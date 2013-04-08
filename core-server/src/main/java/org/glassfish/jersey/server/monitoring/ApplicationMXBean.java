@@ -37,57 +37,72 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.jersey.server.internal.routing;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+package org.glassfish.jersey.server.monitoring;
 
-import org.glassfish.jersey.server.ContainerRequest;
-import org.glassfish.jersey.server.model.Resource;
-import org.glassfish.jersey.server.model.ResourceMethod;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Router that pushes matched {@link Resource resource or child resource} and {@link ResourceMethod resourceMethod}
- * to {@link RoutingContext routing context}.
+ * Application MX Bean.
  *
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-
-class PushMatchedMethodResourceRouter implements Router {
+public interface ApplicationMXBean {
+    /**
+     * Get the application name.
+     *
+     * @return Application name.
+     */
+    public String getApplicationName();
 
     /**
-     * Builder for creating {@link PushMatchedMethodResourceRouter push matched resource router} instances. New builder instance
-     * must be injected and not directly created by constructor call.
+     * Get the {@link javax.ws.rs.core.Application application class} used for configuration of Jersey application.
+     * @return Application class name.
      */
-    static class Builder {
-        @Inject
-        private Provider<RoutingContext> routingContext;
+    public String getApplicationClass();
 
-        /**
-         * Builds new instance of router.
-         * @param resource The matched resource that should be pushed into the {@link RoutingContext routing context}.
-         * @param method The matched resource method that should be pushed into the {@link RoutingContext routing context}.
-         * @return New instance of the router.
-         */
-        PushMatchedMethodResourceRouter build(Resource resource, ResourceMethod method) {
-            return new PushMatchedMethodResourceRouter(method, resource, routingContext);
-        }
-    }
+    /**
+     * Get the map of configuration properties converted to strings.
+     * @return Map property keys to property string values.
+     */
+    public Map<String, String> getConfigurationProperties();
 
-    private final ResourceMethod resourceMethod;
-    private final Resource resource;
-    private final Provider<RoutingContext> routingContext;
+    /**
+     * Get the start time of the application (when application was initialized).
+     * @return Application start time.
+     */
+    public Date getStartTime();
 
-    private PushMatchedMethodResourceRouter(ResourceMethod resourceMethod, Resource resource, Provider<RoutingContext> routingContext) {
-        this.resourceMethod = resourceMethod;
-        this.resource = resource;
-        this.routingContext = routingContext;
-    }
+    /**
+     * Get a set of string names of resource classes registered by the user.
+     *
+     * @return Set of classes full names (with package names).
+     *
+     * @see org.glassfish.jersey.server.monitoring.ApplicationEvent#getRegisteredClasses() for specification
+     * of returned classes.
+     */
+    public Set<String> getRegisteredClasses();
 
-    @Override
-    public Continuation apply(ContainerRequest data) {
-        routingContext.get().setMatchedResource(resource);
-        routingContext.get().setMatchedResourceMethod(resourceMethod);
-        return Continuation.of(data);
-    }
+    /**
+     * Get a set of string names of classes of user registered instances.
+     *
+     * @return Set of user registered instances converted to their class full names (with package names).
+     *
+     * @see org.glassfish.jersey.server.monitoring.ApplicationEvent#getRegisteredInstances()
+     * for specification of returned instances.
+     */
+    public Set<String> getRegisteredInstances();
+
+    /**
+     * Get classes of registered providers.
+     *
+     * @return Set of provider class full names (with packages names).
+     * @see org.glassfish.jersey.server.monitoring.ApplicationEvent#getProviders() for specification
+     * of returned classes.
+     */
+    public Set<String> getProviderClasses();
+
+
 }
