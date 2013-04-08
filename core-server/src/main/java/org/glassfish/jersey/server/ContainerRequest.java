@@ -73,6 +73,9 @@ import org.glassfish.jersey.message.internal.InboundMessageContext;
 import org.glassfish.jersey.message.internal.MatchingEntityTag;
 import org.glassfish.jersey.message.internal.VariantSelector;
 import org.glassfish.jersey.server.internal.LocalizationMessages;
+import org.glassfish.jersey.server.internal.monitoring.event.EventListener;
+import org.glassfish.jersey.server.internal.monitoring.event.Events;
+import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
 import org.glassfish.jersey.server.spi.ContainerResponseWriter;
 import org.glassfish.jersey.server.spi.RequestScopedInitializer;
 import org.glassfish.jersey.uri.UriComponent;
@@ -124,6 +127,9 @@ public class ContainerRequest extends InboundMessageContext
     private ContainerResponseWriter responseWriter;
     // True if the request is used in the response processing phase (for example in ContainerResponseFilter)
     private boolean inResponseProcessingPhase;
+    // Event listener registered to this request.
+    private EventListener eventListener = Events.EMPTY_LISTENER;
+    private final RequestEvent.Builder requestEventBuilder;
 
 
     /**
@@ -152,6 +158,7 @@ public class ContainerRequest extends InboundMessageContext
         this.httpMethod = httpMethod;
         this.securityContext = securityContext;
         this.propertiesDelegate = propertiesDelegate;
+        this.requestEventBuilder = new RequestEvent.Builder().setContainerRequest(this);
     }
 
     /**
@@ -419,6 +426,24 @@ public class ContainerRequest extends InboundMessageContext
         this.httpMethod = method;
     }
 
+    // TODO: M: javadoc
+    public EventListener getEventListener() {
+        return eventListener;
+    }
+
+    // TODO: M: javadoc
+    public void setEventListener(EventListener eventListener) {
+        this.eventListener = eventListener;
+    }
+
+    public RequestEvent.Builder getRequestEventBuilder() {
+        return requestEventBuilder;
+    }
+
+
+    public void triggerEvent(RequestEvent.Type requestEventType) {
+        eventListener.onEvent(requestEventBuilder.build(requestEventType));
+    }
 
     /**
      * Like {@link #setMethod(String)} but does not throw {@link IllegalStateException} if the method is invoked in other than

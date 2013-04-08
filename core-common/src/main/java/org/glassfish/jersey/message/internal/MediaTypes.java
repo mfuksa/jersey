@@ -402,4 +402,20 @@ public class MediaTypes {
 
         return mt;
     }
+
+    // TODO: M: javadoc
+    public static String convertToString(Iterable<MediaType> mediaTypes) {
+        StringBuilder sb = new StringBuilder();
+        boolean isFirst = true;
+        for (MediaType mediaType : mediaTypes) {
+            if (!isFirst) {
+                sb.append(", ");
+            } else {
+                isFirst = false;
+            }
+            sb.append("\"").append(mediaType.toString()).append("\"");
+        }
+        return sb.toString();
+
+    }
 }

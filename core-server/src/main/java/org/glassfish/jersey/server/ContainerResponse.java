@@ -78,6 +78,7 @@ public class ContainerResponse implements ContainerResponseContext {
     private boolean mappedFromException;
     private boolean closed;
 
+
     /**
      * Create a new Jersey container response context.
      *

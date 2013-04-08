@@ -119,12 +119,14 @@ public final class RuntimeModelBuilder {
         this.pushedMatchedTemplateBuilder = pushedMatchedTemplateBuilder;
     }
 
-    private Router createSingleMethodAcceptor(final ResourceMethod resourceMethod) {
+    // TODO: M: not so nice, parent resource is needed only for methods
+    private Router createSingleMethodAcceptor(final ResourceMethod resourceMethod, final Resource parentResource,
+                                              final Resource childResource) {
         Router methodAcceptor = null;
         switch (resourceMethod.getType()) {
             case RESOURCE_METHOD:
             case SUB_RESOURCE_METHOD:
-                methodAcceptor = Routers.asTreeAcceptor(createInflector(resourceMethod));
+                methodAcceptor = Routers.asTreeAcceptor(createInflector(resourceMethod, parentResource, childResource));
                 break;
             case SUB_RESOURCE_LOCATOR:
                 methodAcceptor = new SubResourceLocatorRouter(locator, this, resourceMethod);
@@ -135,10 +137,13 @@ public final class RuntimeModelBuilder {
     }
 
 
-    private Inflector<ContainerRequest, ContainerResponse> createInflector(final ResourceMethod method) {
-
+    private Inflector<ContainerRequest, ContainerResponse> createInflector(final ResourceMethod method,
+                                                                           final Resource parentResource,
+                                                                           final Resource childResource) {
         return resourceMethodInvokerBuilder.build(
                 method,
+                parentResource,
+                childResource,
                 processingProviders
         );
     }
@@ -248,7 +253,7 @@ public final class RuntimeModelBuilder {
                                 .to(uriPushingRouter)
                                 .to(locTemplateRouter)
                                 .to(childResourcePushingRouter)
-                                .to(createSingleMethodAcceptor(child.getResourceLocator()));
+                                .to(createSingleMethodAcceptor(child.getResourceLocator(), null, null));
                     }
                 }
             }
@@ -263,7 +268,7 @@ public final class RuntimeModelBuilder {
                         .route(PathPattern.OPEN_ROOT_PATH_PATTERN)
                         .to(uriPushingRouter)
                         .to(resourceTemplateRouter)
-                        .to(createSingleMethodAcceptor(resource.getResourceLocator()));
+                        .to(createSingleMethodAcceptor(resource.getResourceLocator(), null, null));
             }
 
             if (srRoutedBuilder != null) {
@@ -323,14 +328,16 @@ public final class RuntimeModelBuilder {
             final Resource parentResource = runtimeResource.getParent() == null
                     ? null : runtimeResource.getParentResources().get(i++);
             final UriTemplate template = resource.getPathPattern().getTemplate();
-            final PushMatchedTemplateRouter templateRouter = parentResource == null ?
+            final boolean subResourceMethod = parentResource == null;
+            final PushMatchedTemplateRouter templateRouter = subResourceMethod ?
                     getTemplateRouter(subResourceMode, template, null)
                     : getTemplateRouter(subResourceMode, parentResource.getPathPattern().getTemplate(), template);
             for (ResourceMethod resourceMethod : resource.getResourceMethods()) {
                 acceptorPairList.add(new MethodAcceptorPair(resourceMethod,
                         templateRouter,
                         pushedMatchedMethodResourceBuilder.build(resource, resourceMethod),
-                        createSingleMethodAcceptor(resourceMethod)));
+                        createSingleMethodAcceptor(resourceMethod, subResourceMethod ? resource : parentResource,
+                                subResourceMethod ? null : resource)));
             }
         }
         return acceptorPairList;

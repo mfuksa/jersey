@@ -101,6 +101,9 @@ import org.glassfish.jersey.server.internal.JerseyRequestTimeoutHandler;
 import org.glassfish.jersey.server.internal.JerseyResourceContext;
 import org.glassfish.jersey.server.internal.LocalizationMessages;
 import org.glassfish.jersey.server.internal.ProcessingProviders;
+import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
+import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
+import org.glassfish.jersey.server.internal.monitoring.event.CompositeApplicationEventListener;
 import org.glassfish.jersey.server.internal.routing.RoutedInflectorExtractorStage;
 import org.glassfish.jersey.server.internal.routing.Router;
 import org.glassfish.jersey.server.internal.routing.RoutingStage;
@@ -420,8 +423,13 @@ public final class ApplicationHandler {
 
         bindEnhancingResourceClasses(resourceModel, resourceBag, componentProviders);
 
+        // initiate resource model into JerseyResourceContext
+        JerseyResourceContext jerseyResourceContext = locator.getService(JerseyResourceContext.class);
+        jerseyResourceContext.setResourceModel(resourceModel);
+
         final RuntimeModelBuilder runtimeModelBuilder = locator.getService(RuntimeModelBuilder.class);
         runtimeModelBuilder.setProcessingProviders(processingProviders);
+
 
         // assembly request processing chain
         /**
@@ -459,11 +467,13 @@ public final class ApplicationHandler {
             locator.inject(instance);
         }
 
-        // initiate resource model into JerseyResourceContext
-        JerseyResourceContext jerseyResourceContext = locator.getService(JerseyResourceContext.class);
-        jerseyResourceContext.setResourceModel(resourceModel);
+        CompositeApplicationEventListener compositeListener = new CompositeApplicationEventListener(
+                locator.getAllServices(ApplicationEventListener.class));
+        compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZED));
 
-        this.runtime = locator.createAndInitialize(ServerRuntime.Builder.class).build(rootStage);
+
+
+        this.runtime = locator.createAndInitialize(ServerRuntime.Builder.class).build(rootStage, compositeListener);
 
         // inject self
         locator.inject(this);

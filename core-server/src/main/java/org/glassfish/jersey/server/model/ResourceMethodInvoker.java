@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.DynamicFeature;
@@ -76,6 +77,7 @@ import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.internal.ProcessingProviders;
+import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
 import org.glassfish.jersey.server.internal.process.AsyncContext;
 import org.glassfish.jersey.server.internal.process.Endpoint;
 import org.glassfish.jersey.server.internal.process.RespondingContext;
@@ -139,11 +141,17 @@ public class ResourceMethodInvoker implements Endpoint, ResourceInfo {
          * Build a new resource method invoker instance.
          *
          * @param method                      resource method model.
+         * @param parentResource Parent resource that contains the {@code method}. If the {@code method} is a sub resource
+         *                       method then this parameter is a parent resource of the child resource resource that contains
+         *                       the {@code method}. If the {@code method} is not a resource method then this parameter
+         *                       is the resource which contains this method.
          * @param processingProviders Processing providers.
          * @return new resource method invoker instance.
          */
         public ResourceMethodInvoker build(
                 ResourceMethod method,
+                Resource parentResource,
+                Resource childResource,
                 ProcessingProviders processingProviders
         ) {
             return new ResourceMethodInvoker(
@@ -153,6 +161,8 @@ public class ResourceMethodInvoker implements Endpoint, ResourceInfo {
                     dispatcherProviderFactory,
                     invocationHandlerProviderFactory,
                     method,
+                    parentResource,
+                    childResource,
                     processingProviders,
                     locator,
                     globalConfig);
@@ -165,7 +175,9 @@ public class ResourceMethodInvoker implements Endpoint, ResourceInfo {
             Provider<RespondingContext> respondingContextProvider,
             ResourceMethodDispatcher.Provider dispatcherProvider,
             ResourceMethodInvocationHandlerProvider invocationHandlerProvider,
-            ResourceMethod method,
+            final ResourceMethod method,
+            final Resource parentResource,
+            final Resource childResource,
             ProcessingProviders processingProviders,
             ServiceLocator locator,
             Configuration globalConfig) {
@@ -176,7 +188,21 @@ public class ResourceMethodInvoker implements Endpoint, ResourceInfo {
 
         this.method = method;
         final Invocable invocable = method.getInvocable();
-        this.dispatcher = dispatcherProvider.create(invocable, invocationHandlerProvider.create(invocable));
+        final ResourceMethodDispatcher wrappedDispatcher = dispatcherProvider.create(invocable,
+                invocationHandlerProvider.create(invocable));
+        this.dispatcher = new ResourceMethodDispatcher() {
+            @Override
+            public Response dispatch(Object resource, ContainerRequest request) throws ProcessingException {
+                request.getRequestEventBuilder().setParentResource(parentResource).setChildResource(childResource)
+                        .setResourceMethod(method);
+                try {
+                    request.triggerEvent(RequestEvent.Type.RESOURCE_METHOD_START);
+                    return wrappedDispatcher.dispatch(resource, request);
+                } finally {
+                    request.triggerEvent(RequestEvent.Type.RESOURCE_METHOD_FINISHED);
+                }
+            }
+        };
 
         this.resourceMethod = invocable.getHandlingMethod();
         this.resourceClass = invocable.getHandler().getHandlerClass();
@@ -342,7 +368,9 @@ public class ResourceMethodInvoker implements Endpoint, ResourceInfo {
         }
     }
 
+
     private Response invoke(ContainerRequest requestContext, Object resource) {
+
         Response jaxrsResponse = dispatcher.dispatch(resource, requestContext);
         if (jaxrsResponse == null) {
             jaxrsResponse = Response.noContent().build();
