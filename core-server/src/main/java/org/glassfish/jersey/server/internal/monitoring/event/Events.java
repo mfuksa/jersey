@@ -45,9 +45,13 @@ package org.glassfish.jersey.server.internal.monitoring.event;
  *
  */
 public class Events {
-    public static final EventListener<RequestEvent> EMPTY_LISTENER = new EventListener<RequestEvent>() {
+    public static final RequestEventListener EMPTY_REQUEST_LISTENER = new RequestEventListener() {
         @Override
         public void onEvent(RequestEvent event) {
+            // no op
         }
     };
+
+
+
 }

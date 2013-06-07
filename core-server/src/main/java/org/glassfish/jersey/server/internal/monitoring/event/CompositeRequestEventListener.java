@@ -46,15 +46,18 @@ import java.util.List;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
-public class CompossiteEventListener<T extends Event> implements EventListener<T> {
-    private final List<? extends EventListener<T>> eventListeners;
+public class CompositeRequestEventListener implements RequestEventListener {
 
-    public CompossiteEventListener(List<? extends EventListener<T>> eventListeners) {this.eventListeners = eventListeners;}
+    private final List<RequestEventListener> requestEventListeners;
+
+    public CompositeRequestEventListener(List<RequestEventListener> requestEventListeners) {
+        this.requestEventListeners = requestEventListeners;
+    }
 
     @Override
-    public void onEvent(T event) {
-        for (EventListener<T> eventListener : eventListeners) {
-            eventListener.onEvent(event);
+    public void onEvent(RequestEvent event) {
+        for (RequestEventListener requestEventListener : requestEventListeners) {
+            requestEventListener.onEvent(event);
         }
     }
 }

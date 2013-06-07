@@ -162,7 +162,7 @@ public class MonitoringQueue implements ApplicationEventListener {
 
 
     @Override
-    public EventListener<RequestEvent> onRequest(RequestEvent requestEvent) {
+    public ReqEventListener onRequest(RequestEvent requestEvent) {
         switch (requestEvent.getType()) {
             case START_PROCESSING:
                 return new ReqEventListener();

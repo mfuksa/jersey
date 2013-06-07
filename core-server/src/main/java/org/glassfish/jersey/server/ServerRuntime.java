@@ -86,9 +86,7 @@ import org.glassfish.jersey.process.internal.Stage;
 import org.glassfish.jersey.process.internal.Stages;
 import org.glassfish.jersey.server.internal.BackgroundScheduler;
 import org.glassfish.jersey.server.internal.LocalizationMessages;
-import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
-import org.glassfish.jersey.server.internal.monitoring.event.EventListener;
-import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
+import org.glassfish.jersey.server.internal.monitoring.event.*;
 import org.glassfish.jersey.server.internal.process.AsyncContext;
 import org.glassfish.jersey.server.internal.process.Endpoint;
 import org.glassfish.jersey.server.internal.process.MappableException;
@@ -203,9 +201,9 @@ class ServerRuntime {
      * @param request request to be processed.
      */
     public void process(final ContainerRequest request) {
-        final EventListener<RequestEvent> requestEventEventListener =
+        final RequestEventListener requestEventEventListener =
                 applicationEventListener.onRequest(request.getRequestEventBuilder().build(RequestEvent.Type.START_PROCESSING));
-        request.setEventListener(requestEventEventListener);
+        request.setRequestEventListener(requestEventEventListener);
         request.triggerEvent(RequestEvent.Type.START_PROCESSING);
         try {
             request.checkState();

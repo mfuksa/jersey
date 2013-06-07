@@ -44,6 +44,6 @@ package org.glassfish.jersey.server.internal.monitoring.event;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
-public interface RequestEventListener extends EventListener<RequestEvent> {
-
+public interface RequestEventListener {
+    public void onEvent(RequestEvent event);
 }

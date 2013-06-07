@@ -48,27 +48,32 @@ import com.google.common.collect.Lists;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
-public class CompositeApplicationEventListener<T extends Event> extends CompossiteEventListener<ApplicationEvent>
-        implements ApplicationEventListener {
+public class CompositeApplicationEventListener implements ApplicationEventListener {
 
     private final List<ApplicationEventListener> applicationEventListeners;
-    
+
     public CompositeApplicationEventListener(List<ApplicationEventListener> applicationEventListeners) {
-        super(applicationEventListeners);
         this.applicationEventListeners = applicationEventListeners;
     }
 
     @Override
-    public EventListener<RequestEvent> onRequest(RequestEvent requestEvent) {
-        List<EventListener<RequestEvent>> requestEventListeners = Lists.newArrayList();
+    public void onEvent(ApplicationEvent event) {
         for (ApplicationEventListener applicationEventListener : applicationEventListeners) {
-            EventListener<RequestEvent> requestEventListener = applicationEventListener.onRequest(requestEvent);
+            applicationEventListener.onEvent(event);
+        }
+    }
+
+    @Override
+    public RequestEventListener onRequest(RequestEvent requestEvent) {
+        List<RequestEventListener> requestEventListeners = Lists.newArrayList();
+        for (ApplicationEventListener applicationEventListener : applicationEventListeners) {
+            RequestEventListener requestEventListener = applicationEventListener.onRequest(requestEvent);
             if (requestEventListener != null) {
                 requestEventListeners.add(requestEventListener);
             }
         }
 
-        return requestEventListeners.isEmpty() ? Events.EMPTY_LISTENER
-                : new CompossiteEventListener<RequestEvent>(requestEventListeners);
+        return requestEventListeners.isEmpty() ? Events.EMPTY_REQUEST_LISTENER
+                : new CompositeRequestEventListener(requestEventListeners);
     }
 }
