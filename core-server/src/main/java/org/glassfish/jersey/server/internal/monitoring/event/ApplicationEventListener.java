@@ -40,11 +40,14 @@
 
 package org.glassfish.jersey.server.internal.monitoring.event;
 
+import org.glassfish.jersey.spi.*;
+
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
+@Contract
 public interface ApplicationEventListener {
     public void onEvent(ApplicationEvent event);
-    public RequestEventListener onRequest(RequestEvent requestEvent);
+    public RequestEventListener onNewRequest(RequestEvent requestEvent);
 }

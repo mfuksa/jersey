@@ -64,10 +64,10 @@ public class CompositeApplicationEventListener implements ApplicationEventListen
     }
 
     @Override
-    public RequestEventListener onRequest(RequestEvent requestEvent) {
+    public RequestEventListener onNewRequest(RequestEvent requestEvent) {
         List<RequestEventListener> requestEventListeners = Lists.newArrayList();
         for (ApplicationEventListener applicationEventListener : applicationEventListeners) {
-            RequestEventListener requestEventListener = applicationEventListener.onRequest(requestEvent);
+            RequestEventListener requestEventListener = applicationEventListener.onNewRequest(requestEvent);
             if (requestEventListener != null) {
                 requestEventListeners.add(requestEventListener);
             }

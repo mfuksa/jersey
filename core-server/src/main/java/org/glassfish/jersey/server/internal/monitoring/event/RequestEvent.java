@@ -125,6 +125,9 @@ public class RequestEvent implements Event {
     }
 
     public static enum Type {
+        /**
+         * This event type is used only when calling {@link ApplicationEventListener#onNewRequest(RequestEvent)}.
+         */
         START_PROCESSING,
         RESOURCE_METHOD_START,
         RESOURCE_METHOD_FINISHED,

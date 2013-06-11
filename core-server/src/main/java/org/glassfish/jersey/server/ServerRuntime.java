@@ -202,9 +202,9 @@ class ServerRuntime {
      */
     public void process(final ContainerRequest request) {
         final RequestEventListener requestEventEventListener =
-                applicationEventListener.onRequest(request.getRequestEventBuilder().build(RequestEvent.Type.START_PROCESSING));
+                applicationEventListener.onNewRequest(request.getRequestEventBuilder().build(RequestEvent.Type.START_PROCESSING));
         request.setRequestEventListener(requestEventEventListener);
-        request.triggerEvent(RequestEvent.Type.START_PROCESSING);
+
         try {
             request.checkState();
             requestScope.runInScope(new Runnable() {
