@@ -225,6 +225,7 @@ public final class ApplicationHandler {
     private final ServiceLocator locator;
     private ServerRuntime runtime;
 
+
     /**
      * Create a new Jersey application handler using a default configuration.
      */
@@ -329,6 +330,8 @@ public final class ApplicationHandler {
         final List<ComponentProvider> componentProviders;
         final ComponentBag componentBag;
         ResourceModel resourceModel;
+        CompositeApplicationEventListener compositeListener;
+
 
         Errors.mark(); // mark begin of validation phase
         try {
@@ -390,6 +393,10 @@ public final class ApplicationHandler {
             for (ComponentProvider componentProvider : componentProviders) {
                 componentProvider.done();
             }
+            compositeListener = new CompositeApplicationEventListener(
+                    locator.getAllServices(ApplicationEventListener.class));
+            compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_START,
+                    this.runtimeConfig));
 
             processingProviders = getProcessingProviders(componentBag);
 
@@ -466,12 +473,6 @@ public final class ApplicationHandler {
             locator.inject(instance);
         }
 
-        CompositeApplicationEventListener compositeListener = new CompositeApplicationEventListener(
-                locator.getAllServices(ApplicationEventListener.class));
-        compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZED));
-
-
-
         this.runtime = locator.createAndInitialize(ServerRuntime.Builder.class).build(rootStage, compositeListener);
 
         // inject self
@@ -518,6 +519,8 @@ public final class ApplicationHandler {
             printProviders(LocalizationMessages.LOGGING_MESSAGE_BODY_WRITERS(), Collections2.transform(messageBodyWriters, new WorkersToStringTransform<MessageBodyWriter>()), sb);
             LOGGER.log(Level.CONFIG, sb.toString());
         }
+
+        compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_START, runtimeConfig));
     }
 
     private class WorkersToStringTransform<T> implements Function<T, String> {

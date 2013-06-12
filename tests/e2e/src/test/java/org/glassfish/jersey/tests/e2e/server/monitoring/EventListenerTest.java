@@ -41,6 +41,7 @@
 package org.glassfish.jersey.tests.e2e.server.monitoring;
 
 import javax.ws.rs.*;
+import javax.ws.rs.client.*;
 import javax.ws.rs.core.*;
 
 import org.glassfish.jersey.server.*;
@@ -48,12 +49,14 @@ import org.glassfish.jersey.server.internal.monitoring.event.*;
 import org.glassfish.jersey.test.*;
 
 import org.junit.*;
+import static org.junit.Assert.*;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public class EventListenerTest extends JerseyTest {
 
+    private static final String APPLICATION_NAME = "MyApplication";
     private static AppEventListener applicationEventListener;
 
     @Override
@@ -61,17 +64,24 @@ public class EventListenerTest extends JerseyTest {
         applicationEventListener = new AppEventListener();
         final ResourceConfig resourceConfig = new ResourceConfig(MyResource.class);
         resourceConfig.register(applicationEventListener);
+        resourceConfig.setApplicationName(APPLICATION_NAME);
         return resourceConfig;
     }
 
     public static class AppEventListener implements ApplicationEventListener {
-        private ApplicationEvent appEventStart;
+        private ApplicationEvent appEventInitStart;
+        private ApplicationEvent appEventInitFinished;
         private RequestEvent newRequestEvent;
+        private int resourceMethodEventCount = 0;
 
         @Override
         public void onEvent(ApplicationEvent event) {
             switch (event.getType()) {
-                case INITIALIZED: this.appEventStart = event;
+                case INITIALIZATION_START:
+                    this.appEventInitStart = event;
+                    break;
+                case INITIALIZATION_FINISHED:
+                    this.appEventInitFinished = event;
                     break;
             }
         }
@@ -79,17 +89,27 @@ public class EventListenerTest extends JerseyTest {
         @Override
         public RequestEventListener onNewRequest(RequestEvent newRequestEvent) {
             this.newRequestEvent = newRequestEvent;
-            return null;
+            if ("POST".equals(newRequestEvent.getContainerRequest().getMethod())) {
+                return null;
+            }
+
+            return new ReqEventListener(this);
         }
     }
 
     public static class ReqEventListener implements RequestEventListener {
         RequestEvent methodStart;
+        private final AppEventListener appEventListener;
+
+        public ReqEventListener(AppEventListener appEventListener) {
+            this.appEventListener = appEventListener;
+        }
 
         @Override
         public void onEvent(RequestEvent event) {
             switch (event.getType()) {
                 case RESOURCE_METHOD_START:
+                    this.appEventListener.resourceMethodEventCount++;
                     this.methodStart = event;
                     break;
             }
@@ -103,26 +123,46 @@ public class EventListenerTest extends JerseyTest {
         public String get() {
             return "get";
         }
+
+        @POST
+        public void post(String entity) {
+        }
     }
 
 
     @Test
-    public void test() {
-        Assert.assertNotNull(applicationEventListener.appEventStart);
-        Assert.assertNull(applicationEventListener.newRequestEvent);
+    public void testApplicationEvents() {
+        assertNotNull(applicationEventListener.appEventInitStart);
+        assertNotNull(applicationEventListener.appEventInitFinished);
+        assertEquals(APPLICATION_NAME, applicationEventListener.appEventInitStart.getResourceConfig().getApplicationName());
+        assertNull(applicationEventListener.newRequestEvent);
         final Response response = target().path("resource").request().get();
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertNotNull(applicationEventListener.newRequestEvent);
+        assertEquals(200, response.getStatus());
+        assertNotNull(applicationEventListener.newRequestEvent);
 
+    }
+
+    @Test
+    public void testSimpleRequestEvent() {
+        assertEquals(0, applicationEventListener.resourceMethodEventCount);
+        assertNotNull(applicationEventListener.appEventInitStart);
+        assertNull(applicationEventListener.newRequestEvent);
+        Response response = target().path("resource").request().post(Entity.entity("entity",
+                MediaType.TEXT_PLAIN_TYPE));
+        assertEquals(204, response.getStatus());
+        assertNotNull(applicationEventListener.newRequestEvent);
+        assertEquals(0, applicationEventListener.resourceMethodEventCount);
+        response = target().path("resource").request().get();
+        assertEquals(200, response.getStatus());
+        assertEquals(1, applicationEventListener.resourceMethodEventCount);
     }
 
     @Test
     public void test2() {
         final Response response = target().path("resource").request().get();
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertNotNull(applicationEventListener.appEventStart);
+        assertEquals(200, response.getStatus());
+        assertNotNull(applicationEventListener.appEventInitStart);
     }
-
 
 
 }

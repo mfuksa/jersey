@@ -132,6 +132,31 @@ public final class ResourceMethod implements ResourceModelComponent, Producing, 
         }
     }
 
+    public static class Localization {
+        private final ResourceMethod resourceMethod;
+        private final Resource resource;
+        private final Resource parentResource;
+
+
+        public Localization(ResourceMethod resourceMethod, Resource resource, Resource parentResource) {
+            this.resourceMethod = resourceMethod;
+            this.resource = resource;
+            this.parentResource = parentResource;
+        }
+
+        public ResourceMethod getResourceMethod() {
+            return resourceMethod;
+        }
+
+        public Resource getResource() {
+            return resource;
+        }
+
+        public Resource getParentResource() {
+            return parentResource;
+        }
+    }
+
     /**
      * Resource method model builder.
      */

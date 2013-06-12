@@ -40,19 +40,34 @@
 
 package org.glassfish.jersey.server.internal.monitoring.event;
 
+import org.glassfish.jersey.server.*;
+
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
 public class ApplicationEvent implements Event {
-    public ApplicationEvent(Type type) {this.type = type;}
-
     public enum Type {
-        INITIALIZED,
-        STOPPED;
+        INITIALIZATION_START,
+        INITIALIZATION_FINISHED,
+        // TODO: M: implement
+        UNDEPLOY_START,
+        UNDEPLOY_FINISHED,
+        RELOAD
     }
 
     private final Type type;
+    private final ResourceConfig resourceConfig;
+
+    // TODO: M: builder?
+
+    public ApplicationEvent(Type type, ResourceConfig resourceConfig) {this.type = type;
+        this.resourceConfig = resourceConfig;
+    }
+
+    public ResourceConfig getResourceConfig() {
+        return resourceConfig;
+    }
 
     public Type getType() {
         return type;

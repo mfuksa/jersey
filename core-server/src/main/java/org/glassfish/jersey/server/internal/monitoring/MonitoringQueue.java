@@ -47,7 +47,6 @@ import javax.inject.Inject;
 
 import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
 import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
-import org.glassfish.jersey.server.internal.monitoring.event.EventListener;
 import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
 import org.glassfish.jersey.server.internal.monitoring.event.RequestEventListener;
 import org.glassfish.jersey.server.model.Resource;
@@ -164,7 +163,7 @@ public class MonitoringQueue implements ApplicationEventListener {
     @Override
     public ReqEventListener onNewRequest(RequestEvent requestEvent) {
         switch (requestEvent.getType()) {
-            case START_PROCESSING:
+            case START:
                 return new ReqEventListener();
 
         }
@@ -175,9 +174,9 @@ public class MonitoringQueue implements ApplicationEventListener {
     public void onEvent(ApplicationEvent event) {
         final ApplicationEvent.Type type = event.getType();
         switch (type) {
-            case INITIALIZED:
+            case INITIALIZATION_START:
                 break;
-            case STOPPED:
+            case UNDEPLOY_START:
                 break;
         }
     }
@@ -191,7 +190,7 @@ public class MonitoringQueue implements ApplicationEventListener {
         @Override
         public void onEvent(RequestEvent event) {
             switch (event.getType()) {
-                case START_PROCESSING:
+                case START:
                     this.requestTimeStart = System.currentTimeMillis();
                     break;
                 case RESOURCE_METHOD_START:
@@ -201,7 +200,7 @@ public class MonitoringQueue implements ApplicationEventListener {
                     methodItem = new ResourceMethodQueuedItem(event.getParentResource(), event.getChildResource(),
                             event.getResourceMethod(), System.currentTimeMillis() - methodTimeStart, new Date(methodTimeStart));
                     break;
-                case RESPONSE_WRITTEN:
+                case RESP_WRITTEN:
                     responseQueuedItems.add(new ResponseQueuedItem(event.getResponseWritten().getStatus()));
                     break;
                 case FINISHED:

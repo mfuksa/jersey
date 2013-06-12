@@ -176,6 +176,12 @@ public interface ExtendedUriInfo extends UriInfo {
     public ResourceMethod getMatchedResourceMethod();
 
     /**
+     * TODO: M:
+     * @return
+     */
+    public List<ResourceMethod.Localization> getMatchedResourceLocator();
+
+    /**
      * Get matched {@link Resource model resource} from which {@link #getMatchedResourceMethod() the matched} resource method
      * was invoked. The resource can also be a child if the matched method is a sub resource method.
      * <p/>

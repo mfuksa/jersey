@@ -40,6 +40,8 @@
 
 package org.glassfish.jersey.server.internal.monitoring.event;
 
+import java.util.*;
+
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.model.Resource;
@@ -61,6 +63,7 @@ public class RequestEvent implements Event {
         private Resource parentResource;
         private Resource childResource;
         private ResourceMethod resourceMethod;
+
 
         public Builder() {
         }
@@ -122,20 +125,44 @@ public class RequestEvent implements Event {
         this.resourceMethod = resourceMethod;
         this.mappedResponse = mappedResponse;
         this.responseWritten = responseWritten;
+        containerRequest.get()
     }
 
     public static enum Type {
         /**
          * This event type is used only when calling {@link ApplicationEventListener#onNewRequest(RequestEvent)}.
          */
-        START_PROCESSING,
+        START,
+
+        MATCHING_START,
+        MATCHED_LOCATOR,
+        MATCHED_SUB_RESOURCE,
+
+        /**
+         * similar to MATCHING_FINISHED
+         */
+        REQ_FILTERS_START,
+        REQ_FILTERS_FINISHED,
+        /**
+         * Directly before execution
+         */
         RESOURCE_METHOD_START,
         RESOURCE_METHOD_FINISHED,
-        SUCCESS,
-        FAILURE,
-        EXCEPTION_MAPPER,
-        RESPONSE_WRITTEN,
+
+        RESP_FILTERS_START,
+        RESP_FILTERS_FINISHED,
+        /**
+         * After the ExceptionMapper is successfully found and before execution of this mapper
+         */
+        EXCEPTION_MAPPER_FOUND,
+
+        RESP_WRITTEN,
+
         FINISHED;
+    }
+
+    private static class ResourceLocator {
+
     }
 
     private final Type type;
@@ -147,6 +174,7 @@ public class RequestEvent implements Event {
     private final ResourceMethod resourceMethod;
     private final ContainerResponse mappedResponse;
     private final ContainerResponse responseWritten;
+
 
 
     public Resource getChildResource() {

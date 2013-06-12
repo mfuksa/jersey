@@ -52,6 +52,7 @@ import org.glassfish.jersey.model.internal.RankedComparator;
 import org.glassfish.jersey.model.internal.RankedProvider;
 import org.glassfish.jersey.process.internal.AbstractChainableStage;
 import org.glassfish.jersey.process.internal.Stages;
+import org.glassfish.jersey.server.internal.monitoring.event.*;
 import org.glassfish.jersey.server.internal.process.Endpoint;
 import org.glassfish.jersey.server.internal.process.MappableException;
 import org.glassfish.jersey.server.internal.process.RespondingContext;
@@ -144,6 +145,7 @@ class ContainerFilteringStage extends AbstractChainableStage<ContainerRequest> {
             sortedRequestFilters = Providers.sortRankedProviders(new RankedComparator<ContainerRequestFilter>(), requestFilters);
         }
 
+        requestContext.triggerEvent(RequestEvent.Type.REQ_FILTERS_START);
         for (ContainerRequestFilter filter : sortedRequestFilters) {
             try {
                 filter.filter(requestContext);
@@ -166,6 +168,7 @@ class ContainerFilteringStage extends AbstractChainableStage<ContainerRequest> {
                         }));
             }
         }
+        requestContext.triggerEvent(RequestEvent.Type.REQ_FILTERS_FINISHED);
         return Continuation.of(requestContext, getDefaultNext());
     }
 

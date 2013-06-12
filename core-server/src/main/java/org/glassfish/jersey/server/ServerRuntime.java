@@ -202,7 +202,7 @@ class ServerRuntime {
      */
     public void process(final ContainerRequest request) {
         final RequestEventListener requestEventEventListener =
-                applicationEventListener.onNewRequest(request.getRequestEventBuilder().build(RequestEvent.Type.START_PROCESSING));
+                applicationEventListener.onNewRequest(request.getRequestEventBuilder().build(RequestEvent.Type.START));
         request.setRequestEventListener(requestEventEventListener);
 
         try {
@@ -338,7 +338,7 @@ class ServerRuntime {
             request.getRequestEventBuilder().setContainerResponse(response);
             response = processResponse(response);
             release(response);
-            request.triggerEvent(RequestEvent.Type.SUCCESS);
+            request.triggerEvent(RequestEvent.Type.PROCESSING_SUCCESS);
         }
 
         private ContainerResponse processResponse(ContainerResponse response) {
@@ -383,7 +383,7 @@ class ServerRuntime {
                 }
             } finally {
                 release(response);
-                request.triggerEvent(RequestEvent.Type.FAILURE);
+                request.triggerEvent(RequestEvent.Type.PROCESSING_FAILURE);
             }
         }
 
@@ -560,7 +560,7 @@ class ServerRuntime {
 
         private void triggerResponseWrittenEvent(ContainerResponse response) {
             request.getRequestEventBuilder().setResponseWritten(response);
-            request.triggerEvent(RequestEvent.Type.RESPONSE_WRITTEN);
+            request.triggerEvent(RequestEvent.Type.RESP_WRITTEN);
         }
 
         private void release(ContainerResponse responseContext) {

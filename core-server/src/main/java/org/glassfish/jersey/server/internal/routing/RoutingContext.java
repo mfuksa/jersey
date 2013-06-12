@@ -88,6 +88,12 @@ public interface RoutingContext extends ResourceInfo {
     public Object peekMatchedResource();
 
     /**
+     * TODO: M: locator
+     * @param resourceLocator
+     */
+    public void pushMatchedLocator(ResourceMethod.Localization resourceLocator);
+
+    /**
      * Peek at the last successful request URI routing pattern
      * {@link java.util.regex.MatchResult match result}.
      *

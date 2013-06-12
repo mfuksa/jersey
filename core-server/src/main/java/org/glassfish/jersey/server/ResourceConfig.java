@@ -100,6 +100,7 @@ public class ResourceConfig extends Application implements Configurable<Resource
 
         private final Set<Resource> resources;
         private final Set<Resource> resourcesView;
+        private volatile String applicationName;
 
         private volatile ClassLoader classLoader = null;
 
@@ -116,6 +117,7 @@ public class ResourceConfig extends Application implements Configurable<Resource
         public State(State original) {
             super(original);
             this.classLoader = original.classLoader;
+            this.applicationName = original.applicationName;
 
             this.resources = Sets.newHashSet(original.resources);
             this.resourcesView = Collections.unmodifiableSet(this.resources);
@@ -125,6 +127,11 @@ public class ResourceConfig extends Application implements Configurable<Resource
 
         public void setClassLoader(ClassLoader classLoader) {
             this.classLoader = classLoader;
+        }
+
+
+        public void setApplicationName(String applicationName) {
+            this.applicationName = applicationName;
         }
 
         public void registerResources(Set<Resource> resources) {
@@ -199,6 +206,10 @@ public class ResourceConfig extends Application implements Configurable<Resource
          */
         public ClassLoader getClassLoader() {
             return classLoader;
+        }
+
+        private String getApplicationName() {
+            return applicationName;
         }
     }
 
@@ -599,6 +610,20 @@ public class ResourceConfig extends Application implements Configurable<Resource
         return this;
     }
 
+
+    /**
+     * Set the name of the application. The name is an arbitrary user defined name
+     * which is used to distinguish between Jersey applications in the case that more applications
+     * are deployed on the same runtime (container). The name can be used for example for purposes
+     * of monitoring by JMX when name identifies to which application deployed MBeans belong to.
+     * The name should be unique in the runtime.
+     *
+     * @param applicationName Unique application name.
+     */
+    public final void setApplicationName(String applicationName) {
+        state.setApplicationName(applicationName);
+    }
+
     /**
      * Set {@link ClassLoader} which will be used for resource discovery.
      *
@@ -924,6 +949,17 @@ public class ResourceConfig extends Application implements Configurable<Resource
      */
     Application _getApplication() {
         return this;
+    }
+
+    /**
+     * Return the name of the Jersey application.
+     *
+     * @return Name of the application.
+     *
+     * @see #setApplicationName(String)
+     */
+    public String getApplicationName() {
+        return state.getApplicationName();
     }
 
     /**
