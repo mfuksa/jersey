@@ -61,12 +61,9 @@ import com.google.common.collect.Queues;
  *
  */
 public class MonitoringQueue implements ApplicationEventListener {
-
     @Inject
-    public MonitoringQueue(ServiceLocator serviceLocator) {
-        final MonitoringAggregator monitoringAggregator = new MonitoringAggregator(serviceLocator, this);
-        monitoringAggregator.startMonitoringWorker();
-    }
+    private ServiceLocator serviceLocator;
+
 
     private static class TimeEvent {
         private final long duration;
@@ -159,7 +156,6 @@ public class MonitoringQueue implements ApplicationEventListener {
         }
     }
 
-
     @Override
     public ReqEventListener onNewRequest(RequestEvent requestEvent) {
         switch (requestEvent.getType()) {
@@ -175,6 +171,10 @@ public class MonitoringQueue implements ApplicationEventListener {
         final ApplicationEvent.Type type = event.getType();
         switch (type) {
             case INITIALIZATION_START:
+                break;
+            case INITIALIZATION_FINISHED:
+                final MonitoringAggregator monitoringAggregator = new MonitoringAggregator(serviceLocator, this);
+                monitoringAggregator.startMonitoringWorker();
                 break;
             case UNDEPLOY_START:
                 break;
@@ -197,8 +197,10 @@ public class MonitoringQueue implements ApplicationEventListener {
                     this.methodTimeStart = System.currentTimeMillis();
                     break;
                 case RESOURCE_METHOD_FINISHED:
-                    methodItem = new ResourceMethodQueuedItem(event.getParentResource(), event.getChildResource(),
-                            event.getResourceMethod(), System.currentTimeMillis() - methodTimeStart, new Date(methodTimeStart));
+                    final ResourceMethod.Context methodContext = event.getUriInfo().getMatchedResourceMethodContext();
+                    methodItem = new ResourceMethodQueuedItem(methodContext.getParentResource(),
+                            methodContext.getResource(), methodContext.getResourceMethod(),
+                            System.currentTimeMillis() - methodTimeStart, new Date(methodTimeStart));
                     break;
                 case RESP_WRITTEN:
                     responseQueuedItems.add(new ResponseQueuedItem(event.getResponseWritten().getStatus()));
@@ -210,8 +212,10 @@ public class MonitoringQueue implements ApplicationEventListener {
         }
 
         private void methodItem(RequestEvent event) {
-            new ResourceMethodQueuedItem(event.getParentResource(), event.getChildResource(),
-                    event.getResourceMethod(), System.currentTimeMillis() - methodTimeStart, new Date(methodTimeStart));
+            final ResourceMethod.Context methodContext = event.getUriInfo().getMatchedResourceMethodContext();
+            new ResourceMethodQueuedItem(methodContext.getParentResource(), methodContext.getResource(),
+                    methodContext.getResourceMethod(),
+                    System.currentTimeMillis() - methodTimeStart, new Date(methodTimeStart));
         }
     }
 

@@ -104,6 +104,7 @@ class ReferencesInitializer implements Function<ContainerRequest, ContainerReque
         final UriRoutingContext uriRoutingCtx = uriRoutingCtxProvider.get();
 
         containerRequest.setUriInfo(uriRoutingCtx);
+        containerRequest.getRequestEventBuilder().setExtendedUriInfo(uriRoutingCtx);
 
         containerRequest.setReaderInterceptors(new Value<Iterable<ReaderInterceptor>>() {
             @Override

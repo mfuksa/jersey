@@ -40,12 +40,7 @@
 
 package org.glassfish.jersey.server.internal.monitoring.event;
 
-import java.util.*;
-
-import org.glassfish.jersey.server.ContainerRequest;
-import org.glassfish.jersey.server.ContainerResponse;
-import org.glassfish.jersey.server.model.Resource;
-import org.glassfish.jersey.server.model.ResourceMethod;
+import org.glassfish.jersey.server.*;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
@@ -60,18 +55,12 @@ public class RequestEvent implements Event {
         private ContainerResponse mappedResponse;
         private ContainerResponse responseWritten;
         private Throwable throwable;
-        private Resource parentResource;
-        private Resource childResource;
-        private ResourceMethod resourceMethod;
+        private ExtendedUriInfo uriInfo;
 
 
         public Builder() {
         }
 
-        public Builder setChildResource(Resource childResource) {
-            this.childResource = childResource;
-            return this;
-        }
 
         public Builder setContainerRequest(ContainerRequest containerRequest) {
             this.containerRequest = containerRequest;
@@ -83,15 +72,6 @@ public class RequestEvent implements Event {
             return this;
         }
 
-        public Builder setParentResource(Resource parentResource) {
-            this.parentResource = parentResource;
-            return this;
-        }
-
-        public Builder setResourceMethod(ResourceMethod resourceMethod) {
-            this.resourceMethod = resourceMethod;
-            return this;
-        }
 
         public Builder setThrowable(Throwable throwable) {
             this.throwable = throwable;
@@ -106,26 +86,27 @@ public class RequestEvent implements Event {
             this.responseWritten = responseWritten;
         }
 
+        public void setExtendedUriInfo(ExtendedUriInfo extendedUriInfo) {
+            this.uriInfo = extendedUriInfo;
+        }
+
         public RequestEvent build(Type type) {
-            return new RequestEvent(type, containerRequest, containerResponse, throwable, parentResource,
-                    childResource, resourceMethod, mappedResponse, responseWritten);
+            return new RequestEvent(type, containerRequest, containerResponse, throwable, mappedResponse,
+                    responseWritten, uriInfo);
         }
     }
 
 
     private RequestEvent(Type type, ContainerRequest containerRequest, ContainerResponse containerResponse,
-                         Throwable throwable, Resource parentResource, Resource childResource, ResourceMethod resourceMethod,
-                         ContainerResponse mappedResponse, ContainerResponse responseWritten) {
+                         Throwable throwable,
+                         ContainerResponse mappedResponse, ContainerResponse responseWritten, ExtendedUriInfo extendedUriInfo) {
         this.type = type;
         this.containerRequest = containerRequest;
         this.containerResponse = containerResponse;
         this.throwable = throwable;
-        this.parentResource = parentResource;
-        this.childResource = childResource;
-        this.resourceMethod = resourceMethod;
         this.mappedResponse = mappedResponse;
         this.responseWritten = responseWritten;
-        containerRequest.get()
+        this.extendedUriInfo = extendedUriInfo;
     }
 
     public static enum Type {
@@ -169,17 +150,12 @@ public class RequestEvent implements Event {
     private final ContainerRequest containerRequest;
     private final ContainerResponse containerResponse;
     private final Throwable throwable;
-    private final Resource parentResource;
-    private final Resource childResource;
-    private final ResourceMethod resourceMethod;
     private final ContainerResponse mappedResponse;
     private final ContainerResponse responseWritten;
+    private final ExtendedUriInfo extendedUriInfo;
 
 
 
-    public Resource getChildResource() {
-        return childResource;
-    }
 
     public ContainerRequest getContainerRequest() {
         return containerRequest;
@@ -189,13 +165,6 @@ public class RequestEvent implements Event {
         return containerResponse;
     }
 
-    public Resource getParentResource() {
-        return parentResource;
-    }
-
-    public ResourceMethod getResourceMethod() {
-        return resourceMethod;
-    }
 
     public Throwable getThrowable() {
         return throwable;
@@ -211,5 +180,9 @@ public class RequestEvent implements Event {
 
     public ContainerResponse getResponseWritten() {
         return responseWritten;
+    }
+
+    public ExtendedUriInfo getUriInfo() {
+        return extendedUriInfo;
     }
 }

@@ -141,17 +141,11 @@ public class ResourceMethodInvoker implements Endpoint, ResourceInfo {
          * Build a new resource method invoker instance.
          *
          * @param method                      resource method model.
-         * @param parentResource Parent resource that contains the {@code method}. If the {@code method} is a sub resource
-         *                       method then this parameter is a parent resource of the child resource resource that contains
-         *                       the {@code method}. If the {@code method} is not a resource method then this parameter
-         *                       is the resource which contains this method.
          * @param processingProviders Processing providers.
          * @return new resource method invoker instance.
          */
         public ResourceMethodInvoker build(
                 ResourceMethod method,
-                Resource parentResource,
-                Resource childResource,
                 ProcessingProviders processingProviders
         ) {
             return new ResourceMethodInvoker(
@@ -161,8 +155,6 @@ public class ResourceMethodInvoker implements Endpoint, ResourceInfo {
                     dispatcherProviderFactory,
                     invocationHandlerProviderFactory,
                     method,
-                    parentResource,
-                    childResource,
                     processingProviders,
                     locator,
                     globalConfig);
@@ -176,8 +168,6 @@ public class ResourceMethodInvoker implements Endpoint, ResourceInfo {
             ResourceMethodDispatcher.Provider dispatcherProvider,
             ResourceMethodInvocationHandlerProvider invocationHandlerProvider,
             final ResourceMethod method,
-            final Resource parentResource,
-            final Resource childResource,
             ProcessingProviders processingProviders,
             ServiceLocator locator,
             Configuration globalConfig) {
@@ -193,8 +183,6 @@ public class ResourceMethodInvoker implements Endpoint, ResourceInfo {
         this.dispatcher = new ResourceMethodDispatcher() {
             @Override
             public Response dispatch(Object resource, ContainerRequest request) throws ProcessingException {
-                request.getRequestEventBuilder().setParentResource(parentResource).setChildResource(childResource)
-                        .setResourceMethod(method);
                 try {
                     request.triggerEvent(RequestEvent.Type.RESOURCE_METHOD_START);
                     return wrappedDispatcher.dispatch(resource, request);

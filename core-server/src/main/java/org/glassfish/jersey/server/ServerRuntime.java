@@ -338,7 +338,7 @@ class ServerRuntime {
             request.getRequestEventBuilder().setContainerResponse(response);
             response = processResponse(response);
             release(response);
-            request.triggerEvent(RequestEvent.Type.PROCESSING_SUCCESS);
+//            TODO: M: request.triggerEvent(RequestEvent.Type.PROCESSING_SUCCESS);
         }
 
         private ContainerResponse processResponse(ContainerResponse response) {
@@ -383,7 +383,7 @@ class ServerRuntime {
                 }
             } finally {
                 release(response);
-                request.triggerEvent(RequestEvent.Type.PROCESSING_FAILURE);
+                // TODO: M: request.triggerEvent(RequestEvent.Type.PROCESSING_FAILURE);
             }
         }
 

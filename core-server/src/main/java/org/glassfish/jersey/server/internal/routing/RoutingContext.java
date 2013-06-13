@@ -88,12 +88,6 @@ public interface RoutingContext extends ResourceInfo {
     public Object peekMatchedResource();
 
     /**
-     * TODO: M: locator
-     * @param resourceLocator
-     */
-    public void pushMatchedLocator(ResourceMethod.Localization resourceLocator);
-
-    /**
      * Peek at the last successful request URI routing pattern
      * {@link java.util.regex.MatchResult match result}.
      *
@@ -208,16 +202,14 @@ public interface RoutingContext extends ResourceInfo {
      *
      * @param resourceMethod Resource method that was matched.
      */
-    public void setMatchedResourceMethod(ResourceMethod resourceMethod);
+    // TODO: M:
+    public void setMatchedResourceMethod(ResourceMethod.Context methodContext);
 
     /**
-     * Set the matched {@link Resource resource or child resource}. This method needs to be called only if the resource was
-     * matched. This method should be called only setting for final resource which contains matched resource method
-     * and not for setting resources which contains sub resource locators invoked during matching.
-     *
-     * @param resource Resource that was matched.
+     * TODO: M: locator
+     * @param resourceLocator
      */
-    public void setMatchedResource(Resource resource);
+    public void pushMatchedLocator(ResourceMethod.Context resourceLocator);
 
     /**
      * Push a matched {@link RuntimeResource runtime resource} that was visited during matching phase. This method must

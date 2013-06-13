@@ -103,10 +103,9 @@ public class UriRoutingContext implements RoutingContext, ExtendedUriInfo {
     private final LinkedList<String> paths = Lists.newLinkedList();
     private Inflector<ContainerRequest, ContainerResponse> inflector;
     private final LinkedList<RuntimeResource> matchedRuntimeResources = Lists.newLinkedList();
-    volatile private ResourceMethod matchedResourceMethod = null;
-    volatile private Resource matchedResourceModel = null;
+    volatile private ResourceMethod.Context matchedResourceMethod = null;
     private final ProcessingProviders processingProviders;
-    private final LinkedList<ResourceMethod.Localization> matchedLocators = Lists.newLinkedList();
+    private final LinkedList<ResourceMethod.Context> matchedLocators = Lists.newLinkedList();
 
 
     /**
@@ -138,7 +137,7 @@ public class UriRoutingContext implements RoutingContext, ExtendedUriInfo {
     }
 
     @Override
-    public void pushMatchedLocator(ResourceMethod.Localization resourceLocator) {
+    public void pushMatchedLocator(ResourceMethod.Context resourceLocator) {
         matchedLocators.push(resourceLocator);
     }
 
@@ -252,13 +251,8 @@ public class UriRoutingContext implements RoutingContext, ExtendedUriInfo {
     }
 
     @Override
-    public void setMatchedResourceMethod(ResourceMethod resourceMethod) {
-        this.matchedResourceMethod = resourceMethod;
-    }
-
-    @Override
-    public void setMatchedResource(Resource resourceModel) {
-        this.matchedResourceModel = resourceModel;
+    public void setMatchedResourceMethod(ResourceMethod.Context resourceMethodContext) {
+        this.matchedResourceMethod = resourceMethodContext;
     }
 
     @Override
@@ -528,17 +522,22 @@ public class UriRoutingContext implements RoutingContext, ExtendedUriInfo {
 
     @Override
     public ResourceMethod getMatchedResourceMethod() {
-        return matchedResourceMethod;
+        return matchedResourceMethod.getResourceMethod();
     }
 
     @Override
-    public List<ResourceMethod.Localization> getMatchedResourceLocator() {
+    public List<ResourceMethod.Context> getMatchedResourceLocators() {
         return matchedLocators;
     }
 
     @Override
     public Resource getMatchedModelResource() {
-        return matchedResourceModel;
+        return matchedResourceMethod.getResource();
+    }
+
+    @Override
+    public ResourceMethod.Context getMatchedResourceMethodContext() {
+        return matchedResourceMethod;
     }
 
     @Override

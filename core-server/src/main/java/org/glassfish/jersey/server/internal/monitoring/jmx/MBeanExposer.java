@@ -76,13 +76,18 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
         final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 
         requestMXBean = new RequestMXBeanImpl();
-        mBeanServer.registerMBean(requestMXBean, new ObjectName("org.glassfish.jersey:name=Requests"));
-        responseMXBean = new ResponseMXBeanImpl();
-        mBeanServer.registerMBean(responseMXBean, new ObjectName("org.glassfish.jersey:name=Responses"));
 
-        MonitoringStatistics blankStatistics = new MonitoringStatistics.Builder(resourceContext.getResourceModel()).build();
-        resourcesMXBean = new ResourcesMXBeanImpl(blankStatistics.getRootResourceStatistics(), mBeanServer);
+        final boolean alreadyRegistered = mBeanServer.isRegistered(new ObjectName("org.glassfish.jersey"));
+        if (!alreadyRegistered) {
+            mBeanServer.registerMBean(requestMXBean, new ObjectName("org.glassfish.jersey:name=Requests"));
+            responseMXBean = new ResponseMXBeanImpl();
+            mBeanServer.registerMBean(responseMXBean, new ObjectName("org.glassfish.jersey:name=Responses"));
+
+            MonitoringStatistics blankStatistics = new MonitoringStatistics.Builder(resourceContext.getResourceModel()).build();
+            resourcesMXBean = new ResourcesMXBeanImpl(blankStatistics.getRootResourceStatistics(), mBeanServer);
 //        mBeanServer.registerMBean(resourcesMXBean, new ObjectName("org.glassfish.jersey:type=Resources,name="));
+        }
+
     }
 
 

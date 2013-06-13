@@ -520,7 +520,7 @@ public final class ApplicationHandler {
             LOGGER.log(Level.CONFIG, sb.toString());
         }
 
-        compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_START, runtimeConfig));
+        compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_FINISHED, runtimeConfig));
     }
 
     private class WorkersToStringTransform<T> implements Function<T, String> {

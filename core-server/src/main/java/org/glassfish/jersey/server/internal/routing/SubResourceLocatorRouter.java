@@ -211,7 +211,7 @@ class SubResourceLocatorRouter implements Router {
         try {
             Method handlingMethod = locatorModel.getInvocable().getHandlingMethod();
             final Object[] parameterValues = ParameterValueHelper.getParameterValues(valueProviders);
-            request.getRequestEventBuilder().s
+
             request.triggerEvent(RequestEvent.Type.MATCHED_LOCATOR);
             return handlingMethod.invoke(resource, parameterValues);
         } catch (IllegalAccessException ex) {

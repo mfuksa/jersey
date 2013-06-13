@@ -132,13 +132,13 @@ public final class ResourceMethod implements ResourceModelComponent, Producing, 
         }
     }
 
-    public static class Localization {
+    public static class Context {
         private final ResourceMethod resourceMethod;
         private final Resource resource;
         private final Resource parentResource;
 
 
-        public Localization(ResourceMethod resourceMethod, Resource resource, Resource parentResource) {
+        public Context(ResourceMethod resourceMethod, Resource resource, Resource parentResource) {
             this.resourceMethod = resourceMethod;
             this.resource = resource;
             this.parentResource = parentResource;

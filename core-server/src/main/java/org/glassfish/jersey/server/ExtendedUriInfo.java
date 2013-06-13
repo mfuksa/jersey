@@ -165,6 +165,7 @@ public interface ExtendedUriInfo extends UriInfo {
      */
     public List<RuntimeResource> getMatchedRuntimeResources();
 
+    // TODO: M: deprecated?
     /**
      * Get matched {@link ResourceMethod resource method} that is invoked.
      * <p/>
@@ -175,12 +176,7 @@ public interface ExtendedUriInfo extends UriInfo {
      */
     public ResourceMethod getMatchedResourceMethod();
 
-    /**
-     * TODO: M:
-     * @return
-     */
-    public List<ResourceMethod.Localization> getMatchedResourceLocator();
-
+    // TODO: M: deprecated?
     /**
      * Get matched {@link Resource model resource} from which {@link #getMatchedResourceMethod() the matched} resource method
      * was invoked. The resource can also be a child if the matched method is a sub resource method.
@@ -191,4 +187,12 @@ public interface ExtendedUriInfo extends UriInfo {
      * @return The matched model resource or null if no resource was matched.
      */
     public Resource getMatchedModelResource();
+
+    // TODO: M: javadoc
+    public ResourceMethod.Context getMatchedResourceMethodContext();
+
+    public List<ResourceMethod.Context> getMatchedResourceLocators();
+
+
+
 }
