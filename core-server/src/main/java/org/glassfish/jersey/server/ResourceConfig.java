@@ -100,6 +100,7 @@ public class ResourceConfig extends Application implements Configurable<Resource
 
         private final Set<Resource> resources;
         private final Set<Resource> resourcesView;
+        // TODO: M: should be configurable by jax-rs properties: setup new property for app name
         private volatile String applicationName;
 
         private volatile ClassLoader classLoader = null;

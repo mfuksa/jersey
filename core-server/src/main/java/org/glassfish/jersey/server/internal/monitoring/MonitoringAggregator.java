@@ -46,7 +46,7 @@ import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.glassfish.jersey.server.ExtendedResourceContext;
+import org.glassfish.jersey.server.*;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatistics;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsCallback;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceStatistics;
@@ -67,6 +67,7 @@ public class MonitoringAggregator {
     private final List<MonitoringStatisticsCallback> statisticsCallbackList;
     private final Queue<MonitoringQueue.RequestQueuedItem> recentRequestQueue;
 
+
     public MonitoringAggregator(ServiceLocator serviceLocator, MonitoringQueue monitoringQueue) {
         this.monitoringQueue = monitoringQueue;
         final ResourceModel resourceModel = serviceLocator.getService(ExtendedResourceContext.class).getResourceModel();
@@ -76,7 +77,9 @@ public class MonitoringAggregator {
     }
 
     public void startMonitoringWorker() {
-
+        final String appName = monitoringQueue.getResourceConfig().getApplicationName();
+        statisticsBuilder.setApplicationName(appName == null ?
+                String.valueOf(monitoringQueue.getResourceConfig().hashCode()) : appName);
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(new Runnable() {
             @Override
@@ -88,7 +91,7 @@ public class MonitoringAggregator {
                         monitoringStatisticsCallback.onNewStatistics(statisticsBuilder.build());
                     }
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(10000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         Thread.currentThread().interrupt();

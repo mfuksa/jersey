@@ -45,6 +45,7 @@ import java.util.Queue;
 
 import javax.inject.Inject;
 
+import org.glassfish.jersey.server.*;
 import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
 import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
 import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
@@ -173,8 +174,10 @@ public class MonitoringQueue implements ApplicationEventListener {
             case INITIALIZATION_START:
                 break;
             case INITIALIZATION_FINISHED:
+                this.resourceConfig = event.getResourceConfig();
                 final MonitoringAggregator monitoringAggregator = new MonitoringAggregator(serviceLocator, this);
                 monitoringAggregator.startMonitoringWorker();
+
                 break;
             case UNDEPLOY_START:
                 break;
@@ -222,7 +225,11 @@ public class MonitoringQueue implements ApplicationEventListener {
     private volatile String applicationClassName;
     private final Queue<RequestQueuedItem> requestQueuedItems = Queues.newArrayBlockingQueue(50000);
     private final Queue<ResponseQueuedItem> responseQueuedItems = Queues.newArrayBlockingQueue(50000);
+    private volatile ResourceConfig resourceConfig;
 
+    public ResourceConfig getResourceConfig() {
+        return resourceConfig;
+    }
 
     public String getApplicationClassName() {
         return applicationClassName;

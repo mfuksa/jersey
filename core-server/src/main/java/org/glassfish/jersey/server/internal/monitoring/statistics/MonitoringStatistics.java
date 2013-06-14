@@ -56,12 +56,14 @@ public class MonitoringStatistics {
     private final int requestsPerSecond;
     private final Map<Resource, ResourceStatistics> rootResourceStatistics;
     private final ResponseStatistics responseStatistics;
+    private final String applicationName;
 
     public static class Builder {
         private ExecutionStatistics.Builder requestStatisticsBuilder;
         private final Map<Resource, ResourceStatistics.Builder> rootResourceStatistics = Maps.newHashMap();
         private final ResponseStatistics.Builder responseStatisticsBuilder;
         private int requestsPerSecond;
+        private String applicationName;
 
         public Builder(ResourceModel resourceModel) {
             this.requestStatisticsBuilder = new ExecutionStatistics.Builder();
@@ -88,6 +90,10 @@ public class MonitoringStatistics {
             this.requestsPerSecond = requestsPerSecond;
         }
 
+        public void setApplicationName(String applicationName) {
+            this.applicationName = applicationName;
+        }
+
         public MonitoringStatistics build() {
             final Map<Resource, ResourceStatistics> builtResourceStatistics = Maps.newHashMap();
             for (Map.Entry<Resource, ResourceStatistics.Builder> entry : rootResourceStatistics.entrySet()) {
@@ -95,18 +101,19 @@ public class MonitoringStatistics {
             }
 
             return new MonitoringStatistics(requestStatisticsBuilder.build(), builtResourceStatistics,
-                    responseStatisticsBuilder.build(), requestsPerSecond);
+                    responseStatisticsBuilder.build(), requestsPerSecond, applicationName);
         }
     }
 
     private MonitoringStatistics(ExecutionStatistics requestStatistics,
                                  Map<Resource, ResourceStatistics> rootResourceStatistics,
                                  ResponseStatistics responseStatistics,
-                                 int requestsPerSecond) {
+                                 int requestsPerSecond, String applicationName) {
         this.requestStatistics = requestStatistics;
         this.requestsPerSecond = requestsPerSecond;
         this.rootResourceStatistics = rootResourceStatistics;
         this.responseStatistics = responseStatistics;
+        this.applicationName = applicationName;
     }
 
     public ExecutionStatistics getRequestStatistics() {
@@ -123,5 +130,9 @@ public class MonitoringStatistics {
 
     public int getRequestsPerSecond() {
         return requestsPerSecond;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
     }
 }

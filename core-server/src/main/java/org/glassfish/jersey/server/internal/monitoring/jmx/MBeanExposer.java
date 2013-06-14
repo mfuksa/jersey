@@ -40,59 +40,73 @@
 
 package org.glassfish.jersey.server.internal.monitoring.jmx;
 
-import java.lang.management.ManagementFactory;
+import java.lang.management.*;
+import java.util.concurrent.atomic.*;
+import java.util.logging.*;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
+import javax.inject.*;
+import javax.management.*;
+import javax.ws.rs.*;
 
-import org.glassfish.jersey.server.ExtendedResourceContext;
-import org.glassfish.jersey.server.internal.monitoring.MonitoringQueue;
-import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
-import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatistics;
-import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsCallback;
+import org.glassfish.jersey.server.*;
+import org.glassfish.jersey.server.internal.monitoring.*;
+import org.glassfish.jersey.server.internal.monitoring.event.*;
+import org.glassfish.jersey.server.internal.monitoring.statistics.*;
 
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.hk2.utilities.binding.*;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public class MBeanExposer implements MonitoringStatisticsCallback {
 
     private final RequestMXBeanImpl requestMXBean;
     private final ResponseMXBeanImpl responseMXBean;
     private final ResourcesMXBeanImpl resourcesMXBean;
+    private final AtomicBoolean exposed = new AtomicBoolean(false);
+    private volatile String namePrefix;
+
+    private static final Logger LOGGER = Logger.getLogger(MBeanExposer.class.getName());
 
     @Inject
     public MBeanExposer(ExtendedResourceContext resourceContext)
             throws MalformedObjectNameException, NotCompliantMBeanException,
             InstanceAlreadyExistsException, MBeanRegistrationException {
-        final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 
         requestMXBean = new RequestMXBeanImpl();
-
-        final boolean alreadyRegistered = mBeanServer.isRegistered(new ObjectName("org.glassfish.jersey"));
-        if (!alreadyRegistered) {
-            mBeanServer.registerMBean(requestMXBean, new ObjectName("org.glassfish.jersey:name=Requests"));
-            responseMXBean = new ResponseMXBeanImpl();
-            mBeanServer.registerMBean(responseMXBean, new ObjectName("org.glassfish.jersey:name=Responses"));
-
-            MonitoringStatistics blankStatistics = new MonitoringStatistics.Builder(resourceContext.getResourceModel()).build();
-            resourcesMXBean = new ResourcesMXBeanImpl(blankStatistics.getRootResourceStatistics(), mBeanServer);
-//        mBeanServer.registerMBean(resourcesMXBean, new ObjectName("org.glassfish.jersey:type=Resources,name="));
-        }
-
+        responseMXBean = new ResponseMXBeanImpl();
+        MonitoringStatistics blankStatistics = new MonitoringStatistics.Builder(resourceContext.getResourceModel()).build();
+        resourcesMXBean = new ResourcesMXBeanImpl(blankStatistics.getRootResourceStatistics());
     }
 
+    void registerMBean(Object mbean, String namePostfix) {
+        final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+        try {
+            final ObjectName objectName = new ObjectName(namePrefix + ":" + namePostfix);
+            if (mBeanServer.isRegistered(objectName)) {
+                // TODO: M: loc
+                LOGGER.log(Level.SEVERE, "Monitoring Mbeans for Jersey application " + objectName.getCanonicalName() +
+                        " are already registered. Unregistering the current mbean and registering a new one instead.");
+                mBeanServer.unregisterMBean(objectName);
+            }
+
+            mBeanServer.registerMBean(mbean, objectName);
+        } catch (JMException e) {
+            throw new ProcessingException("Error when registering Jersey monitoring MXBeans.", e);
+        }
+    }
 
     @Override
     public void onNewStatistics(MonitoringStatistics statistics) {
+        if (exposed.compareAndSet(false, true)) {
+            String prefix = "org.glassfish.jersey." + statistics.getApplicationName();
+            namePrefix = prefix;
+            registerMBean(requestMXBean, "name=Requests");
+            registerMBean(responseMXBean, "name=Responses");
+            resourcesMXBean.register(this);
+
+        }
+
         requestMXBean.setMonitoringStatistics(statistics);
         resourcesMXBean.setResourcesStatistics(statistics.getRootResourceStatistics());
         responseMXBean.setResponseCodesToCountMap(statistics.getResponseStatistics());

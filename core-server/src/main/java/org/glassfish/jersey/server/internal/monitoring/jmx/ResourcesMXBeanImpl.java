@@ -62,7 +62,7 @@ public class ResourcesMXBeanImpl implements ResourcesMXBean {
     private final Map<Resource, ResourceMxBeanImpl> resourceMBeans = Maps.newHashMap();
     private final Map<String, ResourceMXBean> exposedResourceMBeans = Maps.newHashMap();
 
-    public ResourcesMXBeanImpl(Map<Resource, ResourceStatistics> resourceStatistics, final MBeanServer mBeanServer)
+    public ResourcesMXBeanImpl(Map<Resource, ResourceStatistics> resourceStatistics)
             throws MalformedObjectNameException, NotCompliantMBeanException, InstanceAlreadyExistsException,
             MBeanRegistrationException {
         for (Map.Entry<Resource, ResourceStatistics> entry : resourceStatistics.entrySet()) {
@@ -71,8 +71,17 @@ public class ResourcesMXBeanImpl implements ResourcesMXBean {
             final ResourceMxBeanImpl mxBean = new ResourceMxBeanImpl(entry.getValue(), path);
             resourceMBeans.put(resource, mxBean);
             exposedResourceMBeans.put(path, mxBean);
-            mBeanServer.registerMBean(mxBean, new ObjectName("org.glassfish.jersey:type=Resources,name=" + path));
         }
+    }
+
+    public void register(final MBeanExposer exposer) {
+        for (Map.Entry<String, ResourceMXBean> entry : exposedResourceMBeans.entrySet()) {
+            exposer.registerMBean(entry.getValue(), "type=Resources,name=\""
+                    + entry.getKey());
+        }
+
+
+
     }
 
     public void setResourcesStatistics(Map<Resource, ResourceStatistics> resourceStatistics) {
