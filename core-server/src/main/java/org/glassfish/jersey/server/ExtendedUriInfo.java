@@ -193,6 +193,5 @@ public interface ExtendedUriInfo extends UriInfo {
 
     public List<ResourceMethod.Context> getMatchedResourceLocators();
 
-
-
+    public List<Resource> getLocatorSubResources();
 }

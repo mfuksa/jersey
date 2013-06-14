@@ -218,4 +218,11 @@ public interface RoutingContext extends ResourceInfo {
      * @param runtimeResource Runtime resource that was matched during matching.
      */
     public void pushMatchedRuntimeResource(RuntimeResource runtimeResource);
+
+
+    /**
+     * TODO: M:
+     * @param subResourceFromLocator
+     */
+    public void pushLocatorSubResource(Resource subResourceFromLocator);
 }

@@ -42,6 +42,9 @@ package org.glassfish.jersey.tests.e2e.server.monitoring;
 
 import java.lang.management.ManagementFactory;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import javax.management.openmbean.CompositeDataSupport;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -51,10 +54,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import javax.management.openmbean.CompositeDataSupport;
-
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 
@@ -63,7 +62,6 @@ import org.junit.Test;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public class JerseyMonitoringTest extends JerseyTest {
     @Override
@@ -102,29 +100,31 @@ public class JerseyMonitoringTest extends JerseyTest {
     @Test
     public void test() throws Exception {
         final String path = "resource";
-        Assert.assertEquals(200, target().path(path).request().get().getStatus());
-        Assert.assertEquals(200, target().path(path).request().post(Entity.entity("post",
-                MediaType.TEXT_PLAIN_TYPE)).getStatus());
-        Assert.assertEquals(200, target().path(path).request().post(Entity.entity("post",
-                MediaType.TEXT_PLAIN_TYPE)).getStatus());
-        Assert.assertEquals(200, target().path(path).request().post(Entity.entity("post",
-                MediaType.TEXT_PLAIN_TYPE)).getStatus());
-        Assert.assertEquals(200, target().path(path).request().post(Entity.entity("post",
-                MediaType.TEXT_PLAIN_TYPE)).getStatus());
-        Assert.assertEquals(200, target().path(path + "/sub2").request().post(Entity.entity("post",
-                MediaType.TEXT_PLAIN_TYPE)).getStatus());
+        do {
+            Assert.assertEquals(200, target().path(path).request().get().getStatus());
+            Assert.assertEquals(200, target().path(path).request().post(Entity.entity("post",
+                    MediaType.TEXT_PLAIN_TYPE)).getStatus());
+            Assert.assertEquals(200, target().path(path).request().post(Entity.entity("post",
+                    MediaType.TEXT_PLAIN_TYPE)).getStatus());
+            Assert.assertEquals(200, target().path(path).request().post(Entity.entity("post",
+                    MediaType.TEXT_PLAIN_TYPE)).getStatus());
+            Assert.assertEquals(200, target().path(path).request().post(Entity.entity("post",
+                    MediaType.TEXT_PLAIN_TYPE)).getStatus());
+            Assert.assertEquals(200, target().path(path + "/sub2").request().post(Entity.entity("post",
+                    MediaType.TEXT_PLAIN_TYPE)).getStatus());
 
-        Assert.assertEquals(200, target().path("resource/sub").request().get().getStatus());
-        Assert.assertEquals(200, target().path("resource/sub").request().get().getStatus());
-        Assert.assertEquals(404, target().path("resource/not-found-404").request().get().getStatus());
+            Assert.assertEquals(200, target().path("resource/sub").request().get().getStatus());
+            Assert.assertEquals(200, target().path("resource/sub").request().get().getStatus());
+            Assert.assertEquals(404, target().path("resource/not-found-404").request().get().getStatus());
 
-        // wait until statistics are propagated to mxbeans
-        Thread.sleep(1500);
+            // wait until statistics are propagated to mxbeans
+            Thread.sleep(1500);
+        } while (true);
 
-        final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-        final ObjectName name = new ObjectName("org.glassfish.jersey:name=Requests");
-        final CompositeDataSupport cds = (CompositeDataSupport) mBeanServer.getAttribute(name, "ExecutionStatisticsMxBean");
-        final Long executionCount = (Long) cds.get("executionCount");
-        Assert.assertEquals(Long.valueOf(9), executionCount);
+//        final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+//        final ObjectName name = new ObjectName("org.glassfish.jersey:name=Requests");
+//        final CompositeDataSupport cds = (CompositeDataSupport) mBeanServer.getAttribute(name, "ExecutionStatisticsMxBean");
+//        final Long executionCount = (Long) cds.get("executionCount");
+//        Assert.assertEquals(Long.valueOf(9), executionCount);
     }
 }

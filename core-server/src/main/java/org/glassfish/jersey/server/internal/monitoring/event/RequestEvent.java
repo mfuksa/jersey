@@ -40,11 +40,16 @@
 
 package org.glassfish.jersey.server.internal.monitoring.event;
 
-import org.glassfish.jersey.server.*;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.ext.ExceptionMapper;
+
+import org.glassfish.jersey.server.ContainerRequest;
+import org.glassfish.jersey.server.ContainerResponse;
+import org.glassfish.jersey.server.ExtendedUriInfo;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public class RequestEvent implements Event {
 
@@ -56,11 +61,18 @@ public class RequestEvent implements Event {
         private ContainerResponse responseWritten;
         private Throwable throwable;
         private ExtendedUriInfo uriInfo;
+        private Iterable<ContainerResponseFilter> containerResponseFilters;
+        private Iterable<ContainerRequestFilter> containerRequestFilters;
+        private ExceptionMapper<?> exceptionMapper;
+        private boolean success;
 
 
         public Builder() {
         }
 
+        public void setExceptionMapper(ExceptionMapper<?> exceptionMapper) {
+            this.exceptionMapper = exceptionMapper;
+        }
 
         public Builder setContainerRequest(ContainerRequest containerRequest) {
             this.containerRequest = containerRequest;
@@ -72,6 +84,9 @@ public class RequestEvent implements Event {
             return this;
         }
 
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
 
         public Builder setThrowable(Throwable throwable) {
             this.throwable = throwable;
@@ -90,16 +105,25 @@ public class RequestEvent implements Event {
             this.uriInfo = extendedUriInfo;
         }
 
+        public void setContainerResponseFilters(Iterable<ContainerResponseFilter> containerResponseFilters) {
+            this.containerResponseFilters = containerResponseFilters;
+        }
+
+        public void setContainerRequestFilters(Iterable<ContainerRequestFilter> containerRequestFilters) {
+            this.containerRequestFilters = containerRequestFilters;
+        }
+
         public RequestEvent build(Type type) {
             return new RequestEvent(type, containerRequest, containerResponse, throwable, mappedResponse,
-                    responseWritten, uriInfo);
+                    responseWritten, uriInfo, containerResponseFilters, containerRequestFilters, exceptionMapper, success);
         }
     }
 
 
     private RequestEvent(Type type, ContainerRequest containerRequest, ContainerResponse containerResponse,
-                         Throwable throwable,
-                         ContainerResponse mappedResponse, ContainerResponse responseWritten, ExtendedUriInfo extendedUriInfo) {
+                         Throwable throwable, ContainerResponse mappedResponse, ContainerResponse responseWritten,
+                         ExtendedUriInfo extendedUriInfo, Iterable<ContainerResponseFilter> containerResponseFilters,
+                         Iterable<ContainerRequestFilter> containerRequestFilters, ExceptionMapper<?> exceptionMapper, boolean success) {
         this.type = type;
         this.containerRequest = containerRequest;
         this.containerResponse = containerResponse;
@@ -107,6 +131,10 @@ public class RequestEvent implements Event {
         this.mappedResponse = mappedResponse;
         this.responseWritten = responseWritten;
         this.extendedUriInfo = extendedUriInfo;
+        this.containerResponseFilters = containerResponseFilters;
+        this.containerRequestFilters = containerRequestFilters;
+        this.exceptionMapper = exceptionMapper;
+        this.success = success;
     }
 
     public static enum Type {
@@ -130,12 +158,17 @@ public class RequestEvent implements Event {
         RESOURCE_METHOD_START,
         RESOURCE_METHOD_FINISHED,
 
+
         RESP_FILTERS_START,
         RESP_FILTERS_FINISHED,
         /**
          * After the ExceptionMapper is successfully found and before execution of this mapper
          */
         EXCEPTION_MAPPER_FOUND,
+
+        // RESPONSE_MAPPED?
+
+        // ADD ON_EXCEPTION
 
         RESP_WRITTEN,
 
@@ -153,8 +186,11 @@ public class RequestEvent implements Event {
     private final ContainerResponse mappedResponse;
     private final ContainerResponse responseWritten;
     private final ExtendedUriInfo extendedUriInfo;
-
-
+    // TODO: M: maybe List?
+    private final Iterable<ContainerResponseFilter> containerResponseFilters;
+    private final Iterable<ContainerRequestFilter> containerRequestFilters;
+    private final ExceptionMapper<?> exceptionMapper;
+    private final boolean success;
 
 
     public ContainerRequest getContainerRequest() {
@@ -163,6 +199,15 @@ public class RequestEvent implements Event {
 
     public ContainerResponse getContainerResponse() {
         return containerResponse;
+    }
+
+
+    /***
+     * TODO: M: lot of responses: simplify
+     * @return
+     */
+    public ContainerResponse getLatestResponse() {
+        return mappedResponse != null ? mappedResponse : containerResponse;
     }
 
 
@@ -184,5 +229,21 @@ public class RequestEvent implements Event {
 
     public ExtendedUriInfo getUriInfo() {
         return extendedUriInfo;
+    }
+
+    public ExceptionMapper<?> getExceptionMapper() {
+        return exceptionMapper;
+    }
+
+    public Iterable<ContainerRequestFilter> getContainerRequestFilters() {
+        return containerRequestFilters;
+    }
+
+    public Iterable<ContainerResponseFilter> getContainerResponseFilters() {
+        return containerResponseFilters;
+    }
+
+    public boolean isSuccess() {
+        return success;
     }
 }

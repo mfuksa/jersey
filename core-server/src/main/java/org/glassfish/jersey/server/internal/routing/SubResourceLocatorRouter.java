@@ -158,6 +158,8 @@ class SubResourceLocatorRouter implements Router {
         }
 
         subResource = resourceModel.getResources().get(0);
+        request.triggerEvent(RequestEvent.Type.MATCHED_SUB_RESOURCE);
+
 
         for (Class<?> handlerClass : subResource.getHandlerClasses()) {
             resourceContext.bindResource(handlerClass);
@@ -178,12 +180,12 @@ class SubResourceLocatorRouter implements Router {
 
         for (ModelProcessor modelProcessor : modelProcessors) {
             subResourceModel = modelProcessor.processSubResource(subResourceModel, configuration);
-            validateEnhancedModel(subResourceModel, modelProcessor);
+            validateEnhancedModel(subResourceModel);
         }
         return subResourceModel;
     }
 
-    private void validateEnhancedModel(final ResourceModel subResourceModel, final ModelProcessor modelProcessor) {
+    private void validateEnhancedModel(final ResourceModel subResourceModel) {
         if (subResourceModel.getResources().size() != 1) {
             throw new ProcessingException(LocalizationMessages.ERROR_SUB_RESOURCE_LOCATOR_MORE_RESOURCES(
                     subResourceModel.getResources().size()));

@@ -76,8 +76,7 @@ public class ResourcesMXBeanImpl implements ResourcesMXBean {
 
     public void register(final MBeanExposer exposer) {
         for (Map.Entry<String, ResourceMXBean> entry : exposedResourceMBeans.entrySet()) {
-            exposer.registerMBean(entry.getValue(), "type=Resources,name=\""
-                    + entry.getKey());
+            exposer.registerMBean(entry.getValue(), "type=Resources,name=" + entry.getKey());
         }
 
 

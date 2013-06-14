@@ -414,6 +414,8 @@ class ServerRuntime {
 
                     ExceptionMapper mapper = exceptionMappers.findMapping(throwable);
                     if (mapper != null) {
+                        request.getRequestEventBuilder().setExceptionMapper(mapper);
+                        request.triggerEvent(RequestEvent.Type.EXCEPTION_MAPPER_FOUND);
                         try {
                             final Response mappedResponse = mapper.toResponse(throwable);
                             if (mappedResponse != null) {
@@ -560,6 +562,7 @@ class ServerRuntime {
 
         private void triggerResponseWrittenEvent(ContainerResponse response) {
             request.getRequestEventBuilder().setResponseWritten(response);
+            request.getRequestEventBuilder().setSuccess(true);
             request.triggerEvent(RequestEvent.Type.RESP_WRITTEN);
         }
 

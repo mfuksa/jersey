@@ -40,16 +40,38 @@
 
 package org.glassfish.jersey.tests.e2e.server.monitoring;
 
-import javax.ws.rs.*;
-import javax.ws.rs.client.*;
-import javax.ws.rs.core.*;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
-import org.glassfish.jersey.server.*;
-import org.glassfish.jersey.server.internal.monitoring.event.*;
-import org.glassfish.jersey.test.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.container.PreMatching;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
 
-import org.junit.*;
-import static org.junit.Assert.*;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
+import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
+import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
+import org.glassfish.jersey.server.internal.monitoring.event.RequestEventListener;
+import org.glassfish.jersey.server.model.ResourceMethod;
+import org.glassfish.jersey.test.JerseyTest;
+
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
@@ -64,6 +86,10 @@ public class EventListenerTest extends JerseyTest {
         applicationEventListener = new AppEventListener();
         final ResourceConfig resourceConfig = new ResourceConfig(MyResource.class);
         resourceConfig.register(applicationEventListener);
+        resourceConfig.register(RequestFilter.class);
+        resourceConfig.register(PreMatchingRequestFilter.class);
+        resourceConfig.register(ResponseFilter.class);
+        resourceConfig.register(MyExceptionMapper.class);
         resourceConfig.setApplicationName(APPLICATION_NAME);
         return resourceConfig;
     }
@@ -98,21 +124,99 @@ public class EventListenerTest extends JerseyTest {
     }
 
     public static class ReqEventListener implements RequestEventListener {
-        RequestEvent methodStart;
         private final AppEventListener appEventListener;
+
+        private final MultivaluedMap<String, String> eventData = new MultivaluedHashMap<String, String>();
 
         public ReqEventListener(AppEventListener appEventListener) {
             this.appEventListener = appEventListener;
         }
 
+        private int index = 1;
+
         @Override
         public void onEvent(RequestEvent event) {
             switch (event.getType()) {
+                case REQ_FILTERS_START:
+                    eventData.add("R.REQ_FILTERS_START.order", String.valueOf(index++));
+                    break;
+                case REQ_FILTERS_FINISHED:
+                    eventData.add("R.REQ_FILTERS_FINISHED.order", String.valueOf(index++));
+                    break;
+                case MATCHED_LOCATOR:
+                    eventData.add("R.MATCHED_LOCATOR.order", String.valueOf(index++));
+                    final List<ResourceMethod.Context> locators = event.getUriInfo().getMatchedResourceLocators();
+                    String msg = String.valueOf(locators.size())
+                            + ":" + locators.get(0).getResourceMethod().getInvocable().getHandlingMethod().getName();
+                    eventData.add("R.MATCHED_LOCATOR", msg);
+                    break;
+                case MATCHED_SUB_RESOURCE:
+                    eventData.add("R.MATCHED_SUB_RESOURCE.order", String.valueOf(index++));
+                    break;
                 case RESOURCE_METHOD_START:
+                    eventData.add("R.RESOURCE_METHOD_START.order", String.valueOf(index++));
                     this.appEventListener.resourceMethodEventCount++;
-                    this.methodStart = event;
+                    final ResourceMethod.Context context = event.getUriInfo().getMatchedResourceMethodContext();
+                    eventData.add("R.RESOURCE_METHOD_START.method", context.getResourceMethod()
+                            .getInvocable().getHandlingMethod().getName());
+                    break;
+                case RESOURCE_METHOD_FINISHED:
+                    eventData.add("R.RESOURCE_METHOD_FINISHED.order", String.valueOf(index++));
+                    eventData.add("R.RESOURCE_METHOD_FINISHED", "ok");
+                    break;
+                case RESP_FILTERS_START:
+                    eventData.add("R.RESP_FILTERS_START.order", String.valueOf(index++));
+                    break;
+                case EXCEPTION_MAPPER_FOUND:
+                    eventData.add("R.EXCEPTION_MAPPER_FOUND.order", String.valueOf(index++));
+                    eventData.add("R.EXCEPTION_MAPPER_FOUND.exception", event.getThrowable().getMessage());
+                    break;
+                case RESP_FILTERS_FINISHED:
+                    eventData.add("R.RESP_FILTERS_FINISHED.order", String.valueOf(index++));
+                    for (Map.Entry<String, List<String>> entry : eventData.entrySet()) {
+                        event.getLatestResponse().getHeaders().addAll(entry.getKey(), entry.getValue());
+                    }
+                    break;
+                case FINISHED:
                     break;
             }
+        }
+    }
+
+    public static class MyMappableException extends RuntimeException {
+        public MyMappableException(String message) {
+            super(message);
+        }
+    }
+
+    public static class MyExceptionMapper implements ExceptionMapper<MyMappableException> {
+
+        @Override
+        public Response toResponse(MyMappableException exception) {
+            return Response.ok("mapped").build();
+        }
+    }
+
+    public static class RequestFilter implements ContainerRequestFilter {
+
+        @Override
+        public void filter(ContainerRequestContext requestContext) throws IOException {
+        }
+    }
+
+    @PreMatching
+    public static class PreMatchingRequestFilter implements ContainerRequestFilter {
+
+        @Override
+        public void filter(ContainerRequestContext requestContext) throws IOException {
+        }
+    }
+
+
+    public static class ResponseFilter implements ContainerResponseFilter {
+
+        @Override
+        public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         }
     }
 
@@ -120,15 +224,33 @@ public class EventListenerTest extends JerseyTest {
     public static class MyResource {
 
         @GET
-        public String get() {
+        public String getMethod() {
             return "get";
         }
 
         @POST
         public void post(String entity) {
         }
+
+        @Path("locator")
+        public SubResource locator() {
+            return new SubResource();
+        }
     }
 
+
+    public static class SubResource {
+        @GET
+        public String get() {
+            return "sub";
+        }
+
+        @GET
+        @Path("exception")
+        public String getException() {
+            throw new MyMappableException("test-error");
+        }
+    }
 
     @Test
     public void testApplicationEvents() {
@@ -158,11 +280,92 @@ public class EventListenerTest extends JerseyTest {
     }
 
     @Test
-    public void test2() {
+    public void testMatchedLocator() {
+        final Response response = target().path("resource/locator").request().get();
+        assertEquals(200, response.getStatus());
+        assertEquals("sub", response.readEntity(String.class));
+        assertEquals("[1:locator]", response.getHeaderString("R.MATCHED_LOCATOR"));
+    }
+
+    @Test
+    public void testMatchedMethod() {
         final Response response = target().path("resource").request().get();
         assertEquals(200, response.getStatus());
-        assertNotNull(applicationEventListener.appEventInitStart);
+        assertEquals("get", response.readEntity(String.class));
+        assertEquals("[getMethod]", response.getHeaderString("R.RESOURCE_METHOD_START.method"));
+        assertEquals("[ok]", response.getHeaderString("R.RESOURCE_METHOD_FINISHED"));
+    }
+
+    @Test
+    public void testException() {
+        final Response response = target().path("resource/locator/exception").request().get();
+        assertEquals(200, response.getStatus());
+        assertEquals("mapped", response.readEntity(String.class));
+        assertEquals("[org.glassfish.jersey.tests.e2e.server.monitoring.EventListenerTest$MyMappableException: test-error]",
+                response.getHeaderString("R.EXCEPTION_MAPPER_FOUND.exception"));
     }
 
 
+    // TODO: M: add test for filters (check that correct filters are passed to the event)
+
+
+    @Test
+    public void testSimpleProcessing() {
+        final Response response = target().path("resource").request().get();
+        assertEquals(200, response.getStatus());
+
+        assertEquals("get", response.readEntity(String.class));
+
+
+        int i = 1;
+        System.out.println(response.getHeaders());
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.REQ_FILTERS_START.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.REQ_FILTERS_FINISHED.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.RESOURCE_METHOD_START.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.RESOURCE_METHOD_FINISHED.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.RESP_FILTERS_START.order"));
+        assertEquals("[" + i + "]", response.getHeaderString("R.RESP_FILTERS_FINISHED.order"));
+    }
+
+
+    @Test
+    public void testLocatorProcessing() {
+        final Response response = target().path("resource/locator").request().get();
+        assertEquals(200, response.getStatus());
+
+        assertEquals("sub", response.readEntity(String.class));
+
+
+        int i = 1;
+        System.out.println(response.getHeaders());
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.MATCHED_LOCATOR.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.MATCHED_SUB_RESOURCE.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.REQ_FILTERS_START.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.REQ_FILTERS_FINISHED.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.RESOURCE_METHOD_START.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.RESOURCE_METHOD_FINISHED.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.RESP_FILTERS_START.order"));
+        assertEquals("[" + i + "]", response.getHeaderString("R.RESP_FILTERS_FINISHED.order"));
+    }
+
+    @Test
+    public void testExceptionProcessing() {
+        final Response response = target().path("resource/locator/exception").request().get();
+        assertEquals(200, response.getStatus());
+
+        assertEquals("mapped", response.readEntity(String.class));
+
+
+        int i = 1;
+        System.out.println(response.getHeaders());
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.MATCHED_LOCATOR.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.MATCHED_SUB_RESOURCE.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.REQ_FILTERS_START.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.REQ_FILTERS_FINISHED.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.RESOURCE_METHOD_START.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.RESOURCE_METHOD_FINISHED.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.EXCEPTION_MAPPER_FOUND.order"));
+        assertEquals("[" + i++ + "]", response.getHeaderString("R.RESP_FILTERS_START.order"));
+        assertEquals("[" + i + "]", response.getHeaderString("R.RESP_FILTERS_FINISHED.order"));
+    }
 }

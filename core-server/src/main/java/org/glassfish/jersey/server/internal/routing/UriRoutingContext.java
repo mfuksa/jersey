@@ -106,6 +106,7 @@ public class UriRoutingContext implements RoutingContext, ExtendedUriInfo {
     volatile private ResourceMethod.Context matchedResourceMethod = null;
     private final ProcessingProviders processingProviders;
     private final LinkedList<ResourceMethod.Context> matchedLocators = Lists.newLinkedList();
+    private final LinkedList<Resource> locatorSubResources = Lists.newLinkedList();
 
 
     /**
@@ -258,6 +259,11 @@ public class UriRoutingContext implements RoutingContext, ExtendedUriInfo {
     @Override
     public void pushMatchedRuntimeResource(RuntimeResource runtimeResource) {
         this.matchedRuntimeResources.push(runtimeResource);
+    }
+
+    @Override
+    public void pushLocatorSubResource(Resource subResourceFromLocator) {
+        this.locatorSubResources.push(subResourceFromLocator);
     }
 
     // UriInfo
@@ -528,6 +534,11 @@ public class UriRoutingContext implements RoutingContext, ExtendedUriInfo {
     @Override
     public List<ResourceMethod.Context> getMatchedResourceLocators() {
         return matchedLocators;
+    }
+
+    @Override
+    public List<Resource> getLocatorSubResources() {
+        return locatorSubResources;
     }
 
     @Override

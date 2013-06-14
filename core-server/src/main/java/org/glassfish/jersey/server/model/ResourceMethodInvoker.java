@@ -178,19 +178,8 @@ public class ResourceMethodInvoker implements Endpoint, ResourceInfo {
 
         this.method = method;
         final Invocable invocable = method.getInvocable();
-        final ResourceMethodDispatcher wrappedDispatcher = dispatcherProvider.create(invocable,
+        this.dispatcher =  dispatcherProvider.create(invocable,
                 invocationHandlerProvider.create(invocable));
-        this.dispatcher = new ResourceMethodDispatcher() {
-            @Override
-            public Response dispatch(Object resource, ContainerRequest request) throws ProcessingException {
-                try {
-                    request.triggerEvent(RequestEvent.Type.RESOURCE_METHOD_START);
-                    return wrappedDispatcher.dispatch(resource, request);
-                } finally {
-                    request.triggerEvent(RequestEvent.Type.RESOURCE_METHOD_FINISHED);
-                }
-            }
-        };
 
         this.resourceMethod = invocable.getHandlingMethod();
         this.resourceClass = invocable.getHandler().getHandlerClass();
@@ -359,7 +348,14 @@ public class ResourceMethodInvoker implements Endpoint, ResourceInfo {
 
     private Response invoke(ContainerRequest requestContext, Object resource) {
 
-        Response jaxrsResponse = dispatcher.dispatch(resource, requestContext);
+        Response jaxrsResponse;
+        requestContext.triggerEvent(RequestEvent.Type.RESOURCE_METHOD_START);
+        try {
+            jaxrsResponse = dispatcher.dispatch(resource, requestContext);
+        } finally {
+            requestContext.triggerEvent(RequestEvent.Type.RESOURCE_METHOD_FINISHED);
+        }
+
         if (jaxrsResponse == null) {
             jaxrsResponse = Response.noContent().build();
         }
