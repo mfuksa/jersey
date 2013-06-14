@@ -50,6 +50,8 @@ import org.glassfish.jersey.server.*;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatistics;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsCallback;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceStatistics;
+import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
 
 import org.glassfish.hk2.api.ServiceLocator;
@@ -126,14 +128,23 @@ public class MonitoringAggregator {
             }
             statisticsBuilder.getRequestStatisticsBuilder().addExecution(event.getExecutionTime(), event.getTime());
             final MonitoringQueue.ResourceMethodQueuedItem methodItem = event.getMethodItem();
+
+
             if (methodItem != null) {
+                final ResourceMethod.Context methodContext = methodItem.getMethodContext();
+                final Resource resource = (methodContext.getParentResource() == null) ? methodContext.getResource()
+                        : methodContext.getParentResource();
+                final Resource childResource = (methodContext.getParentResource() == null) ? null
+                        : methodContext.getResource();
+
                 final ResourceStatistics.Builder resourceBuilder = statisticsBuilder.getRootResourceStatistics()
-                        .get(methodItem.getParentResource());
-                if (methodItem.getChildResource() == null) {
-                    resourceBuilder.addResourceExecution(methodItem.getResourceMethod(), methodItem.getExecutionTime(),
+                        .get(resource);
+                final ResourceMethod method = methodContext.getResourceMethod();
+                if (childResource == null) {
+                    resourceBuilder.addResourceExecution(method, methodItem.getExecutionTime(),
                             methodItem.getTime(), event.getExecutionTime(), event.getTime());
                 } else {
-                    resourceBuilder.addResourceExecution(methodItem.getChildResource(), methodItem.getResourceMethod(),
+                    resourceBuilder.addResourceExecution(childResource, method,
                             methodItem.getExecutionTime(), methodItem.getTime(), event.getExecutionTime(), event.getTime());
                 }
             }

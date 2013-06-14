@@ -98,29 +98,16 @@ public class MonitoringQueue implements ApplicationEventListener {
     }
 
     static class ResourceMethodQueuedItem extends TimeEvent {
-        private final Resource parentResource;
-        private final Resource childResource;
-        private final ResourceMethod resourceMethod;
+        private final ResourceMethod.Context methodContext;
 
-
-        private ResourceMethodQueuedItem(Resource parentResource, Resource childResource, ResourceMethod resourceMethod,
+        private ResourceMethodQueuedItem(ResourceMethod.Context methodContext,
                                          long duration, Date time) {
             super(duration, time);
-            this.parentResource = parentResource;
-            this.childResource = childResource;
-            this.resourceMethod = resourceMethod;
+            this.methodContext = methodContext;
         }
 
-        public Resource getChildResource() {
-            return childResource;
-        }
-
-        public Resource getParentResource() {
-            return parentResource;
-        }
-
-        public ResourceMethod getResourceMethod() {
-            return resourceMethod;
+        ResourceMethod.Context getMethodContext() {
+            return methodContext;
         }
     }
 
@@ -201,8 +188,7 @@ public class MonitoringQueue implements ApplicationEventListener {
                     break;
                 case RESOURCE_METHOD_FINISHED:
                     final ResourceMethod.Context methodContext = event.getUriInfo().getMatchedResourceMethodContext();
-                    methodItem = new ResourceMethodQueuedItem(methodContext.getParentResource(),
-                            methodContext.getResource(), methodContext.getResourceMethod(),
+                    methodItem = new ResourceMethodQueuedItem(methodContext,
                             System.currentTimeMillis() - methodTimeStart, new Date(methodTimeStart));
                     break;
                 case RESP_WRITTEN:
@@ -216,8 +202,7 @@ public class MonitoringQueue implements ApplicationEventListener {
 
         private void methodItem(RequestEvent event) {
             final ResourceMethod.Context methodContext = event.getUriInfo().getMatchedResourceMethodContext();
-            new ResourceMethodQueuedItem(methodContext.getParentResource(), methodContext.getResource(),
-                    methodContext.getResourceMethod(),
+            new ResourceMethodQueuedItem(methodContext,
                     System.currentTimeMillis() - methodTimeStart, new Date(methodTimeStart));
         }
     }

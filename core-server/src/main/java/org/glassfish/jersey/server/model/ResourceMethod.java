@@ -133,6 +133,7 @@ public final class ResourceMethod implements ResourceModelComponent, Producing, 
     }
 
     public static class Context {
+        // TODO: M: maybe parentResource (always not null) and childResource (if exists) -> simplify the code usage
         private final ResourceMethod resourceMethod;
         private final Resource resource;
         private final Resource parentResource;
