@@ -65,7 +65,7 @@ public class MonitoringStatistics {
         private final ResponseStatistics.Builder responseStatisticsBuilder;
         private int requestsPerSecond;
         private String applicationName;
-        private Map<Integer, AvgRequestCount.Builder> averages;
+        private Map<Integer, IntervalStatistics.Builder> averages;
 
         public Builder(ResourceModel resourceModel) {
             this.requestStatisticsBuilder = new ExecutionStatistics.Builder();
@@ -75,11 +75,11 @@ public class MonitoringStatistics {
                 rootResourceStatistics.put(resource, builder);
             }
             // TODO: M: configurable?
-            this.averages = new HashMap<Integer, AvgRequestCount.Builder>(4);
-            averages.put(1000, new AvgRequestCount.Builder(1000));
-            averages.put(10000, new AvgRequestCount.Builder(10000));
-            averages.put(60000, new AvgRequestCount.Builder(60000));
-            averages.put(60000, new AvgRequestCount.Builder(60000));
+            this.averages = new HashMap<Integer, IntervalStatistics.Builder>(4);
+            averages.put(1000, new IntervalStatistics.Builder(1000));
+            averages.put(10000, new IntervalStatistics.Builder(10000));
+            averages.put(60000, new IntervalStatistics.Builder(60000));
+            averages.put(60000, new IntervalStatistics.Builder(60000));
         }
 
         public ExecutionStatistics.Builder getRequestStatisticsBuilder() {

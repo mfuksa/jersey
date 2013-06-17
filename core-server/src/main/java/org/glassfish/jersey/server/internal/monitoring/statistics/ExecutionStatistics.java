@@ -41,6 +41,8 @@
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
@@ -53,6 +55,8 @@ public class ExecutionStatistics {
     private final long averageExecutionTimeInMilliseconds;
     private final long totalExecutionTimeInMilliseconds;
     private final Date lastStartTime;
+
+    private final Map<Long, IntervalStatistics> intervalStatistics;
 
     private ExecutionStatistics(long executionCount, long minimumExecutionTimeInMilliseconds,
                                 long maximumExecutionTimeInMilliseconds, long averageExecutionTimeInMilliseconds,
@@ -96,6 +100,7 @@ public class ExecutionStatistics {
         private long maximumExecutionTimeInMilliseconds;
         private long totalExecutionTimeInMilliseconds;
         private Date lastStartTime;
+        private final Map<Integer, IntervalStatistics.Builder> intervalStatistics;
 
         public Builder(ExecutionStatistics executionStatistics) {
             this.executionCount = executionStatistics.getExecutionCount();
@@ -103,15 +108,23 @@ public class ExecutionStatistics {
             this.maximumExecutionTimeInMilliseconds = executionStatistics.getMaximumExecutionTimeInMilliseconds();
             this.lastStartTime = executionStatistics.getLastStartTime();
             this.totalExecutionTimeInMilliseconds = executionStatistics.getTotalExecutionTimeInMilliseconds();
+
         }
 
         public Builder() {
+            this.intervalStatistics = new HashMap<Integer, IntervalStatistics.Builder>(4);
+            intervalStatistics.put(1000, new IntervalStatistics.Builder(1000));
+            intervalStatistics.put(10000, new IntervalStatistics.Builder(10000));
+            intervalStatistics.put(60000, new IntervalStatistics.Builder(60000));
+            intervalStatistics.put(60000, new IntervalStatistics.Builder(60000));
+
 
         }
 
         public void addExecution(long executionTime, Date startTime) {
             this.totalExecutionTimeInMilliseconds += executionTime;
             if (executionCount > 0) {
+                // TODO: M: bug
                 this.minimumExecutionTimeInMilliseconds = executionTime >= minimumExecutionTimeInMilliseconds
                         ? executionTime : minimumExecutionTimeInMilliseconds;
                 this.maximumExecutionTimeInMilliseconds = executionTime >= maximumExecutionTimeInMilliseconds
