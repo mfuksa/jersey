@@ -40,6 +40,7 @@
 
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.glassfish.jersey.server.model.Resource;
@@ -64,6 +65,7 @@ public class MonitoringStatistics {
         private final ResponseStatistics.Builder responseStatisticsBuilder;
         private int requestsPerSecond;
         private String applicationName;
+        private Map<Integer, AvgRequestCount.Builder> averages;
 
         public Builder(ResourceModel resourceModel) {
             this.requestStatisticsBuilder = new ExecutionStatistics.Builder();
@@ -72,6 +74,12 @@ public class MonitoringStatistics {
                 final ResourceStatistics.Builder builder = new ResourceStatistics.Builder(resource);
                 rootResourceStatistics.put(resource, builder);
             }
+            // TODO: M: configurable?
+            this.averages = new HashMap<Integer, AvgRequestCount.Builder>(4);
+            averages.put(1000, new AvgRequestCount.Builder(1000));
+            averages.put(10000, new AvgRequestCount.Builder(10000));
+            averages.put(60000, new AvgRequestCount.Builder(60000));
+            averages.put(60000, new AvgRequestCount.Builder(60000));
         }
 
         public ExecutionStatistics.Builder getRequestStatisticsBuilder() {
