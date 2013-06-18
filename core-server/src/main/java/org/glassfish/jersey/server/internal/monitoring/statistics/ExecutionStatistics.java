@@ -40,112 +40,65 @@
 
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.collect.Maps;
+
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public class ExecutionStatistics {
-    private final long executionCount;
-    private final long minimumExecutionTimeInMilliseconds;
-    private final long maximumExecutionTimeInMilliseconds;
-    private final long averageExecutionTimeInMilliseconds;
-    private final long totalExecutionTimeInMilliseconds;
-    private final Date lastStartTime;
+    private final long lastStartTime;
+    private final Map<Integer, IntervalStatistics> intervalStatistics;
 
-//    private final Map<Long, IntervalStatistics> intervalStatistics;
-
-    private ExecutionStatistics(long executionCount, long minimumExecutionTimeInMilliseconds,
-                                long maximumExecutionTimeInMilliseconds, long averageExecutionTimeInMilliseconds,
-                                long totalExecutionTimeInMilliseconds,
-                                Date lastStartTime) {
-        this.executionCount = executionCount;
-        this.minimumExecutionTimeInMilliseconds = minimumExecutionTimeInMilliseconds;
-        this.maximumExecutionTimeInMilliseconds = maximumExecutionTimeInMilliseconds;
-        this.averageExecutionTimeInMilliseconds = averageExecutionTimeInMilliseconds;
-        this.lastStartTime = lastStartTime;
-        this.totalExecutionTimeInMilliseconds = totalExecutionTimeInMilliseconds;
+    public Map<Integer, IntervalStatistics> getIntervalStatistics() {
+        return intervalStatistics;
     }
 
-    public long getAverageExecutionTimeInMilliseconds() {
-        return averageExecutionTimeInMilliseconds;
-    }
-
-    public long getExecutionCount() {
-        return executionCount;
-    }
-
-    public long getMaximumExecutionTimeInMilliseconds() {
-        return maximumExecutionTimeInMilliseconds;
-    }
-
-    public long getMinimumExecutionTimeInMilliseconds() {
-        return minimumExecutionTimeInMilliseconds;
-    }
-
-    public Date getLastStartTime() {
+    public long getLastStartTime() {
         return lastStartTime;
     }
 
-    public long getTotalExecutionTimeInMilliseconds() {
-        return totalExecutionTimeInMilliseconds;
+    public ExecutionStatistics(long lastStartTime, Map<Integer, IntervalStatistics> intervalStatistics) {
+        this.lastStartTime = lastStartTime;
+        this.intervalStatistics = intervalStatistics;
     }
 
     public static class Builder {
-        private long executionCount;
-        private long minimumExecutionTimeInMilliseconds;
-        private long maximumExecutionTimeInMilliseconds;
-        private long totalExecutionTimeInMilliseconds;
-        private Date lastStartTime;
-//        private final Map<Integer, IntervalStatistics.Builder> intervalStatistics;
-
-        public Builder(ExecutionStatistics executionStatistics) {
-            this.executionCount = executionStatistics.getExecutionCount();
-            this.minimumExecutionTimeInMilliseconds = executionStatistics.getMinimumExecutionTimeInMilliseconds();
-            this.maximumExecutionTimeInMilliseconds = executionStatistics.getMaximumExecutionTimeInMilliseconds();
-            this.lastStartTime = executionStatistics.getLastStartTime();
-            this.totalExecutionTimeInMilliseconds = executionStatistics.getTotalExecutionTimeInMilliseconds();
-
-        }
+        private long lastStartTime;
+        private final Map<Integer, IntervalStatistics.Builder> intervalStatistics;
 
         public Builder() {
-//            this.intervalStatistics = new HashMap<Integer, IntervalStatistics.Builder>(4);
-//            intervalStatistics.put(1000, new IntervalStatistics.Builder(1000));
-//            intervalStatistics.put(10000, new IntervalStatistics.Builder(10000));
-//            intervalStatistics.put(60000, new IntervalStatistics.Builder(60000));
-//            intervalStatistics.put(60000, new IntervalStatistics.Builder(60000));
-
+            this.intervalStatistics = new HashMap<Integer, IntervalStatistics.Builder>(4);
+            intervalStatistics.put(0, new IntervalStatistics.Builder(0));
+            intervalStatistics.put(1000, new IntervalStatistics.Builder(1000));
+            intervalStatistics.put(10000, new IntervalStatistics.Builder(10000));
+            intervalStatistics.put(60000, new IntervalStatistics.Builder(60000));
+            intervalStatistics.put(60000 * 15, new IntervalStatistics.Builder(60000 * 15));
+            intervalStatistics.put(60000 * 60, new IntervalStatistics.Builder(60000 * 60));
 
         }
 
-        public void addExecution(long executionTime, Date startTime) {
-            this.totalExecutionTimeInMilliseconds += executionTime;
-            if (executionCount > 0) {
-                // TODO: M: bug
-                this.minimumExecutionTimeInMilliseconds = executionTime >= minimumExecutionTimeInMilliseconds
-                        ? executionTime : minimumExecutionTimeInMilliseconds;
-                this.maximumExecutionTimeInMilliseconds = executionTime >= maximumExecutionTimeInMilliseconds
-                        ? executionTime : maximumExecutionTimeInMilliseconds;
-
-                this.totalExecutionTimeInMilliseconds += executionTime;
+        public void addExecution(long executionTime, long startTime) {
+            for (IntervalStatistics.Builder statBuilder : intervalStatistics.values()) {
+                statBuilder.addRequest(startTime, executionTime);
             }
-            this.executionCount++;
+
             this.lastStartTime = startTime;
         }
 
         public ExecutionStatistics build() {
-            return new ExecutionStatistics(executionCount, minimumExecutionTimeInMilliseconds,
-                    maximumExecutionTimeInMilliseconds, executionCount == 0 ? 0 : totalExecutionTimeInMilliseconds / executionCount,
-                    totalExecutionTimeInMilliseconds, lastStartTime);
+            Map<Integer, IntervalStatistics> newIntervalStatistics = Maps.newHashMap();
+            for (Map.Entry<Integer, IntervalStatistics.Builder> builderEntry : intervalStatistics.entrySet()) {
+                newIntervalStatistics.put(builderEntry.getKey(), builderEntry.getValue().build());
+            }
+
+            return new ExecutionStatistics(lastStartTime, newIntervalStatistics);
         }
-
-
     }
 
-    public static ExecutionStatistics emtpyStatistics() {
+    public static ExecutionStatistics epmtyStatistics() {
         return new Builder().build();
     }
 }

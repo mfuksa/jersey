@@ -74,8 +74,8 @@ public class ResourceMethodStatistics {
             return resourceMethodExecutionStatisticsBuilder;
         }
 
-        public void addResourceMethodExecution(long methodExecutionTime, Date methodStartTime,
-                                               long requestExecutionTime, Date requestStartTime) {
+        public void addResourceMethodExecution(long methodExecutionTime, long methodStartTime,
+                                               long requestExecutionTime, long requestStartTime) {
             resourceMethodExecutionStatisticsBuilder.addExecution(methodExecutionTime, methodStartTime);
             requestExecutionStatisticsBuilder.addExecution(requestExecutionTime, requestStartTime);
         }

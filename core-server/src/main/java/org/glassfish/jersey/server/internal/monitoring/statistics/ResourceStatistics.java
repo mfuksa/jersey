@@ -53,21 +53,21 @@ public class ResourceStatistics {
                     requestExecutionStatisticsBuilder.build());
         }
 
-        public void addResourceExecution(Resource childResource, ResourceMethod resourceMethod, long methodExecutionTime, Date methodStartTime,
-                                         long requestExecutionTime, Date requestStartTime) {
+        public void addResourceExecution(Resource childResource, ResourceMethod resourceMethod, long methodExecutionTime, long methodStartTime,
+                                         long requestExecutionTime, long requestStartTime) {
             addResourceExecution(methodExecutionTime, methodStartTime, requestExecutionTime, requestStartTime);
             childBuilders.get(childResource).addResourceExecution(resourceMethod, methodExecutionTime, methodStartTime,
                     requestExecutionTime, requestStartTime);
         }
 
-        public void addResourceExecution(ResourceMethod resourceMethod, long executionTime, Date startTime,
-                                         long requestExecutionTime, Date requestStartTime) {
+        public void addResourceExecution(ResourceMethod resourceMethod, long executionTime, long startTime,
+                                         long requestExecutionTime, long requestStartTime) {
             addResourceExecution(executionTime, startTime, requestExecutionTime, requestStartTime);
             final ResourceMethodStatistics.Builder methodBuilder = methodsBuilders.get(resourceMethod);
             methodBuilder.addResourceMethodExecution(executionTime, startTime, requestExecutionTime, requestStartTime);
         }
 
-        private void addResourceExecution(long executionTime, Date startTime, long requestExecutionTime, Date requestStartTime) {
+        private void addResourceExecution(long executionTime, long startTime, long requestExecutionTime, long requestStartTime) {
             resourceExecutionStatisticsBuilder.addExecution(executionTime, startTime);
             requestExecutionStatisticsBuilder.addExecution(requestExecutionTime, requestStartTime);
         }

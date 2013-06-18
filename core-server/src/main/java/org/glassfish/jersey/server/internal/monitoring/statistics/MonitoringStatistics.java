@@ -40,7 +40,6 @@
 
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.glassfish.jersey.server.model.Resource;
@@ -50,11 +49,9 @@ import com.google.common.collect.Maps;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public class MonitoringStatistics {
     private final ExecutionStatistics requestStatistics;
-    private final int requestsPerSecond;
     private final Map<Resource, ResourceStatistics> rootResourceStatistics;
     private final ResponseStatistics responseStatistics;
     private final String applicationName;
@@ -63,9 +60,8 @@ public class MonitoringStatistics {
         private ExecutionStatistics.Builder requestStatisticsBuilder;
         private final Map<Resource, ResourceStatistics.Builder> rootResourceStatistics = Maps.newHashMap();
         private final ResponseStatistics.Builder responseStatisticsBuilder;
-        private int requestsPerSecond;
         private String applicationName;
-        private Map<Integer, IntervalStatistics.Builder> averages;
+
 
         public Builder(ResourceModel resourceModel) {
             this.requestStatisticsBuilder = new ExecutionStatistics.Builder();
@@ -74,12 +70,6 @@ public class MonitoringStatistics {
                 final ResourceStatistics.Builder builder = new ResourceStatistics.Builder(resource);
                 rootResourceStatistics.put(resource, builder);
             }
-            // TODO: M: configurable?
-            this.averages = new HashMap<Integer, IntervalStatistics.Builder>(4);
-            averages.put(1000, new IntervalStatistics.Builder(1000));
-            averages.put(10000, new IntervalStatistics.Builder(10000));
-            averages.put(60000, new IntervalStatistics.Builder(60000));
-            averages.put(60000, new IntervalStatistics.Builder(60000));
         }
 
         public ExecutionStatistics.Builder getRequestStatisticsBuilder() {
@@ -94,10 +84,6 @@ public class MonitoringStatistics {
             responseStatisticsBuilder.addResponseCode(responseCode);
         }
 
-        public void setRequestsPerSecond(int requestsPerSecond) {
-            this.requestsPerSecond = requestsPerSecond;
-        }
-
         public void setApplicationName(String applicationName) {
             this.applicationName = applicationName;
         }
@@ -109,16 +95,15 @@ public class MonitoringStatistics {
             }
 
             return new MonitoringStatistics(requestStatisticsBuilder.build(), builtResourceStatistics,
-                    responseStatisticsBuilder.build(), requestsPerSecond, applicationName);
+                    responseStatisticsBuilder.build(), applicationName);
         }
     }
 
     private MonitoringStatistics(ExecutionStatistics requestStatistics,
                                  Map<Resource, ResourceStatistics> rootResourceStatistics,
                                  ResponseStatistics responseStatistics,
-                                 int requestsPerSecond, String applicationName) {
+                                 String applicationName) {
         this.requestStatistics = requestStatistics;
-        this.requestsPerSecond = requestsPerSecond;
         this.rootResourceStatistics = rootResourceStatistics;
         this.responseStatistics = responseStatistics;
         this.applicationName = applicationName;
@@ -134,10 +119,6 @@ public class MonitoringStatistics {
 
     public ResponseStatistics getResponseStatistics() {
         return responseStatistics;
-    }
-
-    public int getRequestsPerSecond() {
-        return requestsPerSecond;
     }
 
     public String getApplicationName() {

@@ -68,8 +68,8 @@ public class ResourceMxBeanImpl implements ResourceMXBean {
 
     public ResourceMxBeanImpl(ResourceStatistics resourceStatistics, String path) {
         this.path = path;
-        this.resourceExecutionStatisticsMxBean = new ExecutionStatisticsMxBeanImpl(ExecutionStatistics.emtpyStatistics());
-        this.requestExecutionStatisticsMxBean = new ExecutionStatisticsMxBeanImpl(ExecutionStatistics.emtpyStatistics());
+        this.resourceExecutionStatisticsMxBean = new ExecutionStatisticsMxBeanImpl(ExecutionStatistics.epmtyStatistics());
+        this.requestExecutionStatisticsMxBean = new ExecutionStatisticsMxBeanImpl(ExecutionStatistics.epmtyStatistics());
 
         for (Map.Entry<ResourceMethod, ResourceMethodStatistics> entry
                 : resourceStatistics.getResourceMethods().entrySet()) {
