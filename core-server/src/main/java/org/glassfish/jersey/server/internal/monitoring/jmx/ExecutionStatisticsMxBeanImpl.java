@@ -40,45 +40,82 @@
 
 package org.glassfish.jersey.server.internal.monitoring.jmx;
 
+import java.util.Map;
+
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.AttributeNotFoundException;
+import javax.management.DynamicMBean;
+import javax.management.InvalidAttributeValueException;
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanException;
+import javax.management.MBeanInfo;
+import javax.management.ReflectionException;
+
 import org.glassfish.jersey.server.internal.monitoring.statistics.ExecutionStatistics;
+import org.glassfish.jersey.server.internal.monitoring.statistics.IntervalStatistics;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
-public class ExecutionStatisticsMxBeanImpl implements ExecutionStatisticsMxBean {
+public class ExecutionStatisticsMxBeanImpl implements DynamicMBean {
     private ExecutionStatistics executionStatistics;
+
+    private final MBeanInfo mBeanInfo;
+
+
+    private MBeanInfo getStatisticsMBeanInfo(ExecutionStatistics executionStatistics) {
+        final Map<Integer,IntervalStatistics> stats = executionStatistics.getIntervalStatistics();
+        MBeanAttributeInfo[] attrs = new MBeanAttributeInfo[stats.size()];
+        int i = 0;
+        for (IntervalStatistics statistics : stats.values()) {
+            final long interval = statistics.getInterval();
+            final String prefix = interval / 1000 + "s";
+            attrs[i++] = new MBeanAttributeInfo(prefix + "MinimumTime", "long", "Minimum request processing time in last " + prefix + ".", true, false, false);
+        }
+
+        return new MBeanInfo(this.getClass().getName(), "Execution statistics", attrs, null, null, null);
+    }
 
     public ExecutionStatisticsMxBeanImpl(ExecutionStatistics executionStatistics) {
         this.executionStatistics = executionStatistics;
+        this.mBeanInfo = getMBeanInfo();
+
     }
 
     public void setExecutionStatistics(ExecutionStatistics executionStatistics) {
         this.executionStatistics = executionStatistics;
     }
 
+
+
     @Override
-    public long getExecutionCount() {
-        return executionStatistics.getExecutionCount();
+    public Object getAttribute(String attribute) throws AttributeNotFoundException, MBeanException, ReflectionException {
+        return null;
     }
 
     @Override
-    public long getMaximumExecutionTimeInMilliseconds() {
-        return executionStatistics.getMaximumExecutionTimeInMilliseconds();
+    public void setAttribute(Attribute attribute) throws AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException {
     }
 
     @Override
-    public long getMinimumExecutionTimeInMilliseconds() {
-        return executionStatistics.getMinimumExecutionTimeInMilliseconds();
+    public AttributeList getAttributes(String[] attributes) {
+        return null;
     }
 
     @Override
-    public long getAverageExecutionTimeInMilliseconds() {
-        return executionStatistics.getAverageExecutionTimeInMilliseconds();
+    public AttributeList setAttributes(AttributeList attributes) {
+        return null;
     }
 
     @Override
-    public long getTotalExecutionTimeInMilliseconds() {
-        return executionStatistics.getTotalExecutionTimeInMilliseconds();
+    public Object invoke(String actionName, Object[] params, String[] signature) throws MBeanException, ReflectionException {
+        return null;
+    }
+
+    @Override
+    public MBeanInfo getMBeanInfo() {
+        return null;
     }
 }
