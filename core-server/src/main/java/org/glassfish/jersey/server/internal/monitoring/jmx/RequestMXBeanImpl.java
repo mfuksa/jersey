@@ -45,28 +45,21 @@ import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStat
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public class RequestMXBeanImpl implements RequestMXBean {
     private ExecutionStatisticsMxBeanImpl executionStatisticsMxBean;
-    private int requestsPerSecond;
+
 
     public RequestMXBeanImpl() {
-        this.executionStatisticsMxBean =  new ExecutionStatisticsMxBeanImpl(new ExecutionStatistics.Builder().build());
+        this.executionStatisticsMxBean = new ExecutionStatisticsMxBeanImpl(new ExecutionStatistics.Builder().build());
     }
 
     public ExecutionStatisticsMxBeanImpl getExecutionStatisticsMxBean() {
         return executionStatisticsMxBean;
     }
 
-    @Override
-    public int getRequestsPerSecond() {
-        return requestsPerSecond;
-    }
 
     public void setMonitoringStatistics(MonitoringStatistics monitoringStatistics) {
         executionStatisticsMxBean.setExecutionStatistics(monitoringStatistics.getRequestStatistics());
-        requestsPerSecond = monitoringStatistics.getRequestsPerSecond();
     }
-
 }

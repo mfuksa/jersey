@@ -40,13 +40,12 @@
 
 package org.glassfish.jersey.server.internal.monitoring;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.glassfish.jersey.server.*;
+import org.glassfish.jersey.server.ExtendedResourceContext;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatistics;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsCallback;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceStatistics;
@@ -56,18 +55,13 @@ import org.glassfish.jersey.server.model.ResourceModel;
 
 import org.glassfish.hk2.api.ServiceLocator;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Queues;
-
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public class MonitoringAggregator {
     private final MonitoringQueue monitoringQueue;
     private final MonitoringStatistics.Builder statisticsBuilder;
     private final List<MonitoringStatisticsCallback> statisticsCallbackList;
-    private final Queue<MonitoringQueue.RequestQueuedItem> recentRequestQueue;
 
 
     public MonitoringAggregator(ServiceLocator serviceLocator, MonitoringQueue monitoringQueue) {
@@ -75,7 +69,6 @@ public class MonitoringAggregator {
         final ResourceModel resourceModel = serviceLocator.getService(ExtendedResourceContext.class).getResourceModel();
         this.statisticsBuilder = new MonitoringStatistics.Builder(resourceModel);
         this.statisticsCallbackList = serviceLocator.getAllServices(MonitoringStatisticsCallback.class);
-        this.recentRequestQueue = Lists.newLinkedList();
     }
 
     public void startMonitoringWorker() {
@@ -107,26 +100,10 @@ public class MonitoringAggregator {
 
     private void processRequestEvents() {
         final Queue<MonitoringQueue.RequestQueuedItem> requestQueuedItems = monitoringQueue.getRequestQueuedItems();
-        MonitoringQueue.RequestQueuedItem event;
-        long now = System.currentTimeMillis();
-        long lastSecondTreshold = now - 1000;
-        while (!recentRequestQueue.isEmpty()) {
-            final MonitoringQueue.RequestQueuedItem recentRequest = recentRequestQueue.remove();
-            if (recentRequest.getTime().getTime() > lastSecondTreshold) {
-                break;
-            }
-        }
-        int requestsPerSecond = recentRequestQueue.size();
 
         while (!requestQueuedItems.isEmpty()) {
-            event = requestQueuedItems.remove();
-            if (event.getTime().getTime() > lastSecondTreshold) {
-                if (event.getTime().getTime() < now) {
-                    requestsPerSecond++;
-                }
-                recentRequestQueue.add(event);
-            }
-            statisticsBuilder.getRequestStatisticsBuilder().addExecution(event.getExecutionTime(), event.getTime());
+            MonitoringQueue.RequestQueuedItem event = requestQueuedItems.remove();
+            statisticsBuilder.getRequestStatisticsBuilder().addExecution(event.getExecutionTime(), event.getTime().getTime());
             final MonitoringQueue.ResourceMethodQueuedItem methodItem = event.getMethodItem();
 
 
@@ -142,15 +119,14 @@ public class MonitoringAggregator {
                 final ResourceMethod method = methodContext.getResourceMethod();
                 if (childResource == null) {
                     resourceBuilder.addResourceExecution(method, methodItem.getExecutionTime(),
-                            methodItem.getTime(), event.getExecutionTime(), event.getTime());
+                            methodItem.getTime().getTime(), event.getExecutionTime(), event.getTime().getTime());
                 } else {
                     resourceBuilder.addResourceExecution(childResource, method,
-                            methodItem.getExecutionTime(), methodItem.getTime(), event.getExecutionTime(), event.getTime());
+                            methodItem.getExecutionTime(), methodItem.getTime().getTime(), event.getExecutionTime(),
+                            event.getTime().getTime());
                 }
             }
         }
-        statisticsBuilder.setRequestsPerSecond(requestsPerSecond);
-
     }
 
 
