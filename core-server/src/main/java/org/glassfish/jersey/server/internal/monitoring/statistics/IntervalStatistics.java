@@ -50,6 +50,7 @@ public class IntervalStatistics {
 
 
     static class Builder {
+        private static final int DEFAULT_UNITS_PER_INTERVAL = 100;
         private final int interval;
         private final int unit;
         private final int unitsPerInterval;
@@ -97,7 +98,7 @@ public class IntervalStatistics {
             } else {
 
                 this.interval = interval;
-                int n = 20;
+                int n = DEFAULT_UNITS_PER_INTERVAL;
                 int u = interval / n;
                 if (u < 1000) {
                     n = interval / 1000;
@@ -113,33 +114,7 @@ public class IntervalStatistics {
         }
 
         public void addRequest(long requestTime, int executionTime) {
-            if (interval == 0) {
-
-            } else {
-
-                if ( (requestTime - lastUnitEnd) > interval + unit) {
-                    resetQueue(requestTime);
-                }
-                if (lastUnitEnd < requestTime) {
-                    // close the old unit
-                    unitQueue.add(new Unit(lastUnitCount, lastUnitMin, lastUnitMax));
-
-                    totalCount += lastUnitCount;
-                    lastUnitEnd += unit;
-                    lastUnitCount = 0;
-                    lastUnitMin = -1;
-                    lastUnitMax = -1;
-
-                    while (lastUnitEnd < requestTime) {
-                        // fill with empty until units
-                        if (unitQueue.size()  >= unitsPerInterval) {
-                            totalCount -= unitQueue.remove().count;
-                        }
-                        unitQueue.add(Unit.EMPTY_UNIT);
-                        lastUnitEnd += unit;
-                    }
-                }
-            }
+            closePreviousUnitIfNeeded(requestTime);
 
             lastUnitCount++;
 
@@ -152,6 +127,38 @@ public class IntervalStatistics {
             }
         }
 
+        private void closePreviousUnitIfNeeded(long requestTime) {
+            if (interval != 0) {
+                if ((requestTime - lastUnitEnd) > interval + unit) {
+                    resetQueue(requestTime);
+                }
+                if (lastUnitEnd < requestTime) {
+                    // close the old unit
+                    add(new Unit(lastUnitCount, lastUnitMin, lastUnitMax));
+
+                    totalCount += lastUnitCount;
+                    lastUnitEnd += unit;
+                    lastUnitCount = 0;
+                    lastUnitMin = -1;
+                    lastUnitMax = -1;
+
+                    while (lastUnitEnd < requestTime) {
+                        add(Unit.EMPTY_UNIT);
+                        lastUnitEnd += unit;
+                    }
+                }
+            }
+        }
+
+        private void add(Unit unit) {
+            unitQueue.add(unit);
+
+            // fill with empty until units
+            if (unitQueue.size() > unitsPerInterval) {
+                totalCount -= unitQueue.remove().count;
+            }
+        }
+
         private void resetQueue(long requestTime) {
             this.unitQueue.clear();
             lastUnitEnd = requestTime + unit;
@@ -159,9 +166,12 @@ public class IntervalStatistics {
             lastUnitMin = -1;
             lastUnitMax = -1;
 
+            // fill with empty unit to keep result consistent
+            for (int i = 0; i < unitsPerInterval; i++) {
+                unitQueue.add(Unit.EMPTY_UNIT);
+            }
+
         }
-
-
 
 
         public IntervalStatistics build() {
@@ -175,6 +185,7 @@ public class IntervalStatistics {
                 return new IntervalStatistics(interval, requestsPerSecond, lastUnitMin, lastUnitMax, lastUnitCount);
             }
 
+            closePreviousUnitIfNeeded(currentTime);
             int min = -1;
             int max = -1;
             double requestsPerSecond;
@@ -183,7 +194,7 @@ public class IntervalStatistics {
                 if ((u.minumumExecutionTime < min && u.minumumExecutionTime != -1) || min == -1) {
                     min = u.minumumExecutionTime;
                 }
-                if ((u.maximumExecutionTime < max && u.maximumExecutionTime != -1) || max == -1) {
+                if ((u.maximumExecutionTime > max && u.maximumExecutionTime != -1) || max == -1) {
                     max = u.maximumExecutionTime;
                 }
             }
@@ -191,9 +202,9 @@ public class IntervalStatistics {
             final int size = unitQueue.size();
             if (size >= unitsPerInterval) {
                 // intervalWithRoundError is used instead of size * unit for performance reasons
-                requestsPerSecond = (double)(1000 * totalCount) / intervalWithRoundError;
+                requestsPerSecond = (double) (1000 * totalCount) / intervalWithRoundError;
             } else {
-                requestsPerSecond = size == 0 ? 0d : (double)(1000 * totalCount) / (size * unit);
+                requestsPerSecond = size == 0 ? 0d : (double) (1000 * totalCount) / (size * unit);
             }
 
             return new IntervalStatistics(interval, requestsPerSecond, min, max, totalCount);
