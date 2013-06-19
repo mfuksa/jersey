@@ -44,14 +44,18 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.glassfish.jersey.server.ExtendedResourceContext;
+import org.glassfish.jersey.server.internal.RuntimeExecutorsBinder;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatistics;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsCallback;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceStatistics;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
+import org.glassfish.jersey.spi.RuntimeThreadProvider;
 
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -62,6 +66,8 @@ public class MonitoringAggregator {
     private final MonitoringQueue monitoringQueue;
     private final MonitoringStatistics.Builder statisticsBuilder;
     private final List<MonitoringStatisticsCallback> statisticsCallbackList;
+    private final ScheduledExecutorService scheduler;
+
 
 
     public MonitoringAggregator(ServiceLocator serviceLocator, MonitoringQueue monitoringQueue) {
@@ -69,33 +75,26 @@ public class MonitoringAggregator {
         final ResourceModel resourceModel = serviceLocator.getService(ExtendedResourceContext.class).getResourceModel();
         this.statisticsBuilder = new MonitoringStatistics.Builder(resourceModel);
         this.statisticsCallbackList = serviceLocator.getAllServices(MonitoringStatisticsCallback.class);
+        this.scheduler = serviceLocator.getService(ScheduledExecutorService.class,
+                new RuntimeExecutorsBinder.BackgroundSchedulerLiteral());
     }
 
     public void startMonitoringWorker() {
         final String appName = monitoringQueue.getResourceConfig().getApplicationName();
         statisticsBuilder.setApplicationName(appName == null ?
                 String.valueOf(monitoringQueue.getResourceConfig().hashCode()) : appName);
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.execute(new Runnable() {
+
+        scheduler.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                while (true) {
-                    processRequestEvents();
-                    processResponseCodeEvents();
-                    for (MonitoringStatisticsCallback monitoringStatisticsCallback : statisticsCallbackList) {
-                        monitoringStatisticsCallback.onNewStatistics(statisticsBuilder.build());
-                    }
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        Thread.currentThread().interrupt();
-                        return;
-                    }
-
+                processRequestEvents();
+                processResponseCodeEvents();
+                for (MonitoringStatisticsCallback monitoringStatisticsCallback : statisticsCallbackList) {
+                    monitoringStatisticsCallback.onNewStatistics(statisticsBuilder.build());
                 }
+
             }
-        });
+        }, 0, 500, TimeUnit.MILLISECONDS);
     }
 
     private void processRequestEvents() {

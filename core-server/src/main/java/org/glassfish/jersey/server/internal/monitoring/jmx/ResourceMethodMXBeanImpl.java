@@ -40,6 +40,8 @@
 
 package org.glassfish.jersey.server.internal.monitoring.jmx;
 
+import java.util.UUID;
+
 import org.glassfish.jersey.message.internal.MediaTypes;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ExecutionStatistics;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceMethodStatistics;
@@ -47,7 +49,6 @@ import org.glassfish.jersey.server.model.ResourceMethod;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public class ResourceMethodMXBeanImpl implements ResourceMethodMXBean, Registrable {
     private ExecutionStatisticsDynamicBean methodExecutionStatisticsMxBean;
@@ -61,7 +62,8 @@ public class ResourceMethodMXBeanImpl implements ResourceMethodMXBean, Registrab
         this.methodExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(ExecutionStatistics.epmtyStatistics(), "MethodStatistics");
         this.requestExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(ExecutionStatistics.epmtyStatistics(), "RequestStatistics");
         this.path = path;
-        this.name = methodStatistics.getResourceMethod().getInvocable().getHandlingMethod().getName();
+        this.name = methodStatistics.getResourceMethod().getInvocable().getHandlingMethod().getName() + "_"
+                + Integer.toHexString(methodStatistics.getResourceMethod().hashCode());
         this.resourceMethod = methodStatistics.getResourceMethod();
     }
 
