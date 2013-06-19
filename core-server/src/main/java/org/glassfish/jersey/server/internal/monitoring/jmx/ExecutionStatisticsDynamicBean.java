@@ -62,30 +62,67 @@ import com.google.common.collect.Maps;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable {
-    private ExecutionStatistics executionStatistics;
+    private volatile ExecutionStatistics executionStatistics;
     private final String beanName;
+    private final Map<String, Value<Object>> attributeValues = Maps.newHashMap();
 
     private final MBeanInfo mBeanInfo;
 
 
-    private MBeanInfo getStatisticsMBeanInfo(final ExecutionStatistics executionStatistics) {
-        final Map<Integer, IntervalStatistics> statsMap = executionStatistics.getIntervalStatistics();
-        final Map<String, Value<Object>> attributeValues = Maps.newHashMap();
-        MBeanAttributeInfo[] attrs = new MBeanAttributeInfo[statsMap.size()];
+    private MBeanInfo initMBeanInfo(final ExecutionStatistics initialStatistics) {
+        final Map<Long, IntervalStatistics> statsMap = initialStatistics.getIntervalStatistics();
+        MBeanAttributeInfo[] attrs = new MBeanAttributeInfo[statsMap.size() * 4];
         int i = 0;
-        for (final IntervalStatistics statistics : statsMap.values()) {
-            final long interval = statistics.getInterval();
+        for (final IntervalStatistics stats : statsMap.values()) {
+            final long interval = stats.getInterval();
             final String prefix = interval / 1000 + "s";
-            final String name = prefix + "MinimumTime";
-            attrs[i++] = new MBeanAttributeInfo(name, "long", "Minimum request processing time in last "
-                    + prefix + ".", true, false, false);
+
+            String name = prefix + "_MinTime_ms";
+            attrs[i++] = new MBeanAttributeInfo(name, "long", "Minimum request processing time in milliseconds in last "
+                    + prefix + " seconds.", true, false, false);
+
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return statistics.getMinimumExecutionTime();
+                    return executionStatistics.getIntervalStatistics().get(interval).getMinimumExecutionTime();
                 }
             });
 
+
+            name = prefix + "_MaxTime_ms";
+            attrs[i++] = new MBeanAttributeInfo(name, "long", "Minimum request processing time  in milliseconds in last "
+                    + prefix + " seconds.", true, false, false);
+
+            attributeValues.put(name, new Value<Object>() {
+                @Override
+                public Object get() {
+                    return executionStatistics.getIntervalStatistics().get(interval).getMaximumExecutionTime();
+                }
+            });
+
+
+            name = prefix + "_requests_per_second";
+            attrs[i++] = new MBeanAttributeInfo(name, "double", "Average requests per second in last "
+                    + prefix + " seconds.", true, false, false);
+
+            attributeValues.put(name, new Value<Object>() {
+                @Override
+                public Object get() {
+                    return executionStatistics.getIntervalStatistics().get(interval).getRequestsPerSecond();
+                }
+            });
+
+
+            name = prefix + "_total_count";
+            attrs[i++] = new MBeanAttributeInfo(name, "double", "Request count in last "
+                    + prefix + " seconds.", true, false, false);
+
+            attributeValues.put(name, new Value<Object>() {
+                @Override
+                public Object get() {
+                    return executionStatistics.getIntervalStatistics().get(interval).getTotalCount();
+                }
+            });
         }
 
         return new MBeanInfo(this.getClass().getName(), "Execution statistics", attrs, null, null, null);
@@ -94,7 +131,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
     public ExecutionStatisticsDynamicBean(ExecutionStatistics executionStatistics, String beanName) {
         this.executionStatistics = executionStatistics;
         this.beanName = beanName;
-        this.mBeanInfo = getMBeanInfo();
+        this.mBeanInfo = initMBeanInfo(executionStatistics);
 
     }
 
@@ -103,11 +140,9 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
     }
 
 
-
-
     @Override
     public Object getAttribute(String attribute) throws AttributeNotFoundException, MBeanException, ReflectionException {
-        return null;
+        return attributeValues.get(attribute).get();
     }
 
     @Override
@@ -131,7 +166,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
 
     @Override
     public MBeanInfo getMBeanInfo() {
-        return null;
+        return mBeanInfo;
     }
 
     @Override

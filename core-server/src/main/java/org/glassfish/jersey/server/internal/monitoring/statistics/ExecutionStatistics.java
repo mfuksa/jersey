@@ -50,9 +50,9 @@ import com.google.common.collect.Maps;
  */
 public class ExecutionStatistics {
     private final long lastStartTime;
-    private final Map<Integer, IntervalStatistics> intervalStatistics;
+    private final Map<Long, IntervalStatistics> intervalStatistics;
 
-    public Map<Integer, IntervalStatistics> getIntervalStatistics() {
+    public Map<Long, IntervalStatistics> getIntervalStatistics() {
         return intervalStatistics;
     }
 
@@ -60,23 +60,23 @@ public class ExecutionStatistics {
         return lastStartTime;
     }
 
-    public ExecutionStatistics(long lastStartTime, Map<Integer, IntervalStatistics> intervalStatistics) {
+    public ExecutionStatistics(long lastStartTime, Map<Long, IntervalStatistics> intervalStatistics) {
         this.lastStartTime = lastStartTime;
         this.intervalStatistics = intervalStatistics;
     }
 
     public static class Builder {
         private long lastStartTime;
-        private final Map<Integer, IntervalStatistics.Builder> intervalStatistics;
+        private final Map<Long, IntervalStatistics.Builder> intervalStatistics;
 
         public Builder() {
-            this.intervalStatistics = new HashMap<Integer, IntervalStatistics.Builder>(4);
-            intervalStatistics.put(0, new IntervalStatistics.Builder(0));
-            intervalStatistics.put(1000, new IntervalStatistics.Builder(1000));
-            intervalStatistics.put(10000, new IntervalStatistics.Builder(10000));
-            intervalStatistics.put(60000, new IntervalStatistics.Builder(60000));
-            intervalStatistics.put(60000 * 15, new IntervalStatistics.Builder(60000 * 15));
-            intervalStatistics.put(60000 * 60, new IntervalStatistics.Builder(60000 * 60));
+            this.intervalStatistics = new HashMap<Long, IntervalStatistics.Builder>(4);
+            intervalStatistics.put(0l, new IntervalStatistics.Builder(0));
+            intervalStatistics.put(1000l, new IntervalStatistics.Builder(1000));
+            intervalStatistics.put(10000l, new IntervalStatistics.Builder(10000));
+            intervalStatistics.put(60000l, new IntervalStatistics.Builder(60000));
+            intervalStatistics.put(60000 * 15l, new IntervalStatistics.Builder(60000 * 15));
+            intervalStatistics.put(60000 * 60l, new IntervalStatistics.Builder(60000 * 60));
 
         }
 
@@ -89,8 +89,8 @@ public class ExecutionStatistics {
         }
 
         public ExecutionStatistics build() {
-            Map<Integer, IntervalStatistics> newIntervalStatistics = Maps.newHashMap();
-            for (Map.Entry<Integer, IntervalStatistics.Builder> builderEntry : intervalStatistics.entrySet()) {
+            Map<Long, IntervalStatistics> newIntervalStatistics = Maps.newHashMap();
+            for (Map.Entry<Long, IntervalStatistics.Builder> builderEntry : intervalStatistics.entrySet()) {
                 newIntervalStatistics.put(builderEntry.getKey(), builderEntry.getValue().build());
             }
 

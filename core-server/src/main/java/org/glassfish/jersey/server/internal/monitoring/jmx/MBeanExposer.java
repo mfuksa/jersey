@@ -60,7 +60,7 @@ import org.glassfish.hk2.utilities.binding.*;
  */
 public class MBeanExposer implements MonitoringStatisticsCallback {
 
-    private final RequestMXBeanImpl requestMXBean;
+    private final ExecutionStatisticsDynamicBean requestMBean;
     private final ResponseMXBeanImpl responseMXBean;
     private final ResourcesJMXGroup resourcesGroup;
     private final AtomicBoolean exposed = new AtomicBoolean(false);
@@ -73,10 +73,10 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
             throws MalformedObjectNameException, NotCompliantMBeanException,
             InstanceAlreadyExistsException, MBeanRegistrationException {
 
-        requestMXBean = new RequestMXBeanImpl();
-        responseMXBean = new ResponseMXBeanImpl();
         MonitoringStatistics blankStatistics = new MonitoringStatistics.Builder(resourceContext.getResourceModel()).build();
         resourcesGroup = new ResourcesJMXGroup(blankStatistics.getRootResourceStatistics());
+        responseMXBean = new ResponseMXBeanImpl();
+        requestMBean = new ExecutionStatisticsDynamicBean(blankStatistics.getRequestStatistics(), "GlobalRequestStatistics");
     }
 
     void registerMBean(Object mbean, String namePostfix) {
@@ -101,13 +101,13 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
         if (exposed.compareAndSet(false, true)) {
             String prefix = "org.glassfish.jersey." + statistics.getApplicationName();
             namePrefix = prefix;
-            registerMBean(requestMXBean, "type=Requests");
+            registerMBean(requestMBean, "type=Requests");
             registerMBean(responseMXBean, "type=Responses");
             resourcesGroup.register(this);
 
         }
 
-        requestMXBean.setMonitoringStatistics(statistics);
+        requestMBean.setExecutionStatistics(statistics.getRequestStatistics());
         resourcesGroup.setResourcesStatistics(statistics.getRootResourceStatistics());
         responseMXBean.setResponseCodesToCountMap(statistics.getResponseStatistics());
     }

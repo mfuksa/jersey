@@ -176,13 +176,13 @@ public class MonitoringQueue implements ApplicationEventListener {
         private long methodTimeStart;
         private ResourceMethodQueuedItem methodItem;
 
+        public ReqEventListener() {
+            this.requestTimeStart = System.currentTimeMillis();
+        }
 
         @Override
         public void onEvent(RequestEvent event) {
             switch (event.getType()) {
-                case START:
-                    this.requestTimeStart = System.currentTimeMillis();
-                    break;
                 case RESOURCE_METHOD_START:
                     this.methodTimeStart = System.currentTimeMillis();
                     break;

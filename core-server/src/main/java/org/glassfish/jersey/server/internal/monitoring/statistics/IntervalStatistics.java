@@ -51,6 +51,7 @@ public class IntervalStatistics {
 
     static class Builder {
         private static final int DEFAULT_UNITS_PER_INTERVAL = 100;
+        private static final int MINIMUM_UNIT_SIZE = 1000;
         private final long interval;
         private final long unit;
         private final int unitsPerInterval;
@@ -181,8 +182,13 @@ public class IntervalStatistics {
 
         public IntervalStatistics build(long currentTime) {
             if (interval == 0) {
-                int requestsPerSecond = (int) (lastUnitCount / (startTime - currentTime));
-                return new IntervalStatistics(interval, requestsPerSecond, lastUnitMin, lastUnitMax, lastUnitCount);
+                final long diff = startTime - currentTime;
+                if (diff < MINIMUM_UNIT_SIZE) {
+                    return new IntervalStatistics(interval, 0, 0, 0, 0);
+                } else {
+                    int requestsPerSecond = (int) (lastUnitCount / diff);
+                    return new IntervalStatistics(interval, requestsPerSecond, lastUnitMin, lastUnitMax, lastUnitCount);
+                }
             }
 
             closePreviousUnitIfNeeded(currentTime);
