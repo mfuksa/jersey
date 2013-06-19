@@ -49,6 +49,8 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
+import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatistics;
+import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsCallback;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceStatistics;
 import org.glassfish.jersey.server.model.Resource;
 
@@ -58,11 +60,11 @@ import com.google.common.collect.Maps;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
-public class ResourcesMXBeanImpl implements ResourcesMXBean {
+public class ResourcesJMXGroup {
     private final Map<Resource, ResourceMxBeanImpl> resourceMBeans = Maps.newHashMap();
-    private final Map<String, ResourceMXBean> exposedResourceMBeans = Maps.newHashMap();
+    private final Map<String, ResourceMxBeanImpl> exposedResourceMBeans = Maps.newHashMap();
 
-    public ResourcesMXBeanImpl(Map<Resource, ResourceStatistics> resourceStatistics)
+    public ResourcesJMXGroup(Map<Resource, ResourceStatistics> resourceStatistics)
             throws MalformedObjectNameException, NotCompliantMBeanException, InstanceAlreadyExistsException,
             MBeanRegistrationException {
         for (Map.Entry<Resource, ResourceStatistics> entry : resourceStatistics.entrySet()) {
@@ -75,12 +77,9 @@ public class ResourcesMXBeanImpl implements ResourcesMXBean {
     }
 
     public void register(final MBeanExposer exposer) {
-        for (Map.Entry<String, ResourceMXBean> entry : exposedResourceMBeans.entrySet()) {
-            exposer.registerMBean(entry.getValue(), "type=Resources,name=" + entry.getKey());
+        for (Map.Entry<String, ResourceMxBeanImpl> entry : exposedResourceMBeans.entrySet()) {
+            exposer.registerMBean(entry.getValue(), "type=Resources,resource=" + entry.getKey());
         }
-
-
-
     }
 
     public void setResourcesStatistics(Map<Resource, ResourceStatistics> resourceStatistics) {
@@ -89,8 +88,4 @@ public class ResourcesMXBeanImpl implements ResourcesMXBean {
         }
     }
 
-    @Override
-    public Map<String, ResourceMXBean> getResources() {
-        return exposedResourceMBeans;
-    }
 }

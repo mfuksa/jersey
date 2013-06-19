@@ -57,10 +57,10 @@ import com.google.common.collect.Maps;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
-public class ResourceMxBeanImpl implements ResourceMXBean {
+public class ResourceMxBeanImpl implements ResourceMXBean, Registrable {
     private final String path;
-    private ExecutionStatisticsMxBeanImpl resourceExecutionStatisticsMxBean;
-    private ExecutionStatisticsMxBeanImpl requestExecutionStatisticsMxBean;
+    private ExecutionStatisticsDynamicBean resourceExecutionStatisticsBean;
+    private ExecutionStatisticsDynamicBean requestExecutionStatisticsBean;
     private final Map<ResourceMethod, ResourceMethodMxBeanImpl> resourceMethods = Maps.newHashMap();
     private final List<ResourceMethodMxBeanImpl> exposedResourceMethods = Lists.newArrayList();
     private final Map<Resource, Map<ResourceMethod, ResourceMethodMxBeanImpl>> childResourceMethods = Maps.newHashMap();
@@ -68,8 +68,8 @@ public class ResourceMxBeanImpl implements ResourceMXBean {
 
     public ResourceMxBeanImpl(ResourceStatistics resourceStatistics, String path) {
         this.path = path;
-        this.resourceExecutionStatisticsMxBean = new ExecutionStatisticsMxBeanImpl(ExecutionStatistics.epmtyStatistics());
-        this.requestExecutionStatisticsMxBean = new ExecutionStatisticsMxBeanImpl(ExecutionStatistics.epmtyStatistics());
+        this.resourceExecutionStatisticsBean = new ExecutionStatisticsDynamicBean(ExecutionStatistics.epmtyStatistics(), "ResourceStatistics");
+        this.requestExecutionStatisticsBean = new ExecutionStatisticsDynamicBean(ExecutionStatistics.epmtyStatistics(), "RequestStatistics");
 
         for (Map.Entry<ResourceMethod, ResourceMethodStatistics> entry
                 : resourceStatistics.getResourceMethods().entrySet()) {
@@ -95,8 +95,8 @@ public class ResourceMxBeanImpl implements ResourceMXBean {
     }
 
     public void setResourceStatistics(ResourceStatistics resourceStatistics) {
-        this.resourceExecutionStatisticsMxBean.setExecutionStatistics(resourceStatistics.getResourceExecutionStatistics());
-        this.requestExecutionStatisticsMxBean.setExecutionStatistics(resourceStatistics.getRequestExecutionStatistics());
+        this.resourceExecutionStatisticsBean.setExecutionStatistics(resourceStatistics.getResourceExecutionStatistics());
+        this.requestExecutionStatisticsBean.setExecutionStatistics(resourceStatistics.getRequestExecutionStatistics());
         for (Map.Entry<ResourceMethod, ResourceMethodStatistics> methodEntry
                 : resourceStatistics.getResourceMethods().entrySet()) {
             this.resourceMethods.get(methodEntry.getKey()).setResourceMethodStatistics(methodEntry.getValue());
@@ -113,23 +113,21 @@ public class ResourceMxBeanImpl implements ResourceMXBean {
 
     }
 
-    public List<ResourceMethodMxBeanImpl> getResourceMethods() {
-        return exposedResourceMethods;
-    }
-
-    @Override
-    public ExecutionStatisticsMxBean getResourceExecutionStatistics() {
-        return resourceExecutionStatisticsMxBean;
-    }
-
-
-    @Override
-    public ExecutionStatisticsMxBean getRequestExecutionStatistics() {
-        return requestExecutionStatisticsMxBean;
-    }
 
     @Override
     public String getPath() {
         return this.path;
+    }
+
+    @Override
+    public void register(MBeanExposer mBeanExposer, String parentName) {
+        final String resourcePath = parentName + ",resource=" + path;
+        mBeanExposer.registerMBean(this, resourcePath);
+        requestExecutionStatisticsBean.register(mBeanExposer, resourcePath);
+        resourceExecutionStatisticsBean.register(mBeanExposer, resourcePath);
+        for (ResourceMethodMxBeanImpl methodMxBean : exposedResourceMethods) {
+            methodMxBean.register(mBeanExposer, parentName);
+        }
+
     }
 }

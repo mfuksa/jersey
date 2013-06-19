@@ -62,7 +62,7 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
 
     private final RequestMXBeanImpl requestMXBean;
     private final ResponseMXBeanImpl responseMXBean;
-    private final ResourcesMXBeanImpl resourcesMXBean;
+    private final ResourcesJMXGroup resourcesGroup;
     private final AtomicBoolean exposed = new AtomicBoolean(false);
     private volatile String namePrefix;
 
@@ -76,7 +76,7 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
         requestMXBean = new RequestMXBeanImpl();
         responseMXBean = new ResponseMXBeanImpl();
         MonitoringStatistics blankStatistics = new MonitoringStatistics.Builder(resourceContext.getResourceModel()).build();
-        resourcesMXBean = new ResourcesMXBeanImpl(blankStatistics.getRootResourceStatistics());
+        resourcesGroup = new ResourcesJMXGroup(blankStatistics.getRootResourceStatistics());
     }
 
     void registerMBean(Object mbean, String namePostfix) {
@@ -101,14 +101,14 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
         if (exposed.compareAndSet(false, true)) {
             String prefix = "org.glassfish.jersey." + statistics.getApplicationName();
             namePrefix = prefix;
-            registerMBean(requestMXBean, "name=Requests");
-            registerMBean(responseMXBean, "name=Responses");
-            resourcesMXBean.register(this);
+            registerMBean(requestMXBean, "type=Requests");
+            registerMBean(responseMXBean, "type=Responses");
+            resourcesGroup.register(this);
 
         }
 
         requestMXBean.setMonitoringStatistics(statistics);
-        resourcesMXBean.setResourcesStatistics(statistics.getRootResourceStatistics());
+        resourcesGroup.setResourcesStatistics(statistics.getRootResourceStatistics());
         responseMXBean.setResponseCodesToCountMap(statistics.getResponseStatistics());
     }
 

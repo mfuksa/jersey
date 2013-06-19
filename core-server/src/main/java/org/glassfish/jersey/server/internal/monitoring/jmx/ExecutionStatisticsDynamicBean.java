@@ -52,34 +52,48 @@ import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.ReflectionException;
 
+import org.glassfish.jersey.internal.util.collection.Value;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ExecutionStatistics;
 import org.glassfish.jersey.server.internal.monitoring.statistics.IntervalStatistics;
 
+import com.google.common.collect.Maps;
+
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
-public class ExecutionStatisticsMxBeanImpl implements DynamicMBean {
+public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable {
     private ExecutionStatistics executionStatistics;
+    private final String beanName;
 
     private final MBeanInfo mBeanInfo;
 
 
-    private MBeanInfo getStatisticsMBeanInfo(ExecutionStatistics executionStatistics) {
-        final Map<Integer,IntervalStatistics> stats = executionStatistics.getIntervalStatistics();
-        MBeanAttributeInfo[] attrs = new MBeanAttributeInfo[stats.size()];
+    private MBeanInfo getStatisticsMBeanInfo(final ExecutionStatistics executionStatistics) {
+        final Map<Integer, IntervalStatistics> statsMap = executionStatistics.getIntervalStatistics();
+        final Map<String, Value<Object>> attributeValues = Maps.newHashMap();
+        MBeanAttributeInfo[] attrs = new MBeanAttributeInfo[statsMap.size()];
         int i = 0;
-        for (IntervalStatistics statistics : stats.values()) {
+        for (final IntervalStatistics statistics : statsMap.values()) {
             final long interval = statistics.getInterval();
             final String prefix = interval / 1000 + "s";
-            attrs[i++] = new MBeanAttributeInfo(prefix + "MinimumTime", "long", "Minimum request processing time in last " + prefix + ".", true, false, false);
+            final String name = prefix + "MinimumTime";
+            attrs[i++] = new MBeanAttributeInfo(name, "long", "Minimum request processing time in last "
+                    + prefix + ".", true, false, false);
+            attributeValues.put(name, new Value<Object>() {
+                @Override
+                public Object get() {
+                    return statistics.getMinimumExecutionTime();
+                }
+            });
+
         }
 
         return new MBeanInfo(this.getClass().getName(), "Execution statistics", attrs, null, null, null);
     }
 
-    public ExecutionStatisticsMxBeanImpl(ExecutionStatistics executionStatistics) {
+    public ExecutionStatisticsDynamicBean(ExecutionStatistics executionStatistics, String beanName) {
         this.executionStatistics = executionStatistics;
+        this.beanName = beanName;
         this.mBeanInfo = getMBeanInfo();
 
     }
@@ -87,6 +101,7 @@ public class ExecutionStatisticsMxBeanImpl implements DynamicMBean {
     public void setExecutionStatistics(ExecutionStatistics executionStatistics) {
         this.executionStatistics = executionStatistics;
     }
+
 
 
 
@@ -117,5 +132,10 @@ public class ExecutionStatisticsMxBeanImpl implements DynamicMBean {
     @Override
     public MBeanInfo getMBeanInfo() {
         return null;
+    }
+
+    @Override
+    public void register(MBeanExposer mBeanExposer, String parentName) {
+        mBeanExposer.registerMBean(this, parentName + ",statistics=" + beanName);
     }
 }

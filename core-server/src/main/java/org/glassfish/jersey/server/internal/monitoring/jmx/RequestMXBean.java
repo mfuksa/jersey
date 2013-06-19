@@ -45,5 +45,5 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
  *
  */
 public interface RequestMXBean {
-    public ExecutionStatisticsMxBeanImpl getExecutionStatisticsMxBean();
+    public ExecutionStatisticsDynamicBean getExecutionStatisticsMxBean();
 }

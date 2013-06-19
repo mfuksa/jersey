@@ -40,13 +40,42 @@
 
 package org.glassfish.jersey.server.internal.monitoring.jmx;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
-public interface ResourcesMXBean {
-    public Map<String, ResourceMXBean> getResources();
+public class ResourceJMXGroup implements Registrable {
+    private final ResourceMethodJXMGroup methodGroup;
+    private final ExecutionStatisticsDynamicBean executionStatistics;
+    private final ResourceMxBeanImpl resourceMXBean;
+
+    public ResourceJMXGroup(ResourceMethodJXMGroup methodGroup,
+                            ResourceMxBeanImpl resourceMXBean, ExecutionStatisticsDynamicBean executionStatistics) {
+        this.methodGroup = methodGroup;
+
+        this.executionStatistics = executionStatistics;
+        this.resourceMXBean = resourceMXBean;
+    }
+
+
+
+
+
+    public ResourceMethodJXMGroup getMethodGroup() {
+        return methodGroup;
+    }
+
+
+    public ExecutionStatisticsDynamicBean getExecutionStatistics() {
+        return executionStatistics;
+    }
+
+    public ResourceMxBeanImpl getResourceMXBean() {
+        return resourceMXBean;
+    }
+
+
+    @Override
+    public void register(MBeanExposer mBeanExposer, String parentName) {
+        executionStatistics.register(mBeanExposer, parentName + "");
+    }
 }

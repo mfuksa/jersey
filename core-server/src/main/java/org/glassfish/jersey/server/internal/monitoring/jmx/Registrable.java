@@ -42,15 +42,7 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
-public interface ResourceMethodMxBean {
-
-    public String getName();
-    public String getPath();
-    public String getHttpMethod();
-    public String getDeclaringClassName();
-    public String getConsumesMediaType();
-    public String getProducesMediaType();
-
+public interface Registrable {
+    public void register(MBeanExposer mBeanExposer, String parentName);
 }

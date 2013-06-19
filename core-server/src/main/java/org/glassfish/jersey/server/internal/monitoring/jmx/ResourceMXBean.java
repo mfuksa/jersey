@@ -47,10 +47,5 @@ import java.util.List;
  *
  */
 public interface ResourceMXBean {
-    public ExecutionStatisticsMxBean getResourceExecutionStatistics();
-    public ExecutionStatisticsMxBean getRequestExecutionStatistics();
-    public List<ResourceMethodMxBeanImpl> getResourceMethods();
-
     public String getPath();
-
 }

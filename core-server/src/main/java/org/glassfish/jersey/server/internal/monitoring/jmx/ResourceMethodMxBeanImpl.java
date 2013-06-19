@@ -40,6 +40,8 @@
 
 package org.glassfish.jersey.server.internal.monitoring.jmx;
 
+import javax.management.DynamicMBean;
+
 import org.glassfish.jersey.message.internal.MediaTypes;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ExecutionStatistics;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceMethodStatistics;
@@ -49,17 +51,17 @@ import org.glassfish.jersey.server.model.ResourceMethod;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
-public class ResourceMethodMxBeanImpl implements ResourceMethodMxBean {
-    private ExecutionStatisticsMxBeanImpl methodExecutionStatisticsMxBean;
-    private ExecutionStatisticsMxBeanImpl requestExecutionStatisticsMxBean;
+public class ResourceMethodMxBeanImpl implements ResourceMethodMxBean, Registrable {
+    private ExecutionStatisticsDynamicBean methodExecutionStatisticsMxBean;
+    private ExecutionStatisticsDynamicBean requestExecutionStatisticsMxBean;
     private final String path;
     private final String name;
     private final ResourceMethod resourceMethod;
 
 
     public ResourceMethodMxBeanImpl(ResourceMethodStatistics methodStatistics, String path) {
-        this.methodExecutionStatisticsMxBean = new ExecutionStatisticsMxBeanImpl(ExecutionStatistics.epmtyStatistics());
-        this.requestExecutionStatisticsMxBean = new ExecutionStatisticsMxBeanImpl(ExecutionStatistics.epmtyStatistics());
+        this.methodExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(ExecutionStatistics.epmtyStatistics(), "MethodStatistics");
+        this.requestExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(ExecutionStatistics.epmtyStatistics(), "RequestStatistics");
         this.path = path;
         this.name = methodStatistics.getResourceMethod().getInvocable().getHandlingMethod().getName();
         this.resourceMethod = methodStatistics.getResourceMethod();
@@ -68,16 +70,6 @@ public class ResourceMethodMxBeanImpl implements ResourceMethodMxBean {
     public void setResourceMethodStatistics(ResourceMethodStatistics resourceMethodStatistics) {
         this.methodExecutionStatisticsMxBean.setExecutionStatistics(resourceMethodStatistics.getResourceMethodExecutionStatistics());
         this.requestExecutionStatisticsMxBean.setExecutionStatistics(resourceMethodStatistics.getRequestExecutionStatistics());
-    }
-
-    @Override
-    public ExecutionStatisticsMxBean getResourceExecutionStatistics() {
-        return methodExecutionStatisticsMxBean;
-    }
-
-    @Override
-    public ExecutionStatisticsMxBean getRequestExecutionStatistics() {
-        return requestExecutionStatisticsMxBean;
     }
 
 
@@ -112,4 +104,12 @@ public class ResourceMethodMxBeanImpl implements ResourceMethodMxBean {
         return name;
     }
 
+    @Override
+    public void register(MBeanExposer mBeanExposer, String parentName) {
+        final String methodBeanName = parentName + ",detail=methods,method=" + name;
+        mBeanExposer.registerMBean(this, methodBeanName);
+        methodExecutionStatisticsMxBean.register(mBeanExposer, methodBeanName);
+        requestExecutionStatisticsMxBean.register(mBeanExposer, methodBeanName);
+
+    }
 }

@@ -47,14 +47,14 @@ import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStat
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public class RequestMXBeanImpl implements RequestMXBean {
-    private ExecutionStatisticsMxBeanImpl executionStatisticsMxBean;
+    private ExecutionStatisticsDynamicBean executionStatisticsMxBean;
 
 
     public RequestMXBeanImpl() {
-        this.executionStatisticsMxBean = new ExecutionStatisticsMxBeanImpl(new ExecutionStatistics.Builder().build());
+        this.executionStatisticsMxBean = new ExecutionStatisticsDynamicBean(new ExecutionStatistics.Builder().build(), parentName);
     }
 
-    public ExecutionStatisticsMxBeanImpl getExecutionStatisticsMxBean() {
+    public ExecutionStatisticsDynamicBean getExecutionStatisticsMxBean() {
         return executionStatisticsMxBean;
     }
 
