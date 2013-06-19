@@ -40,8 +40,6 @@
 
 package org.glassfish.jersey.server.internal.monitoring.jmx;
 
-import javax.management.DynamicMBean;
-
 import org.glassfish.jersey.message.internal.MediaTypes;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ExecutionStatistics;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceMethodStatistics;
@@ -51,7 +49,7 @@ import org.glassfish.jersey.server.model.ResourceMethod;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
-public class ResourceMethodMxBeanImpl implements ResourceMethodMxBean, Registrable {
+public class ResourceMethodMXBeanImpl implements ResourceMethodMXBean, Registrable {
     private ExecutionStatisticsDynamicBean methodExecutionStatisticsMxBean;
     private ExecutionStatisticsDynamicBean requestExecutionStatisticsMxBean;
     private final String path;
@@ -59,7 +57,7 @@ public class ResourceMethodMxBeanImpl implements ResourceMethodMxBean, Registrab
     private final ResourceMethod resourceMethod;
 
 
-    public ResourceMethodMxBeanImpl(ResourceMethodStatistics methodStatistics, String path) {
+    public ResourceMethodMXBeanImpl(ResourceMethodStatistics methodStatistics, String path) {
         this.methodExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(ExecutionStatistics.epmtyStatistics(), "MethodStatistics");
         this.requestExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(ExecutionStatistics.epmtyStatistics(), "RequestStatistics");
         this.path = path;
@@ -104,7 +102,6 @@ public class ResourceMethodMxBeanImpl implements ResourceMethodMxBean, Registrab
         return name;
     }
 
-    @Override
     public void register(MBeanExposer mBeanExposer, String parentName) {
         final String methodBeanName = parentName + ",detail=methods,method=" + name;
         mBeanExposer.registerMBean(this, methodBeanName);

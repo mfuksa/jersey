@@ -42,40 +42,15 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
+ *
  */
-public class ResourceJMXGroup implements Registrable {
-    private final ResourceMethodJXMGroup methodGroup;
-    private final ExecutionStatisticsDynamicBean executionStatistics;
-    private final ResourceMxBeanImpl resourceMXBean;
+public interface ResourceMethodMXBean {
 
-    public ResourceJMXGroup(ResourceMethodJXMGroup methodGroup,
-                            ResourceMxBeanImpl resourceMXBean, ExecutionStatisticsDynamicBean executionStatistics) {
-        this.methodGroup = methodGroup;
+    public String getName();
+    public String getPath();
+    public String getHttpMethod();
+    public String getDeclaringClassName();
+    public String getConsumesMediaType();
+    public String getProducesMediaType();
 
-        this.executionStatistics = executionStatistics;
-        this.resourceMXBean = resourceMXBean;
-    }
-
-
-
-
-
-    public ResourceMethodJXMGroup getMethodGroup() {
-        return methodGroup;
-    }
-
-
-    public ExecutionStatisticsDynamicBean getExecutionStatistics() {
-        return executionStatistics;
-    }
-
-    public ResourceMxBeanImpl getResourceMXBean() {
-        return resourceMXBean;
-    }
-
-
-    @Override
-    public void register(MBeanExposer mBeanExposer, String parentName) {
-        executionStatistics.register(mBeanExposer, parentName + "");
-    }
 }

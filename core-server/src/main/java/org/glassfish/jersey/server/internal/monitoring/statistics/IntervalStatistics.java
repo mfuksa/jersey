@@ -171,7 +171,6 @@ public class IntervalStatistics {
             for (int i = 0; i < unitsPerInterval; i++) {
                 unitQueue.add(Unit.EMPTY_UNIT);
             }
-
         }
 
 
@@ -182,7 +181,7 @@ public class IntervalStatistics {
 
         public IntervalStatistics build(long currentTime) {
             if (interval == 0) {
-                final long diff = startTime - currentTime;
+                final long diff = currentTime - startTime;
                 if (diff < MINIMUM_UNIT_SIZE) {
                     return new IntervalStatistics(interval, 0, 0, 0, 0);
                 } else {

@@ -43,6 +43,6 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public interface Registrable {
+interface Registrable {
     public void register(MBeanExposer mBeanExposer, String parentName);
 }

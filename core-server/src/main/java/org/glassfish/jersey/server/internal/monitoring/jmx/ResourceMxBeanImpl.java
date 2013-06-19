@@ -61,9 +61,9 @@ public class ResourceMxBeanImpl implements ResourceMXBean, Registrable {
     private final String path;
     private ExecutionStatisticsDynamicBean resourceExecutionStatisticsBean;
     private ExecutionStatisticsDynamicBean requestExecutionStatisticsBean;
-    private final Map<ResourceMethod, ResourceMethodMxBeanImpl> resourceMethods = Maps.newHashMap();
-    private final List<ResourceMethodMxBeanImpl> exposedResourceMethods = Lists.newArrayList();
-    private final Map<Resource, Map<ResourceMethod, ResourceMethodMxBeanImpl>> childResourceMethods = Maps.newHashMap();
+    private final Map<ResourceMethod, ResourceMethodMXBeanImpl> resourceMethods = Maps.newHashMap();
+    private final List<ResourceMethodMXBeanImpl> exposedResourceMethods = Lists.newArrayList();
+    private final Map<Resource, Map<ResourceMethod, ResourceMethodMXBeanImpl>> childResourceMethods = Maps.newHashMap();
 
 
     public ResourceMxBeanImpl(ResourceStatistics resourceStatistics, String path) {
@@ -74,20 +74,20 @@ public class ResourceMxBeanImpl implements ResourceMXBean, Registrable {
         for (Map.Entry<ResourceMethod, ResourceMethodStatistics> entry
                 : resourceStatistics.getResourceMethods().entrySet()) {
             final ResourceMethod method = entry.getKey();
-            final ResourceMethodMxBeanImpl resourceMxBean = new ResourceMethodMxBeanImpl(entry.getValue(), null);
+            final ResourceMethodMXBeanImpl resourceMxBean = new ResourceMethodMXBeanImpl(entry.getValue(), null);
             resourceMethods.put(method, resourceMxBean);
             exposedResourceMethods.add(resourceMxBean);
         }
 
         for (Map.Entry<Resource, ResourceStatistics> childEntry : resourceStatistics.getChildResources().entrySet()) {
             final Resource childResource = childEntry.getKey();
-            final HashMap<ResourceMethod, ResourceMethodMxBeanImpl> childMap = new HashMap<ResourceMethod,
-                    ResourceMethodMxBeanImpl>();
+            final HashMap<ResourceMethod, ResourceMethodMXBeanImpl> childMap = new HashMap<ResourceMethod,
+                    ResourceMethodMXBeanImpl>();
             childResourceMethods.put(childResource, childMap);
             for (Map.Entry<ResourceMethod, ResourceMethodStatistics> methodEntry
                     : childEntry.getValue().getResourceMethods().entrySet()) {
-                final ResourceMethodMxBeanImpl subResourceMethodMXBean
-                        = new ResourceMethodMxBeanImpl(methodEntry.getValue(), childResource.getPath());
+                final ResourceMethodMXBeanImpl subResourceMethodMXBean
+                        = new ResourceMethodMXBeanImpl(methodEntry.getValue(), childResource.getPath());
                 childMap.put(methodEntry.getKey(), subResourceMethodMXBean);
                 exposedResourceMethods.add(subResourceMethodMXBean);
             }
@@ -125,8 +125,8 @@ public class ResourceMxBeanImpl implements ResourceMXBean, Registrable {
         mBeanExposer.registerMBean(this, resourcePath);
         requestExecutionStatisticsBean.register(mBeanExposer, resourcePath);
         resourceExecutionStatisticsBean.register(mBeanExposer, resourcePath);
-        for (ResourceMethodMxBeanImpl methodMxBean : exposedResourceMethods) {
-            methodMxBean.register(mBeanExposer, parentName);
+        for (ResourceMethodMXBeanImpl methodMxBean : exposedResourceMethods) {
+            methodMxBean.register(mBeanExposer, resourcePath);
         }
 
     }

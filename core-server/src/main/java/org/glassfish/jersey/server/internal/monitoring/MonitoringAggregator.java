@@ -86,7 +86,7 @@ public class MonitoringAggregator {
                         monitoringStatisticsCallback.onNewStatistics(statisticsBuilder.build());
                     }
                     try {
-                        Thread.sleep(10000);
+                        Thread.sleep(500);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         Thread.currentThread().interrupt();

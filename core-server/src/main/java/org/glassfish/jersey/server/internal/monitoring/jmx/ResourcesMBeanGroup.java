@@ -60,11 +60,11 @@ import com.google.common.collect.Maps;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
-public class ResourcesJMXGroup {
+public class ResourcesMBeanGroup implements Registrable {
     private final Map<Resource, ResourceMxBeanImpl> resourceMBeans = Maps.newHashMap();
     private final Map<String, ResourceMxBeanImpl> exposedResourceMBeans = Maps.newHashMap();
 
-    public ResourcesJMXGroup(Map<Resource, ResourceStatistics> resourceStatistics)
+    public ResourcesMBeanGroup(Map<Resource, ResourceStatistics> resourceStatistics)
             throws MalformedObjectNameException, NotCompliantMBeanException, InstanceAlreadyExistsException,
             MBeanRegistrationException {
         for (Map.Entry<Resource, ResourceStatistics> entry : resourceStatistics.entrySet()) {
@@ -76,11 +76,6 @@ public class ResourcesJMXGroup {
         }
     }
 
-    public void register(final MBeanExposer exposer) {
-        for (Map.Entry<String, ResourceMxBeanImpl> entry : exposedResourceMBeans.entrySet()) {
-            exposer.registerMBean(entry.getValue(), "type=Resources,resource=" + entry.getKey());
-        }
-    }
 
     public void setResourcesStatistics(Map<Resource, ResourceStatistics> resourceStatistics) {
         for (Map.Entry<Resource, ResourceStatistics> entry : resourceStatistics.entrySet()) {
@@ -88,4 +83,11 @@ public class ResourcesJMXGroup {
         }
     }
 
+    @Override
+    public void register(MBeanExposer mBeanExposer, String parentName) {
+        for (Map.Entry<String, ResourceMxBeanImpl> entry : exposedResourceMBeans.entrySet()) {
+            entry.getValue().register(mBeanExposer, parentName + "type=Resources" );
+        }
+
+    }
 }

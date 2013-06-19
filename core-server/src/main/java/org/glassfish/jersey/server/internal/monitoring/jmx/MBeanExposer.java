@@ -62,7 +62,7 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
 
     private final ExecutionStatisticsDynamicBean requestMBean;
     private final ResponseMXBeanImpl responseMXBean;
-    private final ResourcesJMXGroup resourcesGroup;
+    private final ResourcesMBeanGroup resourcesGroup;
     private final AtomicBoolean exposed = new AtomicBoolean(false);
     private volatile String namePrefix;
 
@@ -74,7 +74,7 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
             InstanceAlreadyExistsException, MBeanRegistrationException {
 
         MonitoringStatistics blankStatistics = new MonitoringStatistics.Builder(resourceContext.getResourceModel()).build();
-        resourcesGroup = new ResourcesJMXGroup(blankStatistics.getRootResourceStatistics());
+        resourcesGroup = new ResourcesMBeanGroup(blankStatistics.getRootResourceStatistics());
         responseMXBean = new ResponseMXBeanImpl();
         requestMBean = new ExecutionStatisticsDynamicBean(blankStatistics.getRequestStatistics(), "GlobalRequestStatistics");
     }
@@ -99,11 +99,10 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
     @Override
     public void onNewStatistics(MonitoringStatistics statistics) {
         if (exposed.compareAndSet(false, true)) {
-            String prefix = "org.glassfish.jersey." + statistics.getApplicationName();
-            namePrefix = prefix;
+            namePrefix = "org.glassfish.jersey." + statistics.getApplicationName();
             registerMBean(requestMBean, "type=Requests");
             registerMBean(responseMXBean, "type=Responses");
-            resourcesGroup.register(this);
+            resourcesGroup.register(this, "");
 
         }
 
