@@ -357,6 +357,7 @@ class ServerRuntime {
 
         public void process(Throwable throwable) {
             request.getRequestEventBuilder().setThrowable(throwable);
+            request.triggerEvent(RequestEvent.Type.ON_EXCEPTION);
             ContainerResponse response = null;
             try {
                 final Response exceptionResponse = mapException(throwable);

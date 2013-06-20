@@ -161,19 +161,38 @@ public class RequestEvent implements Event {
 
         RESP_FILTERS_START,
         RESP_FILTERS_FINISHED,
+
+
+
+        ON_EXCEPTION,
+
         /**
          * After the ExceptionMapper is successfully found and before execution of this mapper
          */
         EXCEPTION_MAPPER_FOUND,
+        EXCEPTION_MAPPING_FINISHED,
+
 
         // RESPONSE_MAPPED?
 
-        // ADD ON_EXCEPTION
 
         RESP_WRITTEN,
 
         FINISHED;
     }
+
+
+    public static enum EXCEPTION_CAUSE {
+        STANDARD_PROCESSING,
+        MAPPED_RESPONSE_PROCESSING;
+    }
+
+    public static enum EXCEPTION_MAPPING_RESULT {
+        MAPPING_SUCCESSFUL,
+        MAPPING_UNSUCESSFUL,
+
+    }
+
 
     private static class ResourceLocator {
 

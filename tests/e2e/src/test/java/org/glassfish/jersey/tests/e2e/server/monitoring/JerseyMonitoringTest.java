@@ -40,11 +40,6 @@
 
 package org.glassfish.jersey.tests.e2e.server.monitoring;
 
-import java.lang.management.ManagementFactory;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import javax.management.openmbean.CompositeDataSupport;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -66,7 +61,10 @@ import org.junit.Test;
 public class JerseyMonitoringTest extends JerseyTest {
     @Override
     protected Application configure() {
-        return new ResourceConfig(TestResource.class);
+        final ResourceConfig resourceConfig = new ResourceConfig(TestResource.class);
+        resourceConfig.property("very-important", "yes");
+        resourceConfig.property("another-property", 48);
+        return resourceConfig;
     }
 
     @Path("resource")
