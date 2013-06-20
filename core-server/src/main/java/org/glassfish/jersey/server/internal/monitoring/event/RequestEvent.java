@@ -57,14 +57,15 @@ public class RequestEvent implements Event {
     public static class Builder {
         private ContainerRequest containerRequest;
         private ContainerResponse containerResponse;
-        private ContainerResponse mappedResponse;
-        private ContainerResponse responseWritten;
         private Throwable throwable;
-        private ExtendedUriInfo uriInfo;
+        private ExtendedUriInfo extendedUriInfo;
         private Iterable<ContainerResponseFilter> containerResponseFilters;
         private Iterable<ContainerRequestFilter> containerRequestFilters;
         private ExceptionMapper<?> exceptionMapper;
         private boolean success;
+        private boolean responseSuccessfullyMapped;
+        private ExceptionCause exceptionCause;
+
 
 
         public Builder() {
@@ -88,21 +89,15 @@ public class RequestEvent implements Event {
             this.success = success;
         }
 
-        public Builder setThrowable(Throwable throwable) {
+        public Builder setThrowable(Throwable throwable, ExceptionCause exceptionCause) {
             this.throwable = throwable;
+            this.exceptionCause = exceptionCause;
             return this;
         }
 
-        public void setMappedResponse(ContainerResponse mappedResponse) {
-            this.mappedResponse = mappedResponse;
-        }
-
-        public void setResponseWritten(ContainerResponse responseWritten) {
-            this.responseWritten = responseWritten;
-        }
 
         public void setExtendedUriInfo(ExtendedUriInfo extendedUriInfo) {
-            this.uriInfo = extendedUriInfo;
+            this.extendedUriInfo = extendedUriInfo;
         }
 
         public void setContainerResponseFilters(Iterable<ContainerResponseFilter> containerResponseFilters) {
@@ -113,28 +108,37 @@ public class RequestEvent implements Event {
             this.containerRequestFilters = containerRequestFilters;
         }
 
+
+        public void setResponseSuccessfullyMapped(boolean responseSuccessfullyMapped) {
+            this.responseSuccessfullyMapped = responseSuccessfullyMapped;
+        }
+
         public RequestEvent build(Type type) {
-            return new RequestEvent(type, containerRequest, containerResponse, throwable, mappedResponse,
-                    responseWritten, uriInfo, containerResponseFilters, containerRequestFilters, exceptionMapper, success);
+            return new RequestEvent(type, containerRequest, containerResponse, throwable,
+                    extendedUriInfo, containerResponseFilters, containerRequestFilters, exceptionMapper, success,
+                    responseSuccessfullyMapped, exceptionCause);
         }
     }
 
 
     private RequestEvent(Type type, ContainerRequest containerRequest, ContainerResponse containerResponse,
-                         Throwable throwable, ContainerResponse mappedResponse, ContainerResponse responseWritten,
+                         Throwable throwable,
                          ExtendedUriInfo extendedUriInfo, Iterable<ContainerResponseFilter> containerResponseFilters,
-                         Iterable<ContainerRequestFilter> containerRequestFilters, ExceptionMapper<?> exceptionMapper, boolean success) {
+                         Iterable<ContainerRequestFilter> containerRequestFilters,
+                         ExceptionMapper<?> exceptionMapper,
+                         boolean success,
+                         boolean responseSuccessfullyMapped, ExceptionCause exceptionCause) {
         this.type = type;
         this.containerRequest = containerRequest;
         this.containerResponse = containerResponse;
         this.throwable = throwable;
-        this.mappedResponse = mappedResponse;
-        this.responseWritten = responseWritten;
         this.extendedUriInfo = extendedUriInfo;
         this.containerResponseFilters = containerResponseFilters;
         this.containerRequestFilters = containerRequestFilters;
         this.exceptionMapper = exceptionMapper;
         this.success = success;
+        this.responseSuccessfullyMapped = responseSuccessfullyMapped;
+        this.exceptionCause = exceptionCause;
     }
 
     public static enum Type {
@@ -182,15 +186,9 @@ public class RequestEvent implements Event {
     }
 
 
-    public static enum EXCEPTION_CAUSE {
+    public static enum ExceptionCause {
         STANDARD_PROCESSING,
         MAPPED_RESPONSE_PROCESSING;
-    }
-
-    public static enum EXCEPTION_MAPPING_RESULT {
-        MAPPING_SUCCESSFUL,
-        MAPPING_UNSUCESSFUL,
-
     }
 
 
@@ -202,14 +200,16 @@ public class RequestEvent implements Event {
     private final ContainerRequest containerRequest;
     private final ContainerResponse containerResponse;
     private final Throwable throwable;
-    private final ContainerResponse mappedResponse;
-    private final ContainerResponse responseWritten;
+//    private final ContainerResponse mappedResponse;
+//    private final ContainerResponse responseWritten;
     private final ExtendedUriInfo extendedUriInfo;
     // TODO: M: maybe List?
     private final Iterable<ContainerResponseFilter> containerResponseFilters;
     private final Iterable<ContainerRequestFilter> containerRequestFilters;
     private final ExceptionMapper<?> exceptionMapper;
     private final boolean success;
+    private final boolean responseSuccessfullyMapped;
+    private final ExceptionCause exceptionCause;
 
 
     public ContainerRequest getContainerRequest() {
@@ -221,13 +221,13 @@ public class RequestEvent implements Event {
     }
 
 
-    /***
-     * TODO: M: lot of responses: simplify
-     * @return
-     */
-    public ContainerResponse getLatestResponse() {
-        return mappedResponse != null ? mappedResponse : containerResponse;
-    }
+//    /***
+//     * TODO: M: lot of responses: simplify
+//     * @return
+//     */
+//    public ContainerResponse getLatestResponse() {
+//        return mappedResponse != null ? mappedResponse : containerResponse;
+//    }
 
 
     public Throwable getThrowable() {
@@ -238,13 +238,13 @@ public class RequestEvent implements Event {
         return type;
     }
 
-    public ContainerResponse getMappedResponse() {
-        return mappedResponse;
-    }
-
-    public ContainerResponse getResponseWritten() {
-        return responseWritten;
-    }
+//    public ContainerResponse getMappedResponse() {
+//        return mappedResponse;
+//    }
+//
+//    public ContainerResponse getResponseWritten() {
+//        return responseWritten;
+//    }
 
     public ExtendedUriInfo getUriInfo() {
         return extendedUriInfo;
@@ -264,5 +264,13 @@ public class RequestEvent implements Event {
 
     public boolean isSuccess() {
         return success;
+    }
+
+    public boolean isResponseSuccessfullyMapped() {
+        return responseSuccessfullyMapped;
+    }
+
+    public ExceptionCause getExceptionCause() {
+        return exceptionCause;
     }
 }

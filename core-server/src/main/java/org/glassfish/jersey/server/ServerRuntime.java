@@ -356,16 +356,26 @@ class ServerRuntime {
         }
 
         public void process(Throwable throwable) {
-            request.getRequestEventBuilder().setThrowable(throwable);
+
+            request.getRequestEventBuilder().setThrowable(throwable, RequestEvent.ExceptionCause.STANDARD_PROCESSING);
             request.triggerEvent(RequestEvent.Type.ON_EXCEPTION);
+
             ContainerResponse response = null;
             try {
                 final Response exceptionResponse = mapException(throwable);
                 try {
-                    response = convertResponse(exceptionResponse);
+                    try {
+                        response = convertResponse(exceptionResponse);
+                        request.getRequestEventBuilder().setContainerResponse(response).setResponseSuccessfullyMapped(true);
+                    } finally {
+                        request.triggerEvent(RequestEvent.Type.EXCEPTION_MAPPING_FINISHED);
+                    }
+
                     processResponse(response);
                 } catch (Throwable respError) {
                     LOGGER.log(Level.SEVERE, LocalizationMessages.ERROR_PROCESSING_RESPONSE_FROM_ALREADY_MAPPED_EXCEPTION());
+                    request.getRequestEventBuilder().setThrowable(respError, RequestEvent.ExceptionCause.MAPPED_RESPONSE_PROCESSING);
+                    request.triggerEvent(RequestEvent.Type.ON_EXCEPTION);
                     throw respError;
                 }
             } catch (Throwable responseError) {
@@ -391,7 +401,6 @@ class ServerRuntime {
         private ContainerResponse convertResponse(Response exceptionResponse) {
             final ContainerResponse containerResponse = new ContainerResponse(request, exceptionResponse);
             containerResponse.setMappedFromException(true);
-            request.getRequestEventBuilder().setMappedResponse(containerResponse);
             return containerResponse;
         }
 
@@ -562,7 +571,7 @@ class ServerRuntime {
         }
 
         private void triggerResponseWrittenEvent(ContainerResponse response) {
-            request.getRequestEventBuilder().setResponseWritten(response);
+            request.getRequestEventBuilder().setContainerResponse(response);
             request.getRequestEventBuilder().setSuccess(true);
             request.triggerEvent(RequestEvent.Type.RESP_WRITTEN);
         }

@@ -174,7 +174,7 @@ public class EventListenerTest extends JerseyTest {
                 case RESP_FILTERS_FINISHED:
                     eventData.add("R.RESP_FILTERS_FINISHED.order", String.valueOf(index++));
                     for (Map.Entry<String, List<String>> entry : eventData.entrySet()) {
-                        event.getLatestResponse().getHeaders().addAll(entry.getKey(), entry.getValue());
+                        event.getContainerResponse().getHeaders().addAll(entry.getKey(), entry.getValue());
                     }
                     break;
                 case FINISHED:

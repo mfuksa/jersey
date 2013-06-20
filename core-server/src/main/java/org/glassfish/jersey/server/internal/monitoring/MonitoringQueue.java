@@ -193,7 +193,7 @@ public class MonitoringQueue implements ApplicationEventListener {
                             System.currentTimeMillis() - methodTimeStart, new Date(methodTimeStart));
                     break;
                 case RESP_WRITTEN:
-                    responseQueuedItems.add(new ResponseQueuedItem(event.getResponseWritten().getStatus()));
+                    responseQueuedItems.add(new ResponseQueuedItem(event.getContainerResponse().getStatus()));
                     break;
                 case FINISHED:
                     requestQueuedItems.add(new RequestQueuedItem(System.currentTimeMillis() - requestTimeStart,
