@@ -40,37 +40,42 @@
 
 package org.glassfish.jersey.server.internal.monitoring;
 
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.ws.rs.ProcessingException;
 
 import org.glassfish.jersey.server.ExtendedResourceContext;
 import org.glassfish.jersey.server.internal.RuntimeExecutorsBinder;
+import org.glassfish.jersey.server.internal.monitoring.statistics.ApplicationStatistics;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatistics;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsCallback;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceStatistics;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
-import org.glassfish.jersey.spi.RuntimeThreadProvider;
 
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class MonitoringAggregator {
+public class MonitoringStatisticsProcessor {
+
+    private static final Logger LOGGER = Logger.getLogger(MonitoringStatisticsProcessor.class.getName());
     private final MonitoringQueue monitoringQueue;
     private final MonitoringStatistics.Builder statisticsBuilder;
     private final List<MonitoringStatisticsCallback> statisticsCallbackList;
     private final ScheduledExecutorService scheduler;
 
 
-
-    public MonitoringAggregator(ServiceLocator serviceLocator, MonitoringQueue monitoringQueue) {
+    public MonitoringStatisticsProcessor(ServiceLocator serviceLocator, MonitoringQueue monitoringQueue) {
         this.monitoringQueue = monitoringQueue;
         final ResourceModel resourceModel = serviceLocator.getService(ExtendedResourceContext.class).getResourceModel();
         this.statisticsBuilder = new MonitoringStatistics.Builder(resourceModel);
@@ -80,6 +85,9 @@ public class MonitoringAggregator {
     }
 
     public void startMonitoringWorker() {
+        final ApplicationStatistics appStatistics = new ApplicationStatistics(monitoringQueue.getResourceConfig(),
+                new Date(monitoringQueue.getApplicationStartTime()));
+        statisticsBuilder.setApplicationStatistics(appStatistics);
         final String appName = monitoringQueue.getResourceConfig().getApplicationName();
         statisticsBuilder.setApplicationName(appName == null ?
                 String.valueOf(monitoringQueue.getResourceConfig().hashCode()) : appName);
@@ -87,10 +95,29 @@ public class MonitoringAggregator {
         scheduler.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                processRequestEvents();
-                processResponseCodeEvents();
-                for (MonitoringStatisticsCallback monitoringStatisticsCallback : statisticsCallbackList) {
-                    monitoringStatisticsCallback.onNewStatistics(statisticsBuilder.build());
+                try {
+                    processRequestEvents();
+                    processResponseCodeEvents();
+                } catch (Throwable t) {
+                    // TODO: M: loc
+                    LOGGER.log(Level.SEVERE, "Error generating MonitoringStatistics.", t);
+                    // rethrowing exception stops further task execution
+                    throw new ProcessingException("Error generating statistics.", t);
+                }
+
+
+                final Iterator<MonitoringStatisticsCallback> iterator = statisticsCallbackList.iterator();
+                while (iterator.hasNext()) {
+                    MonitoringStatisticsCallback monitoringStatisticsCallback = iterator.next();
+                    try {
+                        monitoringStatisticsCallback.onNewStatistics(statisticsBuilder.build());
+                    } catch (Throwable t) {
+                        // TODO: M: loc
+                        LOGGER.log(Level.SEVERE, "Exception thrown when provider "
+                                + monitoringStatisticsCallback + " was processing MonitoringStatistics. " +
+                                "Removing provider from further processing.", t);
+                        iterator.remove();
+                    }
                 }
 
             }

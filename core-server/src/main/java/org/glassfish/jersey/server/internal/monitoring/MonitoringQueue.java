@@ -50,7 +50,6 @@ import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
 import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
 import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
 import org.glassfish.jersey.server.internal.monitoring.event.RequestEventListener;
-import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 
 import org.glassfish.hk2.api.ServiceLocator;
@@ -156,14 +155,16 @@ public class MonitoringQueue implements ApplicationEventListener {
 
     @Override
     public void onEvent(ApplicationEvent event) {
+        final long now = System.currentTimeMillis();
         final ApplicationEvent.Type type = event.getType();
         switch (type) {
             case INITIALIZATION_START:
                 break;
             case INITIALIZATION_FINISHED:
                 this.resourceConfig = event.getResourceConfig();
-                final MonitoringAggregator monitoringAggregator = new MonitoringAggregator(serviceLocator, this);
-                monitoringAggregator.startMonitoringWorker();
+                this.applicationStartTime = now;
+                final MonitoringStatisticsProcessor monitoringStatisticsProcessor = new MonitoringStatisticsProcessor(serviceLocator, this);
+                monitoringStatisticsProcessor.startMonitoringWorker();
 
                 break;
             case UNDEPLOY_START:
@@ -211,9 +212,14 @@ public class MonitoringQueue implements ApplicationEventListener {
     private final Queue<RequestQueuedItem> requestQueuedItems = Queues.newArrayBlockingQueue(50000);
     private final Queue<ResponseQueuedItem> responseQueuedItems = Queues.newArrayBlockingQueue(50000);
     private volatile ResourceConfig resourceConfig;
+    private volatile long applicationStartTime;
 
     public ResourceConfig getResourceConfig() {
         return resourceConfig;
+    }
+
+    public long getApplicationStartTime() {
+        return applicationStartTime;
     }
 
     public String getApplicationClassName() {

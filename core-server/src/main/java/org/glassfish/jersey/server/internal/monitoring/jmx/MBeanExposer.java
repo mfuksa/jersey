@@ -63,6 +63,7 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
     private final ExecutionStatisticsDynamicBean requestMBean;
     private final ResponseMXBeanImpl responseMXBean;
     private final ResourcesMBeanGroup resourcesGroup;
+    private volatile ApplicationMXBeanImpl applicationMXBean;
     private final AtomicBoolean exposed = new AtomicBoolean(false);
     private volatile String namePrefix;
 
@@ -92,6 +93,7 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
 
             mBeanServer.registerMBean(mbean, objectName);
         } catch (JMException e) {
+
             throw new ProcessingException("Error when registering Jersey monitoring MXBeans.", e);
         }
     }
@@ -103,7 +105,8 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
             registerMBean(requestMBean, "type=Requests");
             registerMBean(responseMXBean, "type=Responses");
             resourcesGroup.register(this, "");
-
+            applicationMXBean = new ApplicationMXBeanImpl(statistics.getApplicationStatistics());
+            applicationMXBean.register(this, "");
         }
 
         requestMBean.setExecutionStatistics(statistics.getRequestStatistics());
