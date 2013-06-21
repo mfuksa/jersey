@@ -78,7 +78,7 @@ public final class RuntimeModelBuilder {
     private final PushMethodHandlerRouter.Builder pushHandlerAcceptorBuilder;
     private final MethodSelectingRouter.Builder methodSelectingAcceptorBuilder;
     private final MessageBodyWorkers workers;
-    private final PushMatchedMethodContextRouter.Builder pushedMatchedMethodBuilder;
+    private final PushMatchedMethodRouter.Builder pushedMatchedMethodBuilder;
     private final PushMatchedTemplateRouter.Builder pushedMatchedTemplateBuilder;
     private final PushMatchedRuntimeResourceRouter.Builder pushedMatchedRuntimeResourceBuilder;
     private ProcessingProviders processingProviders;
@@ -105,7 +105,7 @@ public final class RuntimeModelBuilder {
             final ServiceLocator locator,
             final PushMethodHandlerRouter.Builder pushHandlerAcceptorBuilder,
             final MethodSelectingRouter.Builder methodSelectingAcceptorBuilder,
-            final PushMatchedMethodContextRouter.Builder pushedMatchedMethodBuilder,
+            final PushMatchedMethodRouter.Builder pushedMatchedMethodBuilder,
             final PushMatchedRuntimeResourceRouter.Builder pushedMatchedRuntimeResourceBuilder,
             final MessageBodyWorkers workers, PushMatchedTemplateRouter.Builder pushedMatchedTemplateBuilder) {
         this.rootBuilder = rootBuilder;
@@ -248,7 +248,7 @@ public final class RuntimeModelBuilder {
                                 .to(uriPushingRouter)
                                 .to(locTemplateRouter)
                                 .to(childResourcePushingRouter)
-                                .to(pushedMatchedMethodBuilder.build(getLocatorContext(child)))
+                                .to(pushedMatchedMethodBuilder.build(child.getResourceLocator()))
                                 .to(createMethodAcceptor(child.getResourceLocator()));
                     }
                 }
@@ -264,7 +264,7 @@ public final class RuntimeModelBuilder {
                         .route(PathPattern.OPEN_ROOT_PATH_PATTERN)
                         .to(uriPushingRouter)
                         .to(resourceTemplateRouter)
-                        .to(pushedMatchedMethodBuilder.build(getLocatorContext(resource)))
+                        .to(pushedMatchedMethodBuilder.build(resource.getResourceLocator()))
                         .to(createMethodAcceptor(resource.getResourceLocator()));
             }
 
@@ -278,20 +278,6 @@ public final class RuntimeModelBuilder {
             }
         }
         return createRootTreeAcceptor(lastRoutedBuilder, subResourceMode);
-    }
-
-    private ResourceMethod.Context getLocatorContext(RuntimeResource runtimeResource) {
-        int i = 0;
-        for (Resource resource : runtimeResource.getResources()) {
-
-            final ResourceMethod locator = resource.getResourceLocator();
-            if (locator != null) {
-                final Resource parent = runtimeResource.getParentResources().get(i);
-                return new ResourceMethod.Context(locator, resource, parent);
-            }
-            i++;
-        }
-        return null;
     }
 
     private PushMatchedTemplateRouter getTemplateRouterForChildLocator(boolean subResourceMode, RuntimeResource child) {
@@ -346,11 +332,9 @@ public final class RuntimeModelBuilder {
                     : getTemplateRouter(subResourceMode, parentResource.getPathPattern().getTemplate(), template);
 
             for (ResourceMethod resourceMethod : resource.getResourceMethods()) {
-                final ResourceMethod.Context methodContext = new ResourceMethod.Context(resourceMethod, resource, parentResource);
-
                 acceptorPairList.add(new MethodAcceptorPair(resourceMethod,
                         templateRouter,
-                        pushedMatchedMethodBuilder.build(methodContext),
+                        pushedMatchedMethodBuilder.build(resourceMethod),
                         createMethodAcceptor(resourceMethod)));
             }
         }

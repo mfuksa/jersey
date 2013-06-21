@@ -145,9 +145,9 @@ public class EventListenerTest extends JerseyTest {
                     break;
                 case MATCHED_LOCATOR:
                     eventData.add("R.MATCHED_LOCATOR.order", String.valueOf(index++));
-                    final List<ResourceMethod.Context> locators = event.getUriInfo().getMatchedResourceLocators();
+                    final List<ResourceMethod> locators = event.getUriInfo().getMatchedResourceLocators();
                     String msg = String.valueOf(locators.size())
-                            + ":" + locators.get(0).getResourceMethod().getInvocable().getHandlingMethod().getName();
+                            + ":" + locators.get(0).getInvocable().getHandlingMethod().getName();
                     eventData.add("R.MATCHED_LOCATOR", msg);
                     break;
                 case MATCHED_SUB_RESOURCE:
@@ -156,8 +156,8 @@ public class EventListenerTest extends JerseyTest {
                 case RESOURCE_METHOD_START:
                     eventData.add("R.RESOURCE_METHOD_START.order", String.valueOf(index++));
                     this.appEventListener.resourceMethodEventCount++;
-                    final ResourceMethod.Context context = event.getUriInfo().getMatchedResourceMethodContext();
-                    eventData.add("R.RESOURCE_METHOD_START.method", context.getResourceMethod()
+                    final ResourceMethod resourceMethod = event.getUriInfo().getMatchedResourceMethod();
+                    eventData.add("R.RESOURCE_METHOD_START.method", resourceMethod
                             .getInvocable().getHandlingMethod().getName());
                     break;
                 case RESOURCE_METHOD_FINISHED:

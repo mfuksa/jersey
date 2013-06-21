@@ -103,9 +103,9 @@ public class UriRoutingContext implements RoutingContext, ExtendedUriInfo {
     private final LinkedList<String> paths = Lists.newLinkedList();
     private Inflector<ContainerRequest, ContainerResponse> inflector;
     private final LinkedList<RuntimeResource> matchedRuntimeResources = Lists.newLinkedList();
-    volatile private ResourceMethod.Context matchedResourceMethod = null;
+    volatile private ResourceMethod matchedResourceMethod = null;
     private final ProcessingProviders processingProviders;
-    private final LinkedList<ResourceMethod.Context> matchedLocators = Lists.newLinkedList();
+    private final LinkedList<ResourceMethod> matchedLocators = Lists.newLinkedList();
     private final LinkedList<Resource> locatorSubResources = Lists.newLinkedList();
 
 
@@ -138,7 +138,7 @@ public class UriRoutingContext implements RoutingContext, ExtendedUriInfo {
     }
 
     @Override
-    public void pushMatchedLocator(ResourceMethod.Context resourceLocator) {
+    public void pushMatchedLocator(ResourceMethod resourceLocator) {
         matchedLocators.push(resourceLocator);
     }
 
@@ -252,8 +252,8 @@ public class UriRoutingContext implements RoutingContext, ExtendedUriInfo {
     }
 
     @Override
-    public void setMatchedResourceMethod(ResourceMethod.Context resourceMethodContext) {
-        this.matchedResourceMethod = resourceMethodContext;
+    public void setMatchedResourceMethod(ResourceMethod resourceMethod) {
+        this.matchedResourceMethod = resourceMethod;
     }
 
     @Override
@@ -528,11 +528,11 @@ public class UriRoutingContext implements RoutingContext, ExtendedUriInfo {
 
     @Override
     public ResourceMethod getMatchedResourceMethod() {
-        return matchedResourceMethod.getResourceMethod();
+        return matchedResourceMethod;
     }
 
     @Override
-    public List<ResourceMethod.Context> getMatchedResourceLocators() {
+    public List<ResourceMethod> getMatchedResourceLocators() {
         return matchedLocators;
     }
 
@@ -543,13 +543,9 @@ public class UriRoutingContext implements RoutingContext, ExtendedUriInfo {
 
     @Override
     public Resource getMatchedModelResource() {
-        return matchedResourceMethod.getResource();
+        return matchedResourceMethod.getParent();
     }
 
-    @Override
-    public ResourceMethod.Context getMatchedResourceMethodContext() {
-        return matchedResourceMethod;
-    }
 
     @Override
     public URI resolve(URI uri) {

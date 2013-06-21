@@ -44,7 +44,6 @@ import java.util.Date;
 import java.util.Queue;
 
 import javax.inject.Inject;
-import javax.ws.rs.ext.ExceptionMapper;
 
 import org.glassfish.jersey.server.*;
 import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
@@ -98,16 +97,16 @@ public class MonitoringQueue implements ApplicationEventListener {
     }
 
     static class ResourceMethodQueuedItem extends TimeEvent {
-        private final ResourceMethod.Context methodContext;
+        private final ResourceMethod resourceMethod;
 
-        private ResourceMethodQueuedItem(ResourceMethod.Context methodContext,
+        private ResourceMethodQueuedItem(ResourceMethod resourceMethod,
                                          long duration, Date time) {
             super(duration, time);
-            this.methodContext = methodContext;
+            this.resourceMethod = resourceMethod;
         }
 
-        ResourceMethod.Context getMethodContext() {
-            return methodContext;
+        ResourceMethod getResourceMethod() {
+            return resourceMethod;
         }
     }
 
@@ -170,8 +169,8 @@ public class MonitoringQueue implements ApplicationEventListener {
                     this.methodTimeStart = System.currentTimeMillis();
                     break;
                 case RESOURCE_METHOD_FINISHED:
-                    final ResourceMethod.Context methodContext = event.getUriInfo().getMatchedResourceMethodContext();
-                    methodItem = new ResourceMethodQueuedItem(methodContext,
+                    final ResourceMethod method = event.getUriInfo().getMatchedResourceMethod();
+                    methodItem = new ResourceMethodQueuedItem(method,
                             System.currentTimeMillis() - methodTimeStart, new Date(methodTimeStart));
                     break;
                 case EXCEPTION_MAPPER_FOUND:
@@ -190,7 +189,7 @@ public class MonitoringQueue implements ApplicationEventListener {
         }
 
         private void methodItem(RequestEvent event) {
-            final ResourceMethod.Context methodContext = event.getUriInfo().getMatchedResourceMethodContext();
+            final ResourceMethod methodContext = event.getUriInfo().getMatchedResourceMethod();
             new ResourceMethodQueuedItem(methodContext,
                     System.currentTimeMillis() - methodTimeStart, new Date(methodTimeStart));
         }

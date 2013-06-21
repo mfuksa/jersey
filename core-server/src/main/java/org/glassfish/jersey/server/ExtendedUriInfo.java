@@ -188,10 +188,8 @@ public interface ExtendedUriInfo extends UriInfo {
      */
     public Resource getMatchedModelResource();
 
-    // TODO: M: javadoc
-    public ResourceMethod.Context getMatchedResourceMethodContext();
 
-    public List<ResourceMethod.Context> getMatchedResourceLocators();
+    public List<ResourceMethod> getMatchedResourceLocators();
 
     public List<Resource> getLocatorSubResources();
 }

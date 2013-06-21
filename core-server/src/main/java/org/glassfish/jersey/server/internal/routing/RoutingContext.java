@@ -203,13 +203,13 @@ public interface RoutingContext extends ResourceInfo {
      * @param resourceMethod Resource method that was matched.
      */
     // TODO: M:
-    public void setMatchedResourceMethod(ResourceMethod.Context methodContext);
+    public void setMatchedResourceMethod(ResourceMethod resourceMethod);
 
     /**
      * TODO: M: locator
      * @param resourceLocator
      */
-    public void pushMatchedLocator(ResourceMethod.Context resourceLocator);
+    public void pushMatchedLocator(ResourceMethod resourceLocator);
 
     /**
      * Push a matched {@link RuntimeResource runtime resource} that was visited during matching phase. This method must

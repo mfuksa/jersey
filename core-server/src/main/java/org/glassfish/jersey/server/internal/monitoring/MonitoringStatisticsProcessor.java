@@ -151,15 +151,17 @@ public class MonitoringStatisticsProcessor {
 
 
             if (methodItem != null) {
-                final ResourceMethod.Context methodContext = methodItem.getMethodContext();
-                final Resource resource = (methodContext.getParentResource() == null) ? methodContext.getResource()
-                        : methodContext.getParentResource();
-                final Resource childResource = (methodContext.getParentResource() == null) ? null
-                        : methodContext.getResource();
+                final ResourceMethod method = methodItem.getResourceMethod();
+                final Resource enclosingResource = method.getParent();
+
+                final Resource resource = (enclosingResource.getParent() == null) ? enclosingResource
+                        : enclosingResource.getParent();
+                final Resource childResource = (enclosingResource.getParent() == null) ? null
+                        : enclosingResource;
 
                 final ResourceStatistics.Builder resourceBuilder = statisticsBuilder.getRootResourceStatistics()
                         .get(resource);
-                final ResourceMethod method = methodContext.getResourceMethod();
+
                 if (childResource == null) {
                     resourceBuilder.addResourceExecution(method, methodItem.getExecutionTime(),
                             methodItem.getTime().getTime(), event.getExecutionTime(), event.getTime().getTime());

@@ -53,10 +53,10 @@ import org.glassfish.jersey.server.model.ResourceMethod;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 // TODO: M: javadoc
-class PushMatchedMethodContextRouter implements Router {
+class PushMatchedMethodRouter implements Router {
 
     /**
-     * Builder for creating {@link PushMatchedMethodContextRouter push matched resource router} instances. New builder instance
+     * Builder for creating {@link PushMatchedMethodRouter push matched resource router} instances. New builder instance
      * must be injected and not directly created by constructor call.
      */
     static class Builder {
@@ -65,32 +65,32 @@ class PushMatchedMethodContextRouter implements Router {
 
         /**
          * Builds new instance of router.
-         * @param resource The matched resource that should be pushed into the {@link RoutingContext routing context}.
-         * @param method The matched resource method that should be pushed into the {@link RoutingContext routing context}.
+         * @param resourceMethod The matched resource method that should be pushed into the
+         *                       {@link RoutingContext routing context}.
          * @return New instance of the router.
          */
-        PushMatchedMethodContextRouter build(ResourceMethod.Context methodContext) {
-            return new PushMatchedMethodContextRouter(methodContext, routingContext);
+        PushMatchedMethodRouter build(ResourceMethod resourceMethod) {
+            return new PushMatchedMethodRouter(resourceMethod, routingContext);
         }
     }
 
-    private final ResourceMethod.Context methodContext;
+    private final ResourceMethod resourceMethod;
     private final Provider<RoutingContext> routingContext;
 
-    private PushMatchedMethodContextRouter(ResourceMethod.Context methodContext, Provider<RoutingContext> routingContext) {
-        this.methodContext = methodContext;
+    private PushMatchedMethodRouter(ResourceMethod resourceMethod, Provider<RoutingContext> routingContext) {
+        this.resourceMethod = resourceMethod;
         this.routingContext = routingContext;
     }
 
     @Override
     public Continuation apply(ContainerRequest data) {
-        switch (methodContext.getResourceMethod().getType()) {
+        switch (resourceMethod.getType()) {
             case RESOURCE_METHOD:
             case SUB_RESOURCE_METHOD:
-                routingContext.get().setMatchedResourceMethod(methodContext);
+                routingContext.get().setMatchedResourceMethod(resourceMethod);
                 break;
             case SUB_RESOURCE_LOCATOR:
-                routingContext.get().pushMatchedLocator(methodContext);
+                routingContext.get().pushMatchedLocator(resourceMethod);
                 break;
         }
 

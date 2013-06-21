@@ -132,32 +132,6 @@ public final class ResourceMethod implements ResourceModelComponent, Producing, 
         }
     }
 
-    public static class Context {
-        // TODO: M: maybe parentResource (always not null) and childResource (if exists) -> simplify the code usage
-        private final ResourceMethod resourceMethod;
-        private final Resource resource;
-        private final Resource parentResource;
-
-
-        public Context(ResourceMethod resourceMethod, Resource resource, Resource parentResource) {
-            this.resourceMethod = resourceMethod;
-            this.resource = resource;
-            this.parentResource = parentResource;
-        }
-
-        public ResourceMethod getResourceMethod() {
-            return resourceMethod;
-        }
-
-        public Resource getResource() {
-            return resource;
-        }
-
-        public Resource getParentResource() {
-            return parentResource;
-        }
-    }
-
     /**
      * Resource method model builder.
      */
