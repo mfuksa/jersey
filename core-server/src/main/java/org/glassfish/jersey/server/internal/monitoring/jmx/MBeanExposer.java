@@ -58,7 +58,7 @@ import org.glassfish.hk2.utilities.binding.*;
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class MBeanExposer implements MonitoringStatisticsCallback {
+public class MBeanExposer implements MonitoringStatisticsListener {
 
     private final ExecutionStatisticsDynamicBean requestMBean;
     private final ResponseMXBeanImpl responseMXBean;
@@ -101,7 +101,7 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
     }
 
     @Override
-    public void onNewStatistics(MonitoringStatistics statistics) {
+    public void onStatistics(MonitoringStatistics statistics) {
         if (exposed.compareAndSet(false, true)) {
             namePrefix = "org.glassfish.jersey." + statistics.getApplicationName();
             registerMBean(requestMBean, "type=Requests");
@@ -122,7 +122,7 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
     public static class Binder extends AbstractBinder {
         @Override
         protected void configure() {
-            bind(MBeanExposer.class).to(MonitoringStatisticsCallback.class).in(Singleton.class);
+            bind(MBeanExposer.class).to(MonitoringStatisticsListener.class).in(Singleton.class);
             // TODO: M: move to factory
             bind(MonitoringEventListener.class).to(ApplicationEventListener.class);
         }

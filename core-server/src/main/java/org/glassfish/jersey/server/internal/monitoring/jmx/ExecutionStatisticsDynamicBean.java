@@ -71,7 +71,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
 
     private MBeanInfo initMBeanInfo(final ExecutionStatistics initialStatistics) {
         final Map<Long, IntervalStatistics> statsMap = initialStatistics.getIntervalStatistics();
-        MBeanAttributeInfo[] attrs = new MBeanAttributeInfo[statsMap.size() * 4];
+        MBeanAttributeInfo[] attrs = new MBeanAttributeInfo[statsMap.size() * 5];
         int i = 0;
         for (final IntervalStatistics stats : statsMap.values()) {
             final long interval = stats.getInterval();
@@ -88,7 +88,6 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
                 }
             });
 
-
             name = prefix + "_MaxTime_ms";
             attrs[i++] = new MBeanAttributeInfo(name, "long", "Minimum request processing time  in milliseconds in last "
                     + prefix + " seconds.", true, false, false);
@@ -97,6 +96,17 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
                 @Override
                 public Object get() {
                     return executionStatistics.getIntervalStatistics().get(interval).getMaximumDuration();
+                }
+            });
+
+            name = prefix + "_AverageTime_ms";
+            attrs[i++] = new MBeanAttributeInfo(name, "long", "Average request processing time in milliseconds in last "
+                    + prefix + " seconds.", true, false, false);
+
+            attributeValues.put(name, new Value<Object>() {
+                @Override
+                public Object get() {
+                    return executionStatistics.getIntervalStatistics().get(interval).getAverageDuration();
                 }
             });
 

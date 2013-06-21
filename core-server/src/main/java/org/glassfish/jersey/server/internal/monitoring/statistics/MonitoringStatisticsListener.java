@@ -44,6 +44,6 @@ package org.glassfish.jersey.server.internal.monitoring.statistics;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
-public interface MonitoringStatisticsCallback {
-    public void onNewStatistics(MonitoringStatistics statistics);
+public interface MonitoringStatisticsListener {
+    public void onStatistics(MonitoringStatistics statistics);
 }

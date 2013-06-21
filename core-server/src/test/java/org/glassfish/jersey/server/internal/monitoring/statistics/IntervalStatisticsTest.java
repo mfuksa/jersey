@@ -56,15 +56,15 @@ public class IntervalStatisticsTest {
         IntervalStatistics.Builder builder = new IntervalStatistics.Builder(1000, now);
         builder.addRequest(now, 30);
         builder.addRequest(now + 300, 100);
-        builder.addRequest(now + 600, 153);
+        builder.addRequest(now + 600, 150);
         builder.addRequest(now + 800, 15);
         builder.addRequest(now + 999, 60);
-        builder.addRequest(now + 1000, 99);
+        builder.addRequest(now + 1000, 95);
 
-        check(builder, now + 1000, 0, -1, -1, 0);
+        check(builder, now + 1000, 0, -1, -1, -1, 0);
         builder.addRequest(now + 1001, 999);
 
-        check(builder, now + 1001, 6, 15, 153, 6);
+        check(builder, now + 1001, 6, 15, 150, 75, 6);
     }
 
     @Test
@@ -73,14 +73,14 @@ public class IntervalStatisticsTest {
         IntervalStatistics.Builder builder = new IntervalStatistics.Builder(10000, now);
         builder.addRequest(now, 30);
         builder.addRequest(now + 300, 100);
-        builder.addRequest(now + 600, 153);
+        builder.addRequest(now + 600, 150);
         builder.addRequest(now + 800, 15);
         builder.addRequest(now + 999, 60);
-        builder.addRequest(now + 1000, 99);
+        builder.addRequest(now + 1000, 95);
         builder.addRequest(now + 8001, 600);
-        check(builder, now + 8001, 6, 15, 153, 0.75);
-        builder.addRequest(now + 10380, 5175);
-        check(builder, now + 10100, 7, 15, 600, 0.7);
+        check(builder, now + 8001, 6, 15, 150, 75, 0.75);
+        builder.addRequest(now + 10380, 5200);
+        check(builder, now + 10100, 7, 15, 600, 150, 0.7);
     }
 
     @Test
@@ -93,23 +93,20 @@ public class IntervalStatisticsTest {
         builder.addRequest(now + 1000, 96);
         builder.addRequest(now + 1500, 95);
         builder.addRequest(now + 2500, 3);
-        // ... above should be ignored ignored
+        // ... above should be ignored
 
         builder.addRequest(now + 3500, 90);
         builder.addRequest(now + 3900, 4);
         builder.addRequest(now + 3900, 80);
-        builder.addRequest(now + 4200, 91);
+        builder.addRequest(now + 4200, 92);
         builder.addRequest(now + 4900, 15);
-        builder.addRequest(now + 5300, 7);
+        builder.addRequest(now + 5300, 8);
         builder.addRequest(now + 5600, 50);
 
         // this should be again ignored
         builder.addRequest(now + 6100, 999999);
 
-        check(builder, now + 6050, 7, 4, 91, 2.333333);
-
-        builder.addRequest(now + 6300, 40);
-        builder.addRequest(now + 7000, 30);
+        check(builder, now + 6050, 7, 4, 92, 48, 2.333333);
     }
 
     @Test
@@ -118,31 +115,31 @@ public class IntervalStatisticsTest {
         IntervalStatistics.Builder builder = new IntervalStatistics.Builder(1000 * 60, now);
         builder.addRequest(now, 99);
         final long time = now + 1000 * 60 * 60 * 23;
-        builder.addRequest(time, 98);
+        builder.addRequest(time, 95);
         builder.addRequest(time + 5, 5);
-        check(builder, time + 20000, 2, 5, 98, 0.03333);
+        check(builder, time + 20000, 2, 5, 95, 50, 0.03333);
     }
 
     private void check(IntervalStatistics.Builder builder, long buildTime, int totalCount, int minimumExecTime,
-                       int maximumExecTime, double requestsPerSecond) {
+                       int maximumExecTime, long average, double requestsPerSecond) {
         IntervalStatistics stat = builder.build(buildTime);
 
         Assert.assertEquals(totalCount, stat.getTotalCount());
         Assert.assertEquals(minimumExecTime, stat.getMinimumDuration());
         Assert.assertEquals(maximumExecTime, stat.getMaximumDuration());
+        Assert.assertEquals(average, stat.getAverageDuration());
         Assert.assertEquals(requestsPerSecond, stat.getRequestsPerSecond(), DELTA);
     }
 
     @Test
     public void testGeneric() {
-        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(1000 * 10, 0);
+        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(10000, 0);
         for (int i = 0; i < 100; i++) {
             final int requestTime = i * 10000;
             builder.addRequest(requestTime + 1, i);
             for (int j = 11; j < 100; j++) {
                 try {
                     IntervalStatistics stat = builder.build(requestTime + j * 100);
-                    System.out.println(stat.getRequestsPerSecond());
                     Assert.assertEquals(1, stat.getTotalCount());
                     Assert.assertEquals(i, stat.getMinimumDuration());
                     Assert.assertEquals(i, stat.getMaximumDuration());
@@ -154,4 +151,19 @@ public class IntervalStatisticsTest {
         }
     }
 
+    @Test
+    public void testUnlimited() {
+        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(0, 0);
+        builder.addRequest(0, 10);
+        builder.addRequest(100 + 300, 20);
+        builder.addRequest(1000 + 600, 30);
+        builder.addRequest(1587 + 800, 40);
+        builder.addRequest(5544 + 999, 60);
+        builder.addRequest(9998 + 1000, 50);
+        check(builder, 10000, 6, 10, 60, 35, 0.6);
+    }
+
 }
+
+
+

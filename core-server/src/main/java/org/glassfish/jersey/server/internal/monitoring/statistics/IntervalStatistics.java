@@ -58,26 +58,30 @@ public class IntervalStatistics {
         private final long startTime;
         private final Queue<Unit> unitQueue;
         private long totalCount;
+        private long totalDuration;
         private final long intervalWithRoundError;
 
         private long lastUnitEnd;
         private long lastUnitCount;
         private long lastUnitMin = -1;
         private long lastUnitMax = -1;
+        private long lastUnitDuration = 0;
 
 
         private static class Unit {
             private final long count;
             private final long minimumDuration;
             private final long maximumDuration;
+            private final long duration;
 
-            private Unit(long count, long minimumDuration, long maximumDuration) {
+            private Unit(long count, long minimumDuration, long maximumDuration, long duration) {
                 this.count = count;
                 this.minimumDuration = minimumDuration;
                 this.maximumDuration = maximumDuration;
+                this.duration = duration;
             }
 
-            private static Unit EMPTY_UNIT = new Unit(0, -1, -1);
+            private static Unit EMPTY_UNIT = new Unit(0, -1, -1, 0);
         }
 
         public Builder(long interval) {
@@ -112,9 +116,10 @@ public class IntervalStatistics {
         }
 
         public void addRequest(long requestTime, long duration) {
-            closePreviousUnitIfNeeded(requestTime);
+            closeLastUnitIfNeeded(requestTime);
 
             lastUnitCount++;
+            lastUnitDuration += duration;
 
             if (duration < lastUnitMin || lastUnitMin == -1) {
                 lastUnitMin = duration;
@@ -125,20 +130,16 @@ public class IntervalStatistics {
             }
         }
 
-        private void closePreviousUnitIfNeeded(long requestTime) {
+        private void closeLastUnitIfNeeded(long requestTime) {
             if (interval != 0) {
                 if ((requestTime - lastUnitEnd) > interval + unit) {
                     resetQueue(requestTime);
                 }
                 if (lastUnitEnd < requestTime) {
                     // close the old unit
-                    add(new Unit(lastUnitCount, lastUnitMin, lastUnitMax));
-
-                    totalCount += lastUnitCount;
+                    add(new Unit(lastUnitCount, lastUnitMin, lastUnitMax, lastUnitDuration));
                     lastUnitEnd += unit;
-                    lastUnitCount = 0;
-                    lastUnitMin = -1;
-                    lastUnitMax = -1;
+                    resetLastUnit();
 
                     while (lastUnitEnd < requestTime) {
                         add(Unit.EMPTY_UNIT);
@@ -148,21 +149,30 @@ public class IntervalStatistics {
             }
         }
 
+        private void resetLastUnit() {
+            lastUnitCount = 0;
+            lastUnitMin = -1;
+            lastUnitMax = -1;
+            lastUnitDuration = 0;
+        }
+
         private void add(Unit unit) {
             unitQueue.add(unit);
 
             // fill with empty until units
             if (unitQueue.size() > unitsPerInterval) {
-                totalCount -= unitQueue.remove().count;
+                final Unit removedUnit = unitQueue.remove();
+                totalCount -= removedUnit.count;
+                totalDuration -= removedUnit.duration;
             }
+            totalCount += lastUnitCount;
+            totalDuration += lastUnitDuration;
         }
 
         private void resetQueue(long requestTime) {
             this.unitQueue.clear();
             lastUnitEnd = requestTime + unit;
-            lastUnitCount = 0;
-            lastUnitMin = -1;
-            lastUnitMax = -1;
+            resetLastUnit();
 
             // fill with empty unit to keep result consistent
             for (int i = 0; i < unitsPerInterval; i++) {
@@ -180,14 +190,15 @@ public class IntervalStatistics {
             if (interval == 0) {
                 final long diff = currentTime - startTime;
                 if (diff < MINIMUM_UNIT_SIZE) {
-                    return new IntervalStatistics(interval, 0, 0, 0, 0);
+                    return new IntervalStatistics(interval, 0, 0, 0, 0, 0);
                 } else {
-                    int requestsPerSecond = (int) (lastUnitCount / diff);
-                    return new IntervalStatistics(interval, requestsPerSecond, lastUnitMin, lastUnitMax, lastUnitCount);
+                    double requestsPerSecond = (double) (1000 * lastUnitCount) / diff;
+                    long avg = lastUnitCount == 0 ? -1 : lastUnitDuration / lastUnitCount;
+                    return new IntervalStatistics(interval, requestsPerSecond, lastUnitMin, lastUnitMax, avg, lastUnitCount);
                 }
             }
 
-            closePreviousUnitIfNeeded(currentTime);
+            closeLastUnitIfNeeded(currentTime);
             long min = -1;
             long max = -1;
             double requestsPerSecond;
@@ -209,7 +220,8 @@ public class IntervalStatistics {
                 requestsPerSecond = size == 0 ? 0d : (double) (1000 * totalCount) / (size * unit);
             }
 
-            return new IntervalStatistics(interval, requestsPerSecond, min, max, totalCount);
+            long avg = totalCount == 0 ? -1 : totalDuration / totalCount;
+            return new IntervalStatistics(interval, requestsPerSecond, min, max, avg, totalCount);
         }
 
         public long getInterval() {
@@ -222,16 +234,18 @@ public class IntervalStatistics {
 
     private final long minimumDuration;
     private final long maximumDuration;
+    private final long averageDuration;
 
     private long totalCount;
 
 
     private IntervalStatistics(long interval, double requestsPerSecond, long minimumDuration,
-                               long maximumDuration, long totalCount) {
+                               long maximumDuration, long averageDuration, long totalCount) {
         this.interval = interval;
         this.requestsPerSecond = requestsPerSecond;
         this.minimumDuration = minimumDuration;
         this.maximumDuration = maximumDuration;
+        this.averageDuration = averageDuration;
         this.totalCount = totalCount;
     }
 
@@ -254,5 +268,9 @@ public class IntervalStatistics {
 
     public long getTotalCount() {
         return totalCount;
+    }
+
+    public long getAverageDuration() {
+        return averageDuration;
     }
 }
