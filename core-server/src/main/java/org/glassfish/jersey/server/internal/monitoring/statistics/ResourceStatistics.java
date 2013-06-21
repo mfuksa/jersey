@@ -1,6 +1,5 @@
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
-import java.util.Date;
 import java.util.Map;
 
 import org.glassfish.jersey.server.model.Resource;
@@ -53,23 +52,23 @@ public class ResourceStatistics {
                     requestExecutionStatisticsBuilder.build());
         }
 
-        public void addResourceExecution(Resource childResource, ResourceMethod resourceMethod, long methodExecutionTime, long methodStartTime,
-                                         long requestExecutionTime, long requestStartTime) {
-            addResourceExecution(methodExecutionTime, methodStartTime, requestExecutionTime, requestStartTime);
-            childBuilders.get(childResource).addResourceExecution(resourceMethod, methodExecutionTime, methodStartTime,
-                    requestExecutionTime, requestStartTime);
+        public void addResourceExecution(Resource childResource, ResourceMethod resourceMethod, long methodStartTime, long methodDuration,
+                                         long requestStartTime, long requestDuration) {
+            addResourceExecution(methodStartTime, methodDuration, requestStartTime, requestDuration);
+            childBuilders.get(childResource).addResourceExecution(resourceMethod, methodStartTime, methodDuration,
+                    requestStartTime, requestDuration);
         }
 
-        public void addResourceExecution(ResourceMethod resourceMethod, long executionTime, long startTime,
-                                         long requestExecutionTime, long requestStartTime) {
-            addResourceExecution(executionTime, startTime, requestExecutionTime, requestStartTime);
+        public void addResourceExecution(ResourceMethod resourceMethod, long methodStartTime, long methodDuration,
+                                         long requestStartTime, long requestDuration) {
+            addResourceExecution(methodStartTime, methodDuration, requestStartTime, requestDuration);
             final ResourceMethodStatistics.Builder methodBuilder = methodsBuilders.get(resourceMethod);
-            methodBuilder.addResourceMethodExecution(executionTime, startTime, requestExecutionTime, requestStartTime);
+            methodBuilder.addResourceMethodExecution(methodDuration, methodStartTime, requestDuration, requestStartTime);
         }
 
-        private void addResourceExecution(long executionTime, long startTime, long requestExecutionTime, long requestStartTime) {
-            resourceExecutionStatisticsBuilder.addExecution(executionTime, startTime);
-            requestExecutionStatisticsBuilder.addExecution(requestExecutionTime, requestStartTime);
+        private void addResourceExecution(long methodStartTime, long methodDuration, long requestStartTime, long requestDuration) {
+            resourceExecutionStatisticsBuilder.addExecution(methodStartTime, methodDuration);
+            requestExecutionStatisticsBuilder.addExecution(requestStartTime, requestDuration);
         }
     }
 

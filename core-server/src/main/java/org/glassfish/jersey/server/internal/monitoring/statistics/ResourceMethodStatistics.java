@@ -40,8 +40,6 @@
 
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
-import java.util.Date;
-
 import org.glassfish.jersey.server.model.ResourceMethod;
 
 /**
@@ -76,8 +74,8 @@ public class ResourceMethodStatistics {
 
         public void addResourceMethodExecution(long methodExecutionTime, long methodStartTime,
                                                long requestExecutionTime, long requestStartTime) {
-            resourceMethodExecutionStatisticsBuilder.addExecution(methodExecutionTime, methodStartTime);
-            requestExecutionStatisticsBuilder.addExecution(requestExecutionTime, requestStartTime);
+            resourceMethodExecutionStatisticsBuilder.addExecution(methodStartTime, methodExecutionTime);
+            requestExecutionStatisticsBuilder.addExecution(requestStartTime, requestExecutionTime);
         }
     }
 

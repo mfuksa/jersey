@@ -128,8 +128,8 @@ public class IntervalStatisticsTest {
         IntervalStatistics stat = builder.build(buildTime);
 
         Assert.assertEquals(totalCount, stat.getTotalCount());
-        Assert.assertEquals(minimumExecTime, stat.getMinimumExecutionTime());
-        Assert.assertEquals(maximumExecTime, stat.getMaximumExecutionTime());
+        Assert.assertEquals(minimumExecTime, stat.getMinimumDuration());
+        Assert.assertEquals(maximumExecTime, stat.getMaximumDuration());
         Assert.assertEquals(requestsPerSecond, stat.getRequestsPerSecond(), DELTA);
     }
 
@@ -144,8 +144,8 @@ public class IntervalStatisticsTest {
                     IntervalStatistics stat = builder.build(requestTime + j * 100);
                     System.out.println(stat.getRequestsPerSecond());
                     Assert.assertEquals(1, stat.getTotalCount());
-                    Assert.assertEquals(i, stat.getMinimumExecutionTime());
-                    Assert.assertEquals(i, stat.getMaximumExecutionTime());
+                    Assert.assertEquals(i, stat.getMinimumDuration());
+                    Assert.assertEquals(i, stat.getMaximumDuration());
                 } catch (AssertionError e) {
                     System.out.println(i + " / " + j);
                     throw e;

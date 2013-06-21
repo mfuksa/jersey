@@ -80,9 +80,9 @@ public class ExecutionStatistics {
 
         }
 
-        public void addExecution(long executionTime, long startTime) {
+        public void addExecution(long startTime, long duration) {
             for (IntervalStatistics.Builder statBuilder : intervalStatistics.values()) {
-                statBuilder.addRequest(startTime, executionTime);
+                statBuilder.addRequest(startTime, duration);
             }
 
             this.lastStartTime = startTime;

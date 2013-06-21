@@ -84,7 +84,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return executionStatistics.getIntervalStatistics().get(interval).getMinimumExecutionTime();
+                    return executionStatistics.getIntervalStatistics().get(interval).getMinimumDuration();
                 }
             });
 
@@ -96,7 +96,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return executionStatistics.getIntervalStatistics().get(interval).getMaximumExecutionTime();
+                    return executionStatistics.getIntervalStatistics().get(interval).getMaximumDuration();
                 }
             });
 

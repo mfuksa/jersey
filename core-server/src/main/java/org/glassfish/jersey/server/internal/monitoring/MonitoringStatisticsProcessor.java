@@ -71,14 +71,14 @@ import org.glassfish.hk2.api.ServiceLocator;
 public class MonitoringStatisticsProcessor {
 
     private static final Logger LOGGER = Logger.getLogger(MonitoringStatisticsProcessor.class.getName());
-    private final MonitoringQueue monitoringQueue;
+    private final MonitoringEventListener monitoringEventListener;
     private final MonitoringStatistics.Builder statisticsBuilder;
     private final List<MonitoringStatisticsCallback> statisticsCallbackList;
     private final ScheduledExecutorService scheduler;
 
 
-    public MonitoringStatisticsProcessor(ServiceLocator serviceLocator, MonitoringQueue monitoringQueue) {
-        this.monitoringQueue = monitoringQueue;
+    public MonitoringStatisticsProcessor(ServiceLocator serviceLocator, MonitoringEventListener monitoringEventListener) {
+        this.monitoringEventListener = monitoringEventListener;
         final ResourceModel resourceModel = serviceLocator.getService(ExtendedResourceContext.class).getResourceModel();
         this.statisticsBuilder = new MonitoringStatistics.Builder(resourceModel);
         this.statisticsCallbackList = serviceLocator.getAllServices(MonitoringStatisticsCallback.class);
@@ -87,12 +87,12 @@ public class MonitoringStatisticsProcessor {
     }
 
     public void startMonitoringWorker() {
-        final ApplicationStatistics appStatistics = new ApplicationStatistics(monitoringQueue.getResourceConfig(),
-                new Date(monitoringQueue.getApplicationStartTime()));
+        final ApplicationStatistics appStatistics = new ApplicationStatistics(monitoringEventListener.getResourceConfig(),
+                new Date(monitoringEventListener.getApplicationStartTime()));
         statisticsBuilder.setApplicationStatistics(appStatistics);
-        final String appName = monitoringQueue.getResourceConfig().getApplicationName();
+        final String appName = monitoringEventListener.getResourceConfig().getApplicationName();
         statisticsBuilder.setApplicationName(appName == null ?
-                String.valueOf(monitoringQueue.getResourceConfig().hashCode()) : appName);
+                String.valueOf(monitoringEventListener.getResourceConfig().hashCode()) : appName);
 
         scheduler.scheduleWithFixedDelay(new Runnable() {
             @Override
@@ -127,7 +127,7 @@ public class MonitoringStatisticsProcessor {
     }
 
     private void processExceptionMapperEvents() {
-        final Queue<RequestEvent> eventQueue = monitoringQueue.getExceptionMapperEvents();
+        final Queue<RequestEvent> eventQueue = monitoringEventListener.getExceptionMapperEvents();
         while (!eventQueue.isEmpty()) {
             final RequestEvent event = eventQueue.remove();
             final ExceptionMapperStatistics.Builder mapperStats = statisticsBuilder.getExceptionMapperStatisticsBuilder();
@@ -142,16 +142,19 @@ public class MonitoringStatisticsProcessor {
     }
 
     private void processRequestItems() {
-        final Queue<MonitoringQueue.RequestQueuedItem> requestQueuedItems = monitoringQueue.getRequestQueuedItems();
+        final Queue<MonitoringEventListener.RequestStats> requestQueuedItems = monitoringEventListener.getRequestQueuedItems();
 
         while (!requestQueuedItems.isEmpty()) {
-            MonitoringQueue.RequestQueuedItem event = requestQueuedItems.remove();
-            statisticsBuilder.getRequestStatisticsBuilder().addExecution(event.getExecutionTime(), event.getTime().getTime());
-            final MonitoringQueue.ResourceMethodQueuedItem methodItem = event.getMethodItem();
+            MonitoringEventListener.RequestStats event = requestQueuedItems.remove();
+            final MonitoringEventListener.TimeStats requestStats = event.getRequestStats();
+            statisticsBuilder.getRequestStatisticsBuilder().addExecution(requestStats.getStartTime(), requestStats.getDuration()
+            );
+
+            final MonitoringEventListener.MethodStats methodStat = event.getMethodStats();
 
 
-            if (methodItem != null) {
-                final ResourceMethod method = methodItem.getResourceMethod();
+            if (methodStat != null) {
+                final ResourceMethod method = methodStat.getMethod();
                 final Resource enclosingResource = method.getParent();
 
                 final Resource resource = (enclosingResource.getParent() == null) ? enclosingResource
@@ -163,12 +166,12 @@ public class MonitoringStatisticsProcessor {
                         .get(resource);
 
                 if (childResource == null) {
-                    resourceBuilder.addResourceExecution(method, methodItem.getExecutionTime(),
-                            methodItem.getTime().getTime(), event.getExecutionTime(), event.getTime().getTime());
+                    resourceBuilder.addResourceExecution(method, methodStat.getStartTime(), methodStat.getDuration(),
+                            methodStat.getStartTime(), requestStats.getDuration());
                 } else {
                     resourceBuilder.addResourceExecution(childResource, method,
-                            methodItem.getExecutionTime(), methodItem.getTime().getTime(), event.getExecutionTime(),
-                            event.getTime().getTime());
+                            methodStat.getStartTime(), methodStat.getDuration(), requestStats.getStartTime(), requestStats.getDuration()
+                    );
                 }
             }
         }
@@ -176,11 +179,11 @@ public class MonitoringStatisticsProcessor {
 
 
     private void processResponseCodeEvents() {
-        final Queue<MonitoringQueue.ResponseQueuedItem> responseEvents = monitoringQueue.getResponseQueuedItems();
-        MonitoringQueue.ResponseQueuedItem event;
+        final Queue<Integer> responseEvents = monitoringEventListener.getResponseStatuses();
+        Integer code;
         while (!responseEvents.isEmpty()) {
-            event = responseEvents.remove();
-            statisticsBuilder.addResponseCode(event.getCode());
+            code = responseEvents.remove();
+            statisticsBuilder.addResponseCode(code);
         }
 
     }

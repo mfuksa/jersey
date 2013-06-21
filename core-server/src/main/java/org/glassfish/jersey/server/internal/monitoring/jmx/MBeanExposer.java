@@ -124,7 +124,7 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
         protected void configure() {
             bind(MBeanExposer.class).to(MonitoringStatisticsCallback.class).in(Singleton.class);
             // TODO: M: move to factory
-            bind(MonitoringQueue.class).to(ApplicationEventListener.class);
+            bind(MonitoringEventListener.class).to(ApplicationEventListener.class);
         }
     }
 }

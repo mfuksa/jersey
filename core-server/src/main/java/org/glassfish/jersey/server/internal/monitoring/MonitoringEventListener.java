@@ -40,12 +40,11 @@
 
 package org.glassfish.jersey.server.internal.monitoring;
 
-import java.util.Date;
 import java.util.Queue;
 
 import javax.inject.Inject;
 
-import org.glassfish.jersey.server.*;
+import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
 import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
 import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
@@ -58,70 +57,67 @@ import com.google.common.collect.Queues;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
-public class MonitoringQueue implements ApplicationEventListener {
+public class MonitoringEventListener implements ApplicationEventListener {
     @Inject
     private ServiceLocator serviceLocator;
 
+    private final Queue<RequestStats> requestQueuedItems = Queues.newArrayBlockingQueue(50000);
+    private final Queue<Integer> responseStatuses = Queues.newArrayBlockingQueue(50000);
+    private final Queue<RequestEvent> exceptionMapperEvents = Queues.newArrayBlockingQueue(50000);
+    private volatile ResourceConfig resourceConfig;
+    private volatile long applicationStartTime;
 
-    private static class TimeEvent {
+
+
+    static class TimeStats {
         private final long duration;
-        private final Date time;
+        private final long startTime;
 
-        public TimeEvent(long duration, Date time) {
-            this.duration = duration;
-            this.time = time;
+        private TimeStats(long startTime, long requestDuration) {
+            this.duration = requestDuration;
+            this.startTime = startTime;
         }
 
-        public long getExecutionTime() {
+        long getDuration() {
             return duration;
         }
 
-        public Date getTime() {
-            return time;
+        long getStartTime() {
+            return startTime;
         }
     }
 
-    static class RequestQueuedItem extends TimeEvent {
-        private final ResourceMethodQueuedItem methodItem;
+    static class MethodStats extends TimeStats {
+        private final ResourceMethod method;
 
-        private RequestQueuedItem(long duration, Date time, ResourceMethodQueuedItem methodItem) {
-            super(duration, time);
-            this.methodItem = methodItem;
+        private MethodStats(ResourceMethod method, long startTime, long requestDuration) {
+            super(startTime, requestDuration);
+            this.method = method;
         }
 
-        ResourceMethodQueuedItem getMethodItem() {
-            return methodItem;
-        }
-    }
-
-    static class ResourceMethodQueuedItem extends TimeEvent {
-        private final ResourceMethod resourceMethod;
-
-        private ResourceMethodQueuedItem(ResourceMethod resourceMethod,
-                                         long duration, Date time) {
-            super(duration, time);
-            this.resourceMethod = resourceMethod;
-        }
-
-        ResourceMethod getResourceMethod() {
-            return resourceMethod;
+        ResourceMethod getMethod() {
+            return method;
         }
     }
 
+    class RequestStats {
+        private final TimeStats requestStats;
+        private final MethodStats methodStats; // might be null if a method was not executed during a request
 
-
-
-    // TODO: M: cache ?
-    static class ResponseQueuedItem {
-        private final int code;
-
-        ResponseQueuedItem(int code) {this.code = code;}
-
-        public int getCode() {
-            return code;
+        private RequestStats(TimeStats requestStats, MethodStats methodStats) {
+            this.requestStats = requestStats;
+            this.methodStats = methodStats;
         }
+
+        TimeStats getRequestStats() {
+            return requestStats;
+        }
+
+        MethodStats getMethodStats() {
+            return methodStats;
+        }
+
     }
 
     @Override
@@ -146,17 +142,15 @@ public class MonitoringQueue implements ApplicationEventListener {
                 this.applicationStartTime = now;
                 final MonitoringStatisticsProcessor monitoringStatisticsProcessor = new MonitoringStatisticsProcessor(serviceLocator, this);
                 monitoringStatisticsProcessor.startMonitoringWorker();
+                break;
 
-                break;
-            case UNDEPLOY_START:
-                break;
         }
     }
 
     public class ReqEventListener implements RequestEventListener {
-        private long requestTimeStart;
-        private long methodTimeStart;
-        private ResourceMethodQueuedItem methodItem;
+        private volatile long requestTimeStart;
+        private volatile long methodTimeStart;
+        private volatile MethodStats methodStats;
 
         public ReqEventListener() {
             this.requestTimeStart = System.currentTimeMillis();
@@ -164,61 +158,47 @@ public class MonitoringQueue implements ApplicationEventListener {
 
         @Override
         public void onEvent(RequestEvent event) {
+            final long now = System.currentTimeMillis();
             switch (event.getType()) {
                 case RESOURCE_METHOD_START:
-                    this.methodTimeStart = System.currentTimeMillis();
+                    this.methodTimeStart = now;
                     break;
                 case RESOURCE_METHOD_FINISHED:
                     final ResourceMethod method = event.getUriInfo().getMatchedResourceMethod();
-                    methodItem = new ResourceMethodQueuedItem(method,
-                            System.currentTimeMillis() - methodTimeStart, new Date(methodTimeStart));
-                    break;
-                case EXCEPTION_MAPPER_FOUND:
-
+                    methodStats = new MethodStats(method, methodTimeStart, now - methodTimeStart);
                     break;
                 case EXCEPTION_MAPPING_FINISHED:
                     exceptionMapperEvents.add(event);
                     break;
                 case RESP_WRITTEN:
-                    responseQueuedItems.add(new ResponseQueuedItem(event.getContainerResponse().getStatus()));
+                    responseStatuses.add(event.getContainerResponse().getStatus());
                     break;
                 case FINISHED:
-                    requestQueuedItems.add(new RequestQueuedItem(System.currentTimeMillis() - requestTimeStart,
-                            new Date(requestTimeStart), methodItem));
+                    requestQueuedItems.add(new RequestStats(new TimeStats(requestTimeStart, now - requestTimeStart),
+                            methodStats));
             }
-        }
-
-        private void methodItem(RequestEvent event) {
-            final ResourceMethod methodContext = event.getUriInfo().getMatchedResourceMethod();
-            new ResourceMethodQueuedItem(methodContext,
-                    System.currentTimeMillis() - methodTimeStart, new Date(methodTimeStart));
         }
     }
 
-    private final Queue<RequestQueuedItem> requestQueuedItems = Queues.newArrayBlockingQueue(50000);
-    private final Queue<ResponseQueuedItem> responseQueuedItems = Queues.newArrayBlockingQueue(50000);
-    private final Queue<RequestEvent> exceptionMapperEvents = Queues.newArrayBlockingQueue(50000);
-    private volatile ResourceConfig resourceConfig;
-    private volatile long applicationStartTime;
 
-    public ResourceConfig getResourceConfig() {
+    ResourceConfig getResourceConfig() {
         return resourceConfig;
     }
 
-    public long getApplicationStartTime() {
+    long getApplicationStartTime() {
         return applicationStartTime;
     }
 
-    public Queue<RequestEvent> getExceptionMapperEvents() {
+    Queue<RequestEvent> getExceptionMapperEvents() {
         return exceptionMapperEvents;
     }
 
-    public Queue<RequestQueuedItem> getRequestQueuedItems() {
+    Queue<RequestStats> getRequestQueuedItems() {
         return requestQueuedItems;
     }
 
-    public Queue<ResponseQueuedItem> getResponseQueuedItems() {
-        return responseQueuedItems;
+    Queue<Integer> getResponseStatuses() {
+        return responseStatuses;
     }
 
 

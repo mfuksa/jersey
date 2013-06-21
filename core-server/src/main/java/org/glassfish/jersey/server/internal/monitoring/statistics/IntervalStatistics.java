@@ -55,10 +55,7 @@ public class IntervalStatistics {
         private final long interval;
         private final long unit;
         private final int unitsPerInterval;
-
         private final long startTime;
-
-
         private final Queue<Unit> unitQueue;
         private long totalCount;
         private final long intervalWithRoundError;
@@ -71,13 +68,13 @@ public class IntervalStatistics {
 
         private static class Unit {
             private final long count;
-            private final long minimumExecutionTime;
-            private final long maximumExecutionTime;
+            private final long minimumDuration;
+            private final long maximumDuration;
 
-            private Unit(long count, long minimumExecutionTime, long maximumExecutionTime) {
+            private Unit(long count, long minimumDuration, long maximumDuration) {
                 this.count = count;
-                this.minimumExecutionTime = minimumExecutionTime;
-                this.maximumExecutionTime = maximumExecutionTime;
+                this.minimumDuration = minimumDuration;
+                this.maximumDuration = maximumDuration;
             }
 
             private static Unit EMPTY_UNIT = new Unit(0, -1, -1);
@@ -114,17 +111,17 @@ public class IntervalStatistics {
             }
         }
 
-        public void addRequest(long requestTime, long executionTime) {
+        public void addRequest(long requestTime, long duration) {
             closePreviousUnitIfNeeded(requestTime);
 
             lastUnitCount++;
 
-            if (executionTime < lastUnitMin || lastUnitMin == -1) {
-                lastUnitMin = executionTime;
+            if (duration < lastUnitMin || lastUnitMin == -1) {
+                lastUnitMin = duration;
             }
 
-            if (executionTime > lastUnitMax || lastUnitMax == -1) {
-                lastUnitMax = executionTime;
+            if (duration > lastUnitMax || lastUnitMax == -1) {
+                lastUnitMax = duration;
             }
         }
 
@@ -196,11 +193,11 @@ public class IntervalStatistics {
             double requestsPerSecond;
 
             for (final Unit u : this.unitQueue) {
-                if ((u.minimumExecutionTime < min && u.minimumExecutionTime != -1) || min == -1) {
-                    min = u.minimumExecutionTime;
+                if ((u.minimumDuration < min && u.minimumDuration != -1) || min == -1) {
+                    min = u.minimumDuration;
                 }
-                if ((u.maximumExecutionTime > max && u.maximumExecutionTime != -1) || max == -1) {
-                    max = u.maximumExecutionTime;
+                if ((u.maximumDuration > max && u.maximumDuration != -1) || max == -1) {
+                    max = u.maximumDuration;
                 }
             }
 
@@ -223,18 +220,18 @@ public class IntervalStatistics {
     private final long interval;
     private final double requestsPerSecond;
 
-    private final long minimumExecutionTime;
-    private final long maximumExecutionTime;
+    private final long minimumDuration;
+    private final long maximumDuration;
 
     private long totalCount;
 
 
-    private IntervalStatistics(long interval, double requestsPerSecond, long minimumExecutionTime,
-                               long maximumExecutionTime, long totalCount) {
+    private IntervalStatistics(long interval, double requestsPerSecond, long minimumDuration,
+                               long maximumDuration, long totalCount) {
         this.interval = interval;
         this.requestsPerSecond = requestsPerSecond;
-        this.minimumExecutionTime = minimumExecutionTime;
-        this.maximumExecutionTime = maximumExecutionTime;
+        this.minimumDuration = minimumDuration;
+        this.maximumDuration = maximumDuration;
         this.totalCount = totalCount;
     }
 
@@ -247,12 +244,12 @@ public class IntervalStatistics {
         return requestsPerSecond;
     }
 
-    public long getMinimumExecutionTime() {
-        return minimumExecutionTime;
+    public long getMinimumDuration() {
+        return minimumDuration;
     }
 
-    public long getMaximumExecutionTime() {
-        return maximumExecutionTime;
+    public long getMaximumDuration() {
+        return maximumDuration;
     }
 
     public long getTotalCount() {
