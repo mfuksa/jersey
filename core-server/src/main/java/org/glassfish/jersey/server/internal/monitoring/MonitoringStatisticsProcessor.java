@@ -53,7 +53,9 @@ import javax.ws.rs.ProcessingException;
 
 import org.glassfish.jersey.server.ExtendedResourceContext;
 import org.glassfish.jersey.server.internal.RuntimeExecutorsBinder;
+import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ApplicationStatistics;
+import org.glassfish.jersey.server.internal.monitoring.statistics.ExceptionMapperStatistics;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatistics;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsCallback;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceStatistics;
@@ -96,15 +98,15 @@ public class MonitoringStatisticsProcessor {
             @Override
             public void run() {
                 try {
-                    processRequestEvents();
+                    processRequestItems();
                     processResponseCodeEvents();
+                    processExceptionMapperEvents();
                 } catch (Throwable t) {
                     // TODO: M: loc
                     LOGGER.log(Level.SEVERE, "Error generating MonitoringStatistics.", t);
                     // rethrowing exception stops further task execution
                     throw new ProcessingException("Error generating statistics.", t);
                 }
-
 
                 final Iterator<MonitoringStatisticsCallback> iterator = statisticsCallbackList.iterator();
                 while (iterator.hasNext()) {
@@ -124,7 +126,22 @@ public class MonitoringStatisticsProcessor {
         }, 0, 500, TimeUnit.MILLISECONDS);
     }
 
-    private void processRequestEvents() {
+    private void processExceptionMapperEvents() {
+        final Queue<RequestEvent> eventQueue = monitoringQueue.getExceptionMapperEvents();
+        while (!eventQueue.isEmpty()) {
+            final RequestEvent event = eventQueue.remove();
+            final ExceptionMapperStatistics.Builder mapperStats = statisticsBuilder.getExceptionMapperStatisticsBuilder();
+
+            if (event.getExceptionMapper() != null) {
+                mapperStats.addExceptionMapperExecution(event.getExceptionMapper().getClass(), 1);
+            }
+
+            mapperStats.addMapping(event.isResponseSuccessfullyMapped(), 1);
+        }
+
+    }
+
+    private void processRequestItems() {
         final Queue<MonitoringQueue.RequestQueuedItem> requestQueuedItems = monitoringQueue.getRequestQueuedItems();
 
         while (!requestQueuedItems.isEmpty()) {

@@ -44,6 +44,7 @@ import java.util.Date;
 import java.util.Queue;
 
 import javax.inject.Inject;
+import javax.ws.rs.ext.ExceptionMapper;
 
 import org.glassfish.jersey.server.*;
 import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
@@ -110,27 +111,8 @@ public class MonitoringQueue implements ApplicationEventListener {
         }
     }
 
-    static class ExceptionEvent {
-        private final Throwable exception;
 
-        public ExceptionEvent(Throwable exception) {this.exception = exception;}
 
-        public Throwable getException() {
-            return exception;
-        }
-    }
-
-    static class MappedExceptionEvent extends ExceptionEvent {
-        public MappedExceptionEvent(Throwable exception) {
-            super(exception);
-        }
-    }
-
-    static class UnMappedExceptionEvent extends ExceptionEvent {
-        public UnMappedExceptionEvent(Throwable exception) {
-            super(exception);
-        }
-    }
 
     // TODO: M: cache ?
     static class ResponseQueuedItem {
@@ -192,6 +174,12 @@ public class MonitoringQueue implements ApplicationEventListener {
                     methodItem = new ResourceMethodQueuedItem(methodContext,
                             System.currentTimeMillis() - methodTimeStart, new Date(methodTimeStart));
                     break;
+                case EXCEPTION_MAPPER_FOUND:
+
+                    break;
+                case EXCEPTION_MAPPING_FINISHED:
+                    exceptionMapperEvents.add(event);
+                    break;
                 case RESP_WRITTEN:
                     responseQueuedItems.add(new ResponseQueuedItem(event.getContainerResponse().getStatus()));
                     break;
@@ -208,9 +196,9 @@ public class MonitoringQueue implements ApplicationEventListener {
         }
     }
 
-    private volatile String applicationClassName;
     private final Queue<RequestQueuedItem> requestQueuedItems = Queues.newArrayBlockingQueue(50000);
     private final Queue<ResponseQueuedItem> responseQueuedItems = Queues.newArrayBlockingQueue(50000);
+    private final Queue<RequestEvent> exceptionMapperEvents = Queues.newArrayBlockingQueue(50000);
     private volatile ResourceConfig resourceConfig;
     private volatile long applicationStartTime;
 
@@ -222,10 +210,9 @@ public class MonitoringQueue implements ApplicationEventListener {
         return applicationStartTime;
     }
 
-    public String getApplicationClassName() {
-        return applicationClassName;
+    public Queue<RequestEvent> getExceptionMapperEvents() {
+        return exceptionMapperEvents;
     }
-
 
     public Queue<RequestQueuedItem> getRequestQueuedItems() {
         return requestQueuedItems;

@@ -201,9 +201,7 @@ class ServerRuntime {
      * @param request request to be processed.
      */
     public void process(final ContainerRequest request) {
-        final RequestEventListener requestEventEventListener =
-                applicationEventListener.onNewRequest(request.getRequestEventBuilder().build(RequestEvent.Type.START));
-        request.setRequestEventListener(requestEventEventListener);
+        initRequestEventLiteners(request);
 
         try {
             request.checkState();
@@ -247,6 +245,18 @@ class ServerRuntime {
             });
         } finally {
             request.triggerEvent(RequestEvent.Type.FINISHED);
+        }
+    }
+
+    private void initRequestEventLiteners(ContainerRequest request) {
+        if (applicationEventListener != null) {
+        final RequestEventBuilder requestEventBuilder = new RequestEvent.Builder().setContainerRequest(request);
+        final RequestEventListener requestEventEventListener =
+                applicationEventListener.onNewRequest(requestEventBuilder.build(RequestEvent.Type.START));
+
+            if (requestEventEventListener != null) {
+                request.setRequestEventListener(requestEventEventListener, requestEventBuilder);
+            }
         }
     }
 

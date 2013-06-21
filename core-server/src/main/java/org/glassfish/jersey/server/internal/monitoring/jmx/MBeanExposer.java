@@ -66,6 +66,7 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
     private volatile ApplicationMXBeanImpl applicationMXBean;
     private final AtomicBoolean exposed = new AtomicBoolean(false);
     private volatile String namePrefix;
+    private final ExceptionMapperMXBeanImpl exceptionMapperMXBean;
 
     private static final Logger LOGGER = Logger.getLogger(MBeanExposer.class.getName());
 
@@ -78,6 +79,7 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
         resourcesGroup = new ResourcesMBeanGroup(blankStatistics.getRootResourceStatistics());
         responseMXBean = new ResponseMXBeanImpl();
         requestMBean = new ExecutionStatisticsDynamicBean(blankStatistics.getRequestStatistics(), "GlobalRequestStatistics");
+        exceptionMapperMXBean = new ExceptionMapperMXBeanImpl();
     }
 
     void registerMBean(Object mbean, String namePostfix) {
@@ -107,11 +109,13 @@ public class MBeanExposer implements MonitoringStatisticsCallback {
             resourcesGroup.register(this, "");
             applicationMXBean = new ApplicationMXBeanImpl(statistics.getApplicationStatistics());
             applicationMXBean.register(this, "");
+            exceptionMapperMXBean.register(this, "");
         }
 
         requestMBean.setExecutionStatistics(statistics.getRequestStatistics());
         resourcesGroup.setResourcesStatistics(statistics.getRootResourceStatistics());
         responseMXBean.setResponseCodesToCountMap(statistics.getResponseStatistics());
+        exceptionMapperMXBean.setNewStatistics(statistics.getExceptionMapperStatistics());
     }
 
 

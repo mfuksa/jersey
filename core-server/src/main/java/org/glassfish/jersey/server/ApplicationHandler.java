@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Singleton;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.NameBinding;
 import javax.ws.rs.RuntimeType;
@@ -73,8 +74,6 @@ import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.ReaderInterceptor;
 import javax.ws.rs.ext.WriterInterceptor;
-
-import javax.inject.Singleton;
 
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.internal.Errors;
@@ -101,7 +100,8 @@ import org.glassfish.jersey.server.internal.JerseyRequestTimeoutHandler;
 import org.glassfish.jersey.server.internal.JerseyResourceContext;
 import org.glassfish.jersey.server.internal.LocalizationMessages;
 import org.glassfish.jersey.server.internal.ProcessingProviders;
-import org.glassfish.jersey.server.internal.monitoring.event.*;
+import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
+import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
 import org.glassfish.jersey.server.internal.monitoring.event.CompositeApplicationEventListener;
 import org.glassfish.jersey.server.internal.routing.RoutedInflectorExtractorStage;
 import org.glassfish.jersey.server.internal.routing.Router;
@@ -330,7 +330,7 @@ public final class ApplicationHandler {
         final List<ComponentProvider> componentProviders;
         final ComponentBag componentBag;
         ResourceModel resourceModel;
-        CompositeApplicationEventListener compositeListener;
+        CompositeApplicationEventListener compositeListener = null;
 
 
         Errors.mark(); // mark begin of validation phase
@@ -393,10 +393,13 @@ public final class ApplicationHandler {
             for (ComponentProvider componentProvider : componentProviders) {
                 componentProvider.done();
             }
-            compositeListener = new CompositeApplicationEventListener(
-                    locator.getAllServices(ApplicationEventListener.class));
-            compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_START,
-                    this.runtimeConfig));
+            final List<ApplicationEventListener> appEventListeners = locator.getAllServices(ApplicationEventListener.class);
+            if (appEventListeners.size() > 0) {
+                compositeListener = new CompositeApplicationEventListener(
+                        appEventListeners);
+                compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_START,
+                        this.runtimeConfig));
+            }
 
             processingProviders = getProcessingProviders(componentBag);
 
@@ -520,7 +523,9 @@ public final class ApplicationHandler {
             LOGGER.log(Level.CONFIG, sb.toString());
         }
 
-        compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_FINISHED, runtimeConfig));
+        if (compositeListener != null) {
+            compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_FINISHED, runtimeConfig));
+        }
     }
 
     private class WorkersToStringTransform<T> implements Function<T, String> {

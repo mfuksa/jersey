@@ -53,8 +53,9 @@ import org.glassfish.jersey.server.ExtendedUriInfo;
  */
 public class RequestEvent implements Event {
 
+
     // TODO: M: volatile
-    public static class Builder {
+    public static class Builder implements RequestEventBuilder {
         private ContainerRequest containerRequest;
         private ContainerResponse containerResponse;
         private Throwable throwable;
@@ -67,12 +68,12 @@ public class RequestEvent implements Event {
         private ExceptionCause exceptionCause;
 
 
-
         public Builder() {
         }
 
-        public void setExceptionMapper(ExceptionMapper<?> exceptionMapper) {
+        public Builder setExceptionMapper(ExceptionMapper<?> exceptionMapper) {
             this.exceptionMapper = exceptionMapper;
+            return this;
         }
 
         public Builder setContainerRequest(ContainerRequest containerRequest) {
@@ -85,8 +86,9 @@ public class RequestEvent implements Event {
             return this;
         }
 
-        public void setSuccess(boolean success) {
+        public Builder setSuccess(boolean success) {
             this.success = success;
+            return this;
         }
 
         public Builder setThrowable(Throwable throwable, ExceptionCause exceptionCause) {
@@ -96,23 +98,27 @@ public class RequestEvent implements Event {
         }
 
 
-        public void setExtendedUriInfo(ExtendedUriInfo extendedUriInfo) {
+        public Builder setExtendedUriInfo(ExtendedUriInfo extendedUriInfo) {
             this.extendedUriInfo = extendedUriInfo;
+            return this;
         }
 
-        public void setContainerResponseFilters(Iterable<ContainerResponseFilter> containerResponseFilters) {
+        public Builder setContainerResponseFilters(Iterable<ContainerResponseFilter> containerResponseFilters) {
             this.containerResponseFilters = containerResponseFilters;
+            return this;
         }
 
-        public void setContainerRequestFilters(Iterable<ContainerRequestFilter> containerRequestFilters) {
+        public Builder setContainerRequestFilters(Iterable<ContainerRequestFilter> containerRequestFilters) {
             this.containerRequestFilters = containerRequestFilters;
+            return this;
         }
 
-
-        public void setResponseSuccessfullyMapped(boolean responseSuccessfullyMapped) {
+        public Builder setResponseSuccessfullyMapped(boolean responseSuccessfullyMapped) {
             this.responseSuccessfullyMapped = responseSuccessfullyMapped;
+            return this;
         }
 
+        @Override
         public RequestEvent build(Type type) {
             return new RequestEvent(type, containerRequest, containerResponse, throwable,
                     extendedUriInfo, containerResponseFilters, containerRequestFilters, exceptionMapper, success,
@@ -167,7 +173,6 @@ public class RequestEvent implements Event {
         RESP_FILTERS_FINISHED,
 
 
-
         ON_EXCEPTION,
 
         /**
@@ -200,7 +205,7 @@ public class RequestEvent implements Event {
     private final ContainerRequest containerRequest;
     private final ContainerResponse containerResponse;
     private final Throwable throwable;
-//    private final ContainerResponse mappedResponse;
+    //    private final ContainerResponse mappedResponse;
 //    private final ContainerResponse responseWritten;
     private final ExtendedUriInfo extendedUriInfo;
     // TODO: M: maybe List?

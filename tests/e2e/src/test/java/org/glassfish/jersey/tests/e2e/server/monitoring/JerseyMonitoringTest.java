@@ -48,12 +48,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 
 import org.junit.Assert;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
@@ -61,11 +64,28 @@ import org.junit.Test;
 public class JerseyMonitoringTest extends JerseyTest {
     @Override
     protected Application configure() {
-        final ResourceConfig resourceConfig = new ResourceConfig(TestResource.class);
+        final ResourceConfig resourceConfig = new ResourceConfig(TestResource.class, MyExceptionMapper.class);
         resourceConfig.property("very-important", "yes");
         resourceConfig.property("another-property", 48);
         return resourceConfig;
     }
+
+
+    public static class MyException extends RuntimeException {
+        public MyException(String message) {
+            super(message);
+        }
+    }
+
+    public static class MyExceptionMapper implements ExceptionMapper<MyException> {
+
+        @Override
+        public Response toResponse(MyException exception) {
+            return Response.ok("mapped").build();
+        }
+    }
+
+
 
     @Path("resource")
     public static class TestResource {
@@ -85,6 +105,12 @@ public class JerseyMonitoringTest extends JerseyTest {
             return "sub";
         }
 
+        @GET
+        @Path("exception")
+        public String testException() {
+            throw new MyException("test");
+        }
+
         @POST
         @Path("sub2")
         @Produces("text/html")
@@ -99,21 +125,24 @@ public class JerseyMonitoringTest extends JerseyTest {
     public void test() throws Exception {
         final String path = "resource";
         do {
-            Assert.assertEquals(200, target().path(path).request().get().getStatus());
-            Assert.assertEquals(200, target().path(path).request().post(Entity.entity("post",
+            assertEquals(200, target().path(path).request().get().getStatus());
+            assertEquals(200, target().path(path).request().post(Entity.entity("post",
                     MediaType.TEXT_PLAIN_TYPE)).getStatus());
-            Assert.assertEquals(200, target().path(path).request().post(Entity.entity("post",
+            assertEquals(200, target().path(path).request().post(Entity.entity("post",
                     MediaType.TEXT_PLAIN_TYPE)).getStatus());
-            Assert.assertEquals(200, target().path(path).request().post(Entity.entity("post",
+            assertEquals(200, target().path(path).request().post(Entity.entity("post",
                     MediaType.TEXT_PLAIN_TYPE)).getStatus());
-            Assert.assertEquals(200, target().path(path).request().post(Entity.entity("post",
+            assertEquals(200, target().path(path).request().post(Entity.entity("post",
                     MediaType.TEXT_PLAIN_TYPE)).getStatus());
-            Assert.assertEquals(200, target().path(path + "/sub2").request().post(Entity.entity("post",
+            assertEquals(200, target().path(path + "/sub2").request().post(Entity.entity("post",
                     MediaType.TEXT_PLAIN_TYPE)).getStatus());
+            final Response response = target().path(path + "/exception").request().get();
+            assertEquals(200, response.getStatus());
+            assertEquals("mapped", response.readEntity(String.class));
 
-            Assert.assertEquals(200, target().path("resource/sub").request().get().getStatus());
-            Assert.assertEquals(200, target().path("resource/sub").request().get().getStatus());
-            Assert.assertEquals(404, target().path("resource/not-found-404").request().get().getStatus());
+            assertEquals(200, target().path("resource/sub").request().get().getStatus());
+            assertEquals(200, target().path("resource/sub").request().get().getStatus());
+            assertEquals(404, target().path("resource/not-found-404").request().get().getStatus());
 
             // wait until statistics are propagated to mxbeans
             Thread.sleep(1500);

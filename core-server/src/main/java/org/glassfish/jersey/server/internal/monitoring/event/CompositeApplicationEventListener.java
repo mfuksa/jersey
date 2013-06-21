@@ -73,7 +73,7 @@ public class CompositeApplicationEventListener implements ApplicationEventListen
             }
         }
 
-        return requestEventListeners.isEmpty() ? Events.EMPTY_REQUEST_LISTENER
+        return requestEventListeners.isEmpty() ? null
                 : new CompositeRequestEventListener(requestEventListeners);
     }
 }

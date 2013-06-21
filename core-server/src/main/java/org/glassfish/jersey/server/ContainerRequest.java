@@ -73,7 +73,11 @@ import org.glassfish.jersey.message.internal.InboundMessageContext;
 import org.glassfish.jersey.message.internal.MatchingEntityTag;
 import org.glassfish.jersey.message.internal.VariantSelector;
 import org.glassfish.jersey.server.internal.LocalizationMessages;
-import org.glassfish.jersey.server.internal.monitoring.event.*;
+import org.glassfish.jersey.server.internal.monitoring.event.EmptyRequestEventBuilder;
+import org.glassfish.jersey.server.internal.monitoring.event.Events;
+import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
+import org.glassfish.jersey.server.internal.monitoring.event.RequestEventBuilder;
+import org.glassfish.jersey.server.internal.monitoring.event.RequestEventListener;
 import org.glassfish.jersey.server.spi.ContainerResponseWriter;
 import org.glassfish.jersey.server.spi.RequestScopedInitializer;
 import org.glassfish.jersey.uri.UriComponent;
@@ -84,7 +88,7 @@ import com.google.common.collect.Lists;
 
 /**
  * Jersey container request context.
- *
+ * <p/>
  * An instance of the request context is passed by the container to the
  * {@link ApplicationHandler} for each incoming client request.
  *
@@ -126,8 +130,8 @@ public class ContainerRequest extends InboundMessageContext
     // True if the request is used in the response processing phase (for example in ContainerResponseFilter)
     private boolean inResponseProcessingPhase;
     // Event listener registered to this request.
-    private RequestEventListener requestEventListener = Events.EMPTY_REQUEST_LISTENER;
-    private final RequestEvent.Builder requestEventBuilder;
+    private RequestEventListener requestEventListener = null;
+    private RequestEventBuilder requestEventBuilder  = EmptyRequestEventBuilder.EMPTY_EVENT_BUILDER;
 
 
     /**
@@ -156,12 +160,11 @@ public class ContainerRequest extends InboundMessageContext
         this.httpMethod = httpMethod;
         this.securityContext = securityContext;
         this.propertiesDelegate = propertiesDelegate;
-        this.requestEventBuilder = new RequestEvent.Builder().setContainerRequest(this);
     }
 
     /**
      * Get a custom container extensions initializer for the current request.
-     *
+     * <p/>
      * The initializer is guaranteed to be run from within the request scope of
      * the current request.
      *
@@ -174,7 +177,7 @@ public class ContainerRequest extends InboundMessageContext
 
     /**
      * Set a custom container extensions initializer for the current request.
-     *
+     * <p/>
      * The initializer is guaranteed to be run from within the request scope of
      * the current request.
      *
@@ -425,22 +428,23 @@ public class ContainerRequest extends InboundMessageContext
     }
 
     // TODO: M: javadoc
-    public RequestEventListener getRequestEventListener() {
-        return requestEventListener;
+    public void setRequestEventListener(RequestEventListener requestEventListener,
+                                        RequestEventBuilder requestEventBuilder) {
+        if (requestEventListener != null) {
+            this.requestEventListener = requestEventListener;
+            this.requestEventBuilder = requestEventBuilder;
+        }
     }
 
-    // TODO: M: javadoc
-    public void setRequestEventListener(RequestEventListener requestEventListener) {
-        this.requestEventListener = requestEventListener;
-    }
-
-    public RequestEvent.Builder getRequestEventBuilder() {
+    public RequestEventBuilder getRequestEventBuilder() {
         return requestEventBuilder;
     }
 
 
     public void triggerEvent(RequestEvent.Type requestEventType) {
-        requestEventListener.onEvent(requestEventBuilder.build(requestEventType));
+        if (requestEventListener != null) {
+            requestEventListener.onEvent(requestEventBuilder.build(requestEventType));
+        }
     }
 
     /**
