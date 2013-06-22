@@ -65,7 +65,7 @@ public class MBeanExposer implements MonitoringStatisticsListener {
     private final ResourcesMBeanGroup resourcesGroup;
     private volatile ApplicationMXBeanImpl applicationMXBean;
     private final AtomicBoolean exposed = new AtomicBoolean(false);
-    private volatile String namePrefix;
+    private volatile String domain;
     private final ExceptionMapperMXBeanImpl exceptionMapperMXBean;
 
     private static final Logger LOGGER = Logger.getLogger(MBeanExposer.class.getName());
@@ -85,7 +85,7 @@ public class MBeanExposer implements MonitoringStatisticsListener {
     void registerMBean(Object mbean, String namePostfix) {
         final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
         try {
-            final ObjectName objectName = new ObjectName(namePrefix + ":" + namePostfix);
+            final ObjectName objectName = new ObjectName(domain + ":" + namePostfix);
             if (mBeanServer.isRegistered(objectName)) {
                 // TODO: M: loc
                 LOGGER.log(Level.SEVERE, "Monitoring Mbeans for Jersey application " + objectName.getCanonicalName() +
@@ -103,8 +103,12 @@ public class MBeanExposer implements MonitoringStatisticsListener {
     @Override
     public void onStatistics(MonitoringStatistics statistics) {
         if (exposed.compareAndSet(false, true)) {
-            namePrefix = "org.glassfish.jersey." + statistics.getApplicationName();
-            registerMBean(requestMBean, "type=Requests");
+            String appName = statistics.getApplicationStatistics().getResourceConfig().getApplicationName();
+            if (appName == null) {
+                appName = "App_" + Integer.toHexString(statistics.getApplicationStatistics().getResourceConfig().hashCode());
+            }
+            domain = "org.glassfish.jersey." + appName;
+            registerMBean(requestMBean,  "type=Requests");
             registerMBean(responseMXBean, "type=Responses");
             resourcesGroup.register(this, "");
             applicationMXBean = new ApplicationMXBeanImpl(statistics.getApplicationStatistics());

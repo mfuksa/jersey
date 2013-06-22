@@ -90,9 +90,6 @@ public class MonitoringStatisticsProcessor {
         final ApplicationStatistics appStatistics = new ApplicationStatistics(monitoringEventListener.getResourceConfig(),
                 new Date(monitoringEventListener.getApplicationStartTime()));
         statisticsBuilder.setApplicationStatistics(appStatistics);
-        final String appName = monitoringEventListener.getResourceConfig().getApplicationName();
-        statisticsBuilder.setApplicationName(appName == null ?
-                String.valueOf(monitoringEventListener.getResourceConfig().hashCode()) : appName);
 
         scheduler.scheduleWithFixedDelay(new Runnable() {
             @Override

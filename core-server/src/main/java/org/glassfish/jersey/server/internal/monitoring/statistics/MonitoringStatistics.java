@@ -54,7 +54,6 @@ public class MonitoringStatistics {
     private final ExecutionStatistics requestStatistics;
     private final Map<Resource, ResourceStatistics> rootResourceStatistics;
     private final ResponseStatistics responseStatistics;
-    private final String applicationName; // TODO: M: remove
     private final ApplicationStatistics applicationStatistics;
     private final ExceptionMapperStatistics exceptionMapperStatistics;
 
@@ -63,7 +62,6 @@ public class MonitoringStatistics {
         private ExecutionStatistics.Builder requestStatisticsBuilder;
         private final Map<Resource, ResourceStatistics.Builder> rootResourceStatistics = Maps.newHashMap();
         private final ResponseStatistics.Builder responseStatisticsBuilder;
-        private String applicationName;
         private ApplicationStatistics applicationStatistics;
         private ExceptionMapperStatistics.Builder exceptionMapperStatisticsBuilder;
 
@@ -96,9 +94,6 @@ public class MonitoringStatistics {
             responseStatisticsBuilder.addResponseCode(responseCode);
         }
 
-        public void setApplicationName(String applicationName) {
-            this.applicationName = applicationName;
-        }
 
         public void setApplicationStatistics(ApplicationStatistics applicationStatistics) {
             this.applicationStatistics = applicationStatistics;
@@ -111,7 +106,7 @@ public class MonitoringStatistics {
             }
 
             return new MonitoringStatistics(requestStatisticsBuilder.build(), builtResourceStatistics,
-                    responseStatisticsBuilder.build(), applicationName, applicationStatistics,
+                    responseStatisticsBuilder.build(), applicationStatistics,
                     exceptionMapperStatisticsBuilder.build());
         }
     }
@@ -119,11 +114,10 @@ public class MonitoringStatistics {
     private MonitoringStatistics(ExecutionStatistics requestStatistics,
                                  Map<Resource, ResourceStatistics> rootResourceStatistics,
                                  ResponseStatistics responseStatistics,
-                                 String applicationName, ApplicationStatistics applicationStatistics, ExceptionMapperStatistics exceptionMapperStatistics) {
+                                 ApplicationStatistics applicationStatistics, ExceptionMapperStatistics exceptionMapperStatistics) {
         this.requestStatistics = requestStatistics;
         this.rootResourceStatistics = rootResourceStatistics;
         this.responseStatistics = responseStatistics;
-        this.applicationName = applicationName;
         this.applicationStatistics = applicationStatistics;
         this.exceptionMapperStatistics = exceptionMapperStatistics;
     }
@@ -140,9 +134,6 @@ public class MonitoringStatistics {
         return responseStatistics;
     }
 
-    public String getApplicationName() {
-        return applicationName;
-    }
 
     public ApplicationStatistics getApplicationStatistics() {
         return applicationStatistics;

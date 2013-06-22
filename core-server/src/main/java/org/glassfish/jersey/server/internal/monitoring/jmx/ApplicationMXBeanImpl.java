@@ -90,6 +90,6 @@ public class ApplicationMXBeanImpl implements ApplicationMXBean, Registrable {
 
     @Override
     public void register(MBeanExposer mBeanExposer, String parentName) {
-        mBeanExposer.registerMBean(this, parentName + "application=Application");
+        mBeanExposer.registerMBean(this, parentName + "type=Configuration");
     }
 }

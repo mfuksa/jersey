@@ -43,7 +43,7 @@ public class ExceptionMapperMXBeanImpl implements ExceptionMapperMXBean, Registr
 
     @Override
     public void register(MBeanExposer mBeanExposer, String parentName) {
-        mBeanExposer.registerMBean(this, parentName + "exceptionMapper=ExceptionMapper");
+        mBeanExposer.registerMBean(this, parentName + "type=ExceptionMapper");
     }
 
 }
