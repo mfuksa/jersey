@@ -75,7 +75,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
         int i = 0;
         for (final IntervalStatistics stats : statsMap.values()) {
             final long interval = stats.getInterval();
-            final String prefix = interval / 1000 + "s";
+            final String prefix = convertIntervalToString((int) interval);
 
             String name = prefix + "_MinTime_ms";
             attrs[i++] = new MBeanAttributeInfo(name, "long", "Minimum request processing time in milliseconds in last "
@@ -111,7 +111,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             });
 
 
-            name = prefix + "_requests_per_second";
+            name = prefix + "_RequestsPerSecond";
             attrs[i++] = new MBeanAttributeInfo(name, "double", "Average requests per second in last "
                     + prefix + " seconds.", true, false, false);
 
@@ -123,7 +123,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             });
 
 
-            name = prefix + "_total_count";
+            name = prefix + "_RequestCount";
             attrs[i++] = new MBeanAttributeInfo(name, "double", "Request count in last "
                     + prefix + " seconds.", true, false, false);
 
@@ -136,6 +136,32 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
         }
 
         return new MBeanInfo(this.getClass().getName(), "Execution statistics", attrs, null, null, null);
+    }
+
+    private String convertIntervalToString(int interval) {
+        int hours = (int) interval / 3600000;
+        interval = interval - hours * 3600000;
+        int minutes = (int) interval / 60000;
+        interval = interval - minutes * 60000;
+        int seconds = (int) interval / 1000;
+        StringBuffer sb = new StringBuffer();
+        if (hours > 0) {
+            sb.append(hours).append("h_");
+        }
+        if (minutes > 0) {
+            sb.append(minutes).append("m_");
+        }
+        if (seconds > 0) {
+            sb.append(seconds).append("s_");
+        }
+        if (sb.length() == 0) {
+            sb.append("total");
+        } else {
+            sb.setLength(sb.length() - 1);
+        }
+
+
+        return sb.toString();
     }
 
     public ExecutionStatisticsDynamicBean(ExecutionStatistics executionStatistics, String beanName) {
@@ -161,6 +187,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
 
     @Override
     public AttributeList getAttributes(String[] attributes) {
+        // TODO: M: implement
         return null;
     }
 

@@ -40,6 +40,8 @@
 
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -53,7 +55,7 @@ public class IntervalStatisticsTest {
     @Test
     public void test() {
         final long now = System.currentTimeMillis();
-        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(1000, now);
+        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(1000, TimeUnit.MILLISECONDS, now);
         builder.addRequest(now, 30);
         builder.addRequest(now + 300, 100);
         builder.addRequest(now + 600, 150);
@@ -70,7 +72,7 @@ public class IntervalStatisticsTest {
     @Test
     public void test10() {
         final long now = System.currentTimeMillis();
-        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(10000, now);
+        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(10000, TimeUnit.MILLISECONDS, now);
         builder.addRequest(now, 30);
         builder.addRequest(now + 300, 100);
         builder.addRequest(now + 600, 150);
@@ -86,7 +88,7 @@ public class IntervalStatisticsTest {
     @Test
     public void test3s() {
         final long now = 0;
-        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(3000, now);
+        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(3000, TimeUnit.MILLISECONDS, now);
         builder.addRequest(now, 99);
         builder.addRequest(now + 300, 98);
         builder.addRequest(now + 600, 1);
@@ -112,7 +114,7 @@ public class IntervalStatisticsTest {
     @Test
     public void testLongPause() {
         final long now = 0;
-        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(1000 * 60, now);
+        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(60, TimeUnit.SECONDS, now);
         builder.addRequest(now, 99);
         final long time = now + 1000 * 60 * 60 * 23;
         builder.addRequest(time, 95);
@@ -133,7 +135,7 @@ public class IntervalStatisticsTest {
 
     @Test
     public void testGeneric() {
-        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(10000, 0);
+        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(10, TimeUnit.SECONDS, 0);
         for (int i = 0; i < 100; i++) {
             final int requestTime = i * 10000;
             builder.addRequest(requestTime + 1, i);
@@ -153,7 +155,7 @@ public class IntervalStatisticsTest {
 
     @Test
     public void testUnlimited() {
-        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(0, 0);
+        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(0, TimeUnit.MILLISECONDS, 0);
         builder.addRequest(0, 10);
         builder.addRequest(100 + 300, 20);
         builder.addRequest(1000 + 600, 30);

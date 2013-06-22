@@ -42,6 +42,7 @@ package org.glassfish.jersey.server.internal.monitoring.statistics;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.Maps;
 
@@ -71,14 +72,20 @@ public class ExecutionStatistics {
 
         public Builder() {
             this.intervalStatistics = new HashMap<Long, IntervalStatistics.Builder>(4);
-            intervalStatistics.put(0l, new IntervalStatistics.Builder(0));
-            intervalStatistics.put(1000l, new IntervalStatistics.Builder(1000));
-            intervalStatistics.put(10000l, new IntervalStatistics.Builder(10000));
-            intervalStatistics.put(60000l, new IntervalStatistics.Builder(60000));
-            intervalStatistics.put(60000 * 15l, new IntervalStatistics.Builder(60000 * 15));
-            intervalStatistics.put(60000 * 60l, new IntervalStatistics.Builder(60000 * 60));
-
+            addInterval(0, TimeUnit.MILLISECONDS);
+            addInterval(1, TimeUnit.SECONDS);
+            addInterval(15, TimeUnit.SECONDS);
+            addInterval(1, TimeUnit.MINUTES);
+            addInterval(15, TimeUnit.MINUTES);
+            addInterval(1, TimeUnit.HOURS);
         }
+
+        private void addInterval(long interval, TimeUnit timeUnit) {
+            final long intervalInMillis = timeUnit.toMillis(interval);
+            intervalStatistics.put(intervalInMillis,
+                    new IntervalStatistics.Builder(intervalInMillis, TimeUnit.MILLISECONDS));
+        }
+
 
         public void addExecution(long startTime, long duration) {
             for (IntervalStatistics.Builder statBuilder : intervalStatistics.values()) {
@@ -101,4 +108,6 @@ public class ExecutionStatistics {
     public static ExecutionStatistics epmtyStatistics() {
         return new Builder().build();
     }
+
+
 }

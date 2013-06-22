@@ -42,6 +42,7 @@ package org.glassfish.jersey.server.internal.monitoring.statistics;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
@@ -84,22 +85,20 @@ public class IntervalStatistics {
             private static Unit EMPTY_UNIT = new Unit(0, -1, -1, 0);
         }
 
-        public Builder(long interval) {
-            this(interval, System.currentTimeMillis());
+        public Builder(long interval, TimeUnit timeUnit) {
+            this(interval, timeUnit, System.currentTimeMillis());
         }
 
-        Builder(long interval, long now) {
+        Builder(long intervalInUnits, TimeUnit timeUnit, long now) {
             startTime = now;
+            this.interval = timeUnit.toMillis(intervalInUnits);
             if (interval == 0) {
-                // unlimited interval
+                // unlimited intervalInUnits
                 unit = 0;
                 unitsPerInterval = 0;
                 intervalWithRoundError = 0;
                 unitQueue = null;
-                this.interval = interval;
             } else {
-
-                this.interval = interval;
                 int n = DEFAULT_UNITS_PER_INTERVAL;
                 long u = interval / n;
                 if (u < 1000) {
@@ -273,4 +272,6 @@ public class IntervalStatistics {
     public long getAverageDuration() {
         return averageDuration;
     }
+
+
 }
