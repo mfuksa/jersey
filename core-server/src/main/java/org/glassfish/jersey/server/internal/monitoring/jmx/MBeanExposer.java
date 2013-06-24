@@ -127,8 +127,6 @@ public class MBeanExposer implements MonitoringStatisticsListener {
         @Override
         protected void configure() {
             bind(MBeanExposer.class).to(MonitoringStatisticsListener.class).in(Singleton.class);
-            // TODO: M: move to factory
-            bind(MonitoringEventListener.class).to(ApplicationEventListener.class);
         }
     }
 }

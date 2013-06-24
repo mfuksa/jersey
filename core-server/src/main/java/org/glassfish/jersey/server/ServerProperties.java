@@ -387,6 +387,10 @@ public final class ServerProperties {
     public static final String RESOURCE_VALIDATION_IGNORE_ERRORS =
             "jersey.config.server.resource.validation.ignoreErrors";
 
+    public static final String MONITORING_STATISTICS_ENABLED = "jersey.config.server.monitoring.statistics.enabled";
+    public static final String MONITORING_STATISTICS_MBEANS_ENABLED = "jersey.config.server.monitoring.statistics.mbeans.enabled";
+
+
     private ServerProperties() {
         // prevents instantiation
     }
