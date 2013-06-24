@@ -40,10 +40,17 @@
 
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
+import javax.ws.rs.ConstrainedTo;
+import javax.ws.rs.RuntimeType;
+
+import org.glassfish.jersey.spi.Contract;
+
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
+@Contract
+@ConstrainedTo(RuntimeType.SERVER)
 public interface MonitoringStatisticsListener {
     public void onStatistics(MonitoringStatistics statistics);
 }

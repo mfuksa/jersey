@@ -123,10 +123,4 @@ public class MBeanExposer implements MonitoringStatisticsListener {
     }
 
 
-    public static class Binder extends AbstractBinder {
-        @Override
-        protected void configure() {
-            bind(MBeanExposer.class).to(MonitoringStatisticsListener.class).in(Singleton.class);
-        }
-    }
 }

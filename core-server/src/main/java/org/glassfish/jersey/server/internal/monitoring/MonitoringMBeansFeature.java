@@ -38,20 +38,23 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.event;
+package org.glassfish.jersey.server.internal.monitoring;
 
-import javax.ws.rs.ConstrainedTo;
-import javax.ws.rs.RuntimeType;
+import javax.ws.rs.core.Feature;
+import javax.ws.rs.core.FeatureContext;
 
-import org.glassfish.jersey.spi.*;
+import org.glassfish.jersey.server.internal.monitoring.jmx.MBeanExposer;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
-@Contract
-@ConstrainedTo(RuntimeType.SERVER)
-public interface ApplicationEventListener {
-    public void onEvent(ApplicationEvent event);
-    public RequestEventListener onNewRequest(RequestEvent requestEvent);
+public class MonitoringMBeansFeature implements Feature {
+    @Override
+    public boolean configure(FeatureContext context) {
+        if (!context.getConfiguration().isRegistered(MonitoringFeature.class)) {
+            context.register(MonitoringFeature.class);
+        }
+        context.register(MBeanExposer.class);
+        return true;
+    }
 }

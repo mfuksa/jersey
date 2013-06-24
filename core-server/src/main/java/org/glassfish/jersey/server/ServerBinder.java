@@ -127,8 +127,7 @@ public class ServerBinder extends AbstractBinder {
                 new CloseableServiceBinder(),
                 new JerseyResourceContext.Binder(),
                 new ServiceFinderBinder<AutoDiscoverable>(AutoDiscoverable.class),
-                new MappableExceptionWrapperInterceptor.Binder(),
-                new MBeanExposer.Binder());
+                new MappableExceptionWrapperInterceptor.Binder());
 
         // Request/Response injection interfaces
         bindFactory(ReferencingFactory.<Request>referenceFactory()).to(new TypeLiteral<Ref<Request>>() {

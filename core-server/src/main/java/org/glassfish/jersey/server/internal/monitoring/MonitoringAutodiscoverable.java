@@ -38,20 +38,33 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.event;
+package org.glassfish.jersey.server.internal.monitoring;
 
 import javax.ws.rs.ConstrainedTo;
 import javax.ws.rs.RuntimeType;
+import javax.ws.rs.core.FeatureContext;
 
-import org.glassfish.jersey.spi.*;
+import org.glassfish.jersey.internal.spi.AutoDiscoverable;
+import org.glassfish.jersey.internal.util.PropertiesHelper;
+import org.glassfish.jersey.server.ServerProperties;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
-@Contract
 @ConstrainedTo(RuntimeType.SERVER)
-public interface ApplicationEventListener {
-    public void onEvent(ApplicationEvent event);
-    public RequestEventListener onNewRequest(RequestEvent requestEvent);
+public class MonitoringAutodiscoverable implements AutoDiscoverable {
+    @Override
+    public void configure(FeatureContext context) {
+        final Boolean monitoringEnabled = PropertiesHelper.getValue(context.getConfiguration().getProperties(),
+                ServerProperties.MONITORING_STATISTICS_ENABLED, Boolean.FALSE);
+        final Boolean mbeansEnabled = PropertiesHelper.getValue(context.getConfiguration().getProperties(),
+                ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED, Boolean.FALSE);
+
+        if (monitoringEnabled || mbeansEnabled) {
+            context.register(MonitoringFeature.class);
+            if (mbeansEnabled) {
+                context.register(MonitoringMBeansFeature.class);
+            }
+        }
+    }
 }

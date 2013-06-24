@@ -43,6 +43,7 @@ package org.glassfish.jersey.server.internal.monitoring;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
+import org.glassfish.jersey.internal.spi.AutoDiscoverable;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
@@ -55,13 +56,7 @@ public class MonitoringFeature implements Feature {
 
     @Override
     public boolean configure(FeatureContext context) {
-        final Boolean enabled =
-                PropertiesHelper.getValue(context.getConfiguration().getProperties(),
-                        ServerProperties.MONITORING_STATISTICS_ENABLED, Boolean.FALSE);
-        if (enabled) {
-            context.register(MonitoringEventListener.class);
-            return true;
-        }
-        return false;
+        context.register(MonitoringEventListener.class);
+        return true;
     }
 }

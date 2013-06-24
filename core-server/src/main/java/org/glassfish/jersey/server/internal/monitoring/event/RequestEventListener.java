@@ -40,6 +40,9 @@
 
 package org.glassfish.jersey.server.internal.monitoring.event;
 
+import javax.ws.rs.ConstrainedTo;
+import javax.ws.rs.RuntimeType;
+
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
