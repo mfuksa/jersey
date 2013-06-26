@@ -44,7 +44,8 @@ import java.util.Date;
 import java.util.Map;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.internal.monitoring.statistics.ApplicationStatistics;
+import org.glassfish.jersey.server.internal.monitoring.statistics.ApplicationStatisticsImpl;
+import org.glassfish.jersey.server.monitoring.ApplicationStatistics;
 
 import com.google.common.collect.Maps;
 

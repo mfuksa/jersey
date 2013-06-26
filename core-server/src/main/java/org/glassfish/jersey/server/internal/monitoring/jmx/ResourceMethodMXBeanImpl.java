@@ -66,8 +66,8 @@ public class ResourceMethodMXBeanImpl implements ResourceMethodMXBean, Registrab
     }
 
     public void setResourceMethodStatistics(ResourceMethodStatisticsImpl resourceMethodStatisticsImpl) {
-        this.methodExecutionStatisticsMxBean.setExecutionStatisticsImpl(resourceMethodStatisticsImpl.getResourceMethodExecutionStatisticsImpl());
-        this.requestExecutionStatisticsMxBean.setExecutionStatisticsImpl(resourceMethodStatisticsImpl.getRequestExecutionStatisticsImpl());
+// ?????       this.methodExecutionStatisticsMxBean.setExecutionStatisticsImpl(resourceMethodStatisticsImpl.getResourceMethodExecutionStatisticsImpl());
+//        this.requestExecutionStatisticsMxBean.setExecutionStatisticsImpl(resourceMethodStatisticsImpl.getRequestExecutionStatisticsImpl());
     }
 
 

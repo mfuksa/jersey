@@ -40,48 +40,28 @@
 
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
-import java.util.Map;
+import java.util.Date;
 
-import com.google.common.collect.Maps;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.monitoring.ApplicationStatistics;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
-public class ResponseStatistics {
-    private final Map<Integer, Long> responseCodes;
-    private final Integer lastResponseCode;
+public class ApplicationStatisticsImpl implements ApplicationStatistics {
+    private final ResourceConfig resourceConfig;
+    private final Date startTime;
 
-
-    static class Builder {
-        private Map<Integer, Long> responseCodes = Maps.newHashMap();
-        private Integer lastResponseCode = null;
-
-        void addResponseCode(int responseCode) {
-            lastResponseCode = responseCode;
-            Long currentValue = responseCodes.get(responseCode);
-            if (currentValue == null) {
-                currentValue = 0l;
-            }
-            responseCodes.put(responseCode, currentValue + 1);
-        }
-
-        ResponseStatistics build() {
-            return new ResponseStatistics(lastResponseCode, responseCodes);
-        }
-
+    public ApplicationStatisticsImpl(ResourceConfig resourceConfig, Date startTime) {
+        this.resourceConfig = resourceConfig;
+        this.startTime = startTime;
     }
 
-    private ResponseStatistics(Integer lastResponseCode, Map<Integer, Long> responseCodes) {
-        this.lastResponseCode = lastResponseCode;
-        this.responseCodes = responseCodes;
+    public ResourceConfig getResourceConfig() {
+        return resourceConfig;
     }
 
-    public Integer getLastResponseCode() {
-        return lastResponseCode;
-    }
-
-    public Map<Integer, Long> getResponseCodes() {
-        return responseCodes;
+    public Date getStartTime() {
+        return startTime;
     }
 }

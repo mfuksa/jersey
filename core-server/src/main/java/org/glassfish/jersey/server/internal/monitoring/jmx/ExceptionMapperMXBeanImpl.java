@@ -2,7 +2,7 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
 
 import java.util.Map;
 
-import org.glassfish.jersey.server.internal.monitoring.statistics.ExceptionMapperStatistics;
+import org.glassfish.jersey.server.internal.monitoring.statistics.ExceptionMapperStatisticsImpl;
 
 import com.google.common.collect.Maps;
 
@@ -10,14 +10,15 @@ import com.google.common.collect.Maps;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public class ExceptionMapperMXBeanImpl implements ExceptionMapperMXBean, Registrable {
-    private volatile ExceptionMapperStatistics mapperStatistics;
+    private volatile ExceptionMapperStatisticsImpl mapperStatistics;
     private volatile Map<String, Long> mapperExcecutions = Maps.newHashMap();
 
-    public void setNewStatistics(ExceptionMapperStatistics mapperStatistics) {
+    public void setNewStatistics(ExceptionMapperStatisticsImpl mapperStatistics) {
         this.mapperStatistics = mapperStatistics;
-        for (Map.Entry<Class<?>, Long> entry : mapperStatistics.getExceptionMapperExecutionCount().entrySet()) {
-            mapperExcecutions.put(entry.getKey().getName(), entry.getValue());
-        }
+//???????
+//        for (Map.Entry<Class<?>, Long> entry : mapperStatistics.getExceptionMapperExecutionCount().entrySet()) {
+//            mapperExcecutions.put(entry.getKey().getName(), entry.getValue());
+//        }
 
     }
 

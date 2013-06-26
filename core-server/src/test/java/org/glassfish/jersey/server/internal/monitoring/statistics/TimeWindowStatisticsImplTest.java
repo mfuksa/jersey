@@ -126,7 +126,7 @@ public class TimeWindowStatisticsImplTest {
                        int maximumExecTime, long average, double requestsPerSecond) {
         TimeWindowStatisticsImpl stat = builder.build(buildTime);
 
-        Assert.assertEquals(totalCount, stat.getTotalCount());
+        Assert.assertEquals(totalCount, stat.getRequestCount());
         Assert.assertEquals(minimumExecTime, stat.getMinimumDuration());
         Assert.assertEquals(maximumExecTime, stat.getMaximumDuration());
         Assert.assertEquals(average, stat.getAverageDuration());
@@ -142,7 +142,7 @@ public class TimeWindowStatisticsImplTest {
             for (int j = 11; j < 100; j++) {
                 try {
                     TimeWindowStatisticsImpl stat = builder.build(requestTime + j * 100);
-                    Assert.assertEquals(1, stat.getTotalCount());
+                    Assert.assertEquals(1, stat.getRequestCount());
                     Assert.assertEquals(i, stat.getMinimumDuration());
                     Assert.assertEquals(i, stat.getMaximumDuration());
                 } catch (AssertionError e) {

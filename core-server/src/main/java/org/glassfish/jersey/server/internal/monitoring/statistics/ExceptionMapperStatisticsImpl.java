@@ -1,16 +1,21 @@
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.Map;
 
-import javax.ws.rs.ext.ExceptionMapper;
+import org.glassfish.jersey.server.monitoring.ExceptionMapperStatistics;
+import org.glassfish.jersey.server.monitoring.ExecutionStatistics;
+import org.glassfish.jersey.server.monitoring.TimeWindowStatistics;
 
 import com.google.common.collect.Maps;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class ExceptionMapperStatistics {
+public class ExceptionMapperStatisticsImpl implements ExceptionMapperStatistics {
+
+
     public static class Builder {
         private Map<Class<?>, Long> exceptionMapperExecutionCount = Maps.newHashMap();
         private long successfulMappings;
@@ -36,8 +41,8 @@ public class ExceptionMapperStatistics {
 
 
 
-        public ExceptionMapperStatistics build() {
-            return new ExceptionMapperStatistics(Collections.unmodifiableMap(exceptionMapperExecutionCount),
+        public ExceptionMapperStatisticsImpl build() {
+            return new ExceptionMapperStatisticsImpl(Collections.unmodifiableMap(exceptionMapperExecutionCount),
                     successfulMappings, unsuccessfulMappings, totalMappings);
         }
     }
@@ -50,28 +55,34 @@ public class ExceptionMapperStatistics {
     private final long totalMappings;
 
 
-    public ExceptionMapperStatistics(Map<Class<?>, Long> exceptionMapperExecutionCount,
-                                     long successfulMappings, long unsuccessfulMappings, long totalMappings) {
+    public ExceptionMapperStatisticsImpl(Map<Class<?>, Long> exceptionMapperExecutionCount,
+                                         long successfulMappings, long unsuccessfulMappings, long totalMappings) {
         this.exceptionMapperExecutionCount = exceptionMapperExecutionCount;
         this.successfulMappings = successfulMappings;
         this.unsuccessfulMappings = unsuccessfulMappings;
         this.totalMappings = totalMappings;
     }
 
-    public Map<Class<?>, Long> getExceptionMapperExecutionCount() {
+
+    @Override
+    public Map<Class<?>, Long> getExceptionMapperExecutions() {
         return exceptionMapperExecutionCount;
     }
 
-
+    @Override
     public long getSuccessfulMappings() {
         return successfulMappings;
     }
 
+    @Override
     public long getUnsuccessfulMappings() {
         return unsuccessfulMappings;
     }
 
+    @Override
     public long getTotalMappings() {
         return totalMappings;
     }
+
+
 }

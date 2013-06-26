@@ -58,14 +58,14 @@ import com.google.common.collect.Maps;
  *
  */
 public class ResourceMxBeanImpl implements ResourceMXBean, Registrable {
-    private final String path;
+    private final String path = null; // ?????
     private ExecutionStatisticsDynamicBean resourceExecutionStatisticsBean;
     private ExecutionStatisticsDynamicBean requestExecutionStatisticsBean;
     private final Map<ResourceMethod, ResourceMethodMXBeanImpl> resourceMethods = Maps.newHashMap();
     private final List<ResourceMethodMXBeanImpl> exposedResourceMethods = Lists.newArrayList();
     private final Map<Resource, Map<ResourceMethod, ResourceMethodMXBeanImpl>> childResourceMethods = Maps.newHashMap();
 
-
+          /*
     public ResourceMxBeanImpl(ResourceStatisticsImpl resourceStatisticsImpl, String path) {
         this.path = path;
         this.resourceExecutionStatisticsBean = new ExecutionStatisticsDynamicBean(ExecutionStatisticsImpl.epmtyStatistics(), "ResourceStatistics");
@@ -95,7 +95,7 @@ public class ResourceMxBeanImpl implements ResourceMXBean, Registrable {
     }
 
     public void setResourceStatistics(ResourceStatisticsImpl resourceStatisticsImpl) {
-        this.resourceExecutionStatisticsBean.setExecutionStatisticsImpl(resourceStatisticsImpl.getResourceExecutionStatistics());
+        this.resourceExecutionStatisticsBean.setExecutionStatisticsImpl(resourceStatisticsImpl.getResourceMethodExecutionStatistics());
         this.requestExecutionStatisticsBean.setExecutionStatisticsImpl(resourceStatisticsImpl.getRequestExecutionStatistics());
         for (Map.Entry<ResourceMethod, ResourceMethodStatisticsImpl> methodEntry
                 : resourceStatisticsImpl.getResourceMethods().entrySet()) {
@@ -111,7 +111,7 @@ public class ResourceMxBeanImpl implements ResourceMXBean, Registrable {
 
         }
 
-    }
+    }        */
 
 
     @Override

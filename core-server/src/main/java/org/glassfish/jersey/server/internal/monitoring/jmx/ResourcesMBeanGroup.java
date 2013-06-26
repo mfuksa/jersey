@@ -60,7 +60,7 @@ public class ResourcesMBeanGroup implements Registrable {
     private final Map<Resource, ResourceMxBeanImpl> resourceMBeans = Maps.newHashMap();
     private final Map<String, ResourceMxBeanImpl> exposedResourceMBeans = Maps.newHashMap();
 
-    public ResourcesMBeanGroup(Map<Resource, ResourceStatisticsImpl> resourceStatistics)
+    /*??????public ResourcesMBeanGroup(Map<Resource, ResourceStatisticsImpl> resourceStatistics)
             throws MalformedObjectNameException, NotCompliantMBeanException, InstanceAlreadyExistsException,
             MBeanRegistrationException {
         for (Map.Entry<Resource, ResourceStatisticsImpl> entry : resourceStatistics.entrySet()) {
@@ -71,12 +71,12 @@ public class ResourcesMBeanGroup implements Registrable {
             exposedResourceMBeans.put(path, mxBean);
         }
     }
-
+      */
 
     public void setResourcesStatistics(Map<Resource, ResourceStatisticsImpl> resourceStatistics) {
-        for (Map.Entry<Resource, ResourceStatisticsImpl> entry : resourceStatistics.entrySet()) {
+       /* ???????for (Map.Entry<Resource, ResourceStatisticsImpl> entry : resourceStatistics.entrySet()) {
             resourceMBeans.get(entry.getKey()).setResourceStatistics(entry.getValue());
-        }
+        } */
     }
 
     @Override

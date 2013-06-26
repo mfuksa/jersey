@@ -55,6 +55,7 @@ import javax.management.ReflectionException;
 import org.glassfish.jersey.internal.util.collection.Value;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ExecutionStatisticsImpl;
 import org.glassfish.jersey.server.internal.monitoring.statistics.TimeWindowStatisticsImpl;
+import org.glassfish.jersey.server.monitoring.TimeWindowStatistics;
 
 import com.google.common.collect.Maps;
 
@@ -70,11 +71,11 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
 
 
     private MBeanInfo initMBeanInfo(final ExecutionStatisticsImpl initialStatistics) {
-        final Map<Long, TimeWindowStatisticsImpl> statsMap = initialStatistics.getTimeWindowStatistics();
+        final Map<Long, TimeWindowStatistics> statsMap = initialStatistics.getTimeWindowStatistics();
         MBeanAttributeInfo[] attrs = new MBeanAttributeInfo[statsMap.size() * 5];
         int i = 0;
-        for (final TimeWindowStatisticsImpl stats : statsMap.values()) {
-            final long interval = stats.getInterval();
+        for (final TimeWindowStatistics stats : statsMap.values()) {
+            final long interval = stats.getTimeWindow();
             final String prefix = convertIntervalToString((int) interval);
 
             String name = prefix + "_MinTime_ms";
@@ -130,7 +131,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return executionStatisticsImpl.getTimeWindowStatistics().get(interval).getTotalCount();
+                    return executionStatisticsImpl.getTimeWindowStatistics().get(interval).getRequestCount();
                 }
             });
         }

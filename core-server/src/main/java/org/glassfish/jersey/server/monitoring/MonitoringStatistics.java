@@ -43,13 +43,18 @@ package org.glassfish.jersey.server.monitoring;
 import java.util.Map;
 
 
-
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public interface MonitoringStatistics {
     public Map<String, ResourceStatistics> getUriStatisticsMap();
+
     public Map<Class<?>, ResourceStatistics> getResourceClassStatistics();
+
+    public ExecutionStatistics getRequestExecutionStatistics();
+
+    public ResponseStatistics getResponseStatistics();
+
     public ApplicationStatistics getApplicationStatistics();
 
     public ExceptionMapperStatistics getExceptionMapperStatistics();

@@ -50,6 +50,8 @@ import javax.ws.rs.*;
 
 import org.glassfish.jersey.server.*;
 import org.glassfish.jersey.server.internal.monitoring.statistics.*;
+import org.glassfish.jersey.server.monitoring.MonitoringStatistics;
+import org.glassfish.jersey.server.monitoring.MonitoringStatisticsListener;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
@@ -72,9 +74,9 @@ public class MBeanExposer implements MonitoringStatisticsListener {
             InstanceAlreadyExistsException, MBeanRegistrationException {
 
         MonitoringStatisticsImpl blankStatistics = new MonitoringStatisticsImpl.Builder(resourceContext.getResourceModel()).build();
-        resourcesGroup = new ResourcesMBeanGroup(blankStatistics.getRootResourceStatistics());
+        resourcesGroup = null;//new ResourcesMBeanGroup(blankStatistics.getRootResourceStatistics());               /// ?????
         responseMXBean = new ResponseMXBeanImpl();
-        requestMBean = new ExecutionStatisticsDynamicBean(blankStatistics.getRequestStatistics(), "GlobalRequestStatistics");
+        requestMBean = null; //new ExecutionStatisticsDynamicBean(blankStatistics.getRequestExecutionStatistics(), "GlobalRequestStatistics");
         exceptionMapperMXBean = new ExceptionMapperMXBeanImpl();
     }
 
@@ -97,7 +99,7 @@ public class MBeanExposer implements MonitoringStatisticsListener {
     }
 
     @Override
-    public void onStatistics(MonitoringStatisticsImpl statistics) {
+    public void onStatistics(MonitoringStatistics statistics) {
         if (exposed.compareAndSet(false, true)) {
             String appName = statistics.getApplicationStatistics().getResourceConfig().getApplicationName();
             if (appName == null) {
@@ -112,10 +114,11 @@ public class MBeanExposer implements MonitoringStatisticsListener {
             exceptionMapperMXBean.register(this, "");
         }
 
-        requestMBean.setExecutionStatisticsImpl(statistics.getRequestStatistics());
-        resourcesGroup.setResourcesStatistics(statistics.getRootResourceStatistics());
-        responseMXBean.setResponseCodesToCountMap(statistics.getResponseStatistics());
-        exceptionMapperMXBean.setNewStatistics(statistics.getExceptionMapperStatistics());
+//        requestMBean.setExecutionStatisticsImpl(statistics.getRequestExecutionStatistics());
+//        resourcesGroup.setResourcesStatistics(statistics.getRootResourceStatistics());
+//        responseMXBean.setResponseCodesToCountMap(statistics.getResponseStatistics());
+//        exceptionMapperMXBean.setNewStatistics(statistics.getExceptionMapperStatistics());
+        //???????
     }
 
 

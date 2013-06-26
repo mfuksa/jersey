@@ -48,7 +48,7 @@ import org.glassfish.jersey.server.model.ResourceMethod;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public interface ResourceStatistics {
-    public ExecutionStatistics getResourceExecutionStatistics();
+    public ExecutionStatistics getResourceMethodExecutionStatistics();
 
     public ExecutionStatistics getRequestExecutionStatistics();
 

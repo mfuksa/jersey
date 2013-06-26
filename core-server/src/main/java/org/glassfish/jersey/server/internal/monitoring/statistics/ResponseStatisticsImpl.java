@@ -40,17 +40,52 @@
 
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
-import javax.ws.rs.ConstrainedTo;
-import javax.ws.rs.RuntimeType;
+import java.util.Map;
 
-import org.glassfish.jersey.spi.Contract;
+import org.glassfish.jersey.server.monitoring.ResponseStatistics;
+
+import com.google.common.collect.Maps;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
-@Contract
-@ConstrainedTo(RuntimeType.SERVER)
-public interface MonitoringStatisticsListener {
-    public void onStatistics(MonitoringStatisticsImpl statistics);
+public class ResponseStatisticsImpl implements ResponseStatistics {
+    private final Map<Integer, Long> responseCodes;
+    private final Integer lastResponseCode;
+
+
+    static class Builder {
+        private Map<Integer, Long> responseCodes = Maps.newHashMap();
+        private Integer lastResponseCode = null;
+
+        void addResponseCode(int responseCode) {
+            lastResponseCode = responseCode;
+            Long currentValue = responseCodes.get(responseCode);
+            if (currentValue == null) {
+                currentValue = 0l;
+            }
+            responseCodes.put(responseCode, currentValue + 1);
+        }
+
+        ResponseStatisticsImpl build() {
+            return new ResponseStatisticsImpl(lastResponseCode, responseCodes);
+        }
+
+    }
+
+    private ResponseStatisticsImpl(Integer lastResponseCode, Map<Integer, Long> responseCodes) {
+        this.lastResponseCode = lastResponseCode;
+        this.responseCodes = responseCodes;
+    }
+
+    @Override
+    public Integer getLastResponseCode() {
+        return lastResponseCode;
+    }
+
+    @Override
+    public Map<Integer, Long> getResponseCodes() {
+        return responseCodes;
+    }
 }

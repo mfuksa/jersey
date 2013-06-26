@@ -38,29 +38,20 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.statistics;
+package org.glassfish.jersey.server.monitoring;
 
-import java.util.Date;
+import javax.ws.rs.ConstrainedTo;
+import javax.ws.rs.RuntimeType;
 
-import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsImpl;
+import org.glassfish.jersey.spi.Contract;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
+ *
  */
-public class ApplicationStatistics {
-    private final ResourceConfig resourceConfig;
-    private final Date startTime;
-
-    public ApplicationStatistics(ResourceConfig resourceConfig, Date startTime) {
-        this.resourceConfig = resourceConfig;
-        this.startTime = startTime;
-    }
-
-    public ResourceConfig getResourceConfig() {
-        return resourceConfig;
-    }
-
-    public Date getStartTime() {
-        return startTime;
-    }
+@Contract
+@ConstrainedTo(RuntimeType.SERVER)
+public interface MonitoringStatisticsListener {
+    public void onStatistics(MonitoringStatistics statistics);
 }

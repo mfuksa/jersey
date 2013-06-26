@@ -40,54 +40,101 @@
 
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.SortedMap;
 
 import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
+import org.glassfish.jersey.server.monitoring.ApplicationStatistics;
+import org.glassfish.jersey.server.monitoring.ExceptionMapperStatistics;
+import org.glassfish.jersey.server.monitoring.ExecutionStatistics;
+import org.glassfish.jersey.server.monitoring.MonitoringStatistics;
+import org.glassfish.jersey.server.monitoring.ResourceStatistics;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class MonitoringStatisticsImpl {
-    private final ExecutionStatisticsImpl requestStatistics;
-    private final Map<Resource, ResourceStatisticsImpl> rootResourceStatistics;
-    private final ResponseStatistics responseStatistics;
-    private final ApplicationStatistics applicationStatistics;
-    private final ExceptionMapperStatistics exceptionMapperStatistics;
+public class MonitoringStatisticsImpl implements MonitoringStatistics {
 
     public static class Builder {
 
         private ExecutionStatisticsImpl.Builder requestStatisticsBuilder;
-        private final Map<Resource, ResourceStatisticsImpl.Builder> rootResourceStatistics = Maps.newHashMap();
-        private final ResponseStatistics.Builder responseStatisticsBuilder;
-        private ApplicationStatistics applicationStatistics;
-        private ExceptionMapperStatistics.Builder exceptionMapperStatisticsBuilder;
-
-
-        public Builder(ResourceModel resourceModel) {
-            this.requestStatisticsBuilder = new ExecutionStatisticsImpl.Builder();
-            this.responseStatisticsBuilder = new ResponseStatistics.Builder();
-            for (Resource resource : resourceModel.getRootResources()) {
-                final ResourceStatisticsImpl.Builder builder = new ResourceStatisticsImpl.Builder(resource);
-                rootResourceStatistics.put(resource, builder);
+        private final ResponseStatisticsImpl.Builder responseStatisticsBuilder;
+        private ApplicationStatisticsImpl applicationStatisticsImpl;
+        private ExceptionMapperStatisticsImpl.Builder exceptionMapperStatisticsBuilder;
+        private SortedMap<String, ResourceStatisticsImpl.Builder> uriStatistics = Maps.newTreeMap();
+        private SortedMap<Class<?>, ResourceStatisticsImpl.Builder> resourceClassStatistics
+                = Maps.newTreeMap(new Comparator<Class<?>>() {
+            @Override
+            public int compare(Class<?> o1, Class<?> o2) {
+                return o1.getName().compareTo(o2.getName());
             }
-            this.exceptionMapperStatisticsBuilder = new ExceptionMapperStatistics.Builder();
+        });
+
+
+        public Builder() {
+            this.requestStatisticsBuilder = new ExecutionStatisticsImpl.Builder();
+            this.responseStatisticsBuilder = new ResponseStatisticsImpl.Builder();
+            this.exceptionMapperStatisticsBuilder = new ExceptionMapperStatisticsImpl.Builder();
         }
 
+        public Builder(ResourceModel resourceModel) {
+            this();
+            for (Resource resource : resourceModel.getRootResources()) {
+                processResource(resource, "");
+                for (Resource child : resource.getChildResources()) {
+                    processResource(child, "/" + resource.getPath());
+                }
+            }
 
+        }
+
+        private void processResource(Resource resource, String pathPrefix) {
+            this.uriStatistics.put(pathPrefix + "/" + resource.getPath(), new ResourceStatisticsImpl.Builder(resource));
+            for (ResourceMethod resourceMethod : resource.getResourceMethods()) {
+                ResourceStatisticsImpl.Builder builder = getOrCreateResourceBuilder(resourceMethod);
+                builder.addMethod(resourceMethod);
+            }
+        }
+
+        private ResourceStatisticsImpl.Builder getOrCreateResourceBuilder(ResourceMethod resourceMethod) {
+            final Class<?> clazz = resourceMethod.getInvocable().getHandler().getHandlerClass();
+            ResourceStatisticsImpl.Builder builder = resourceClassStatistics.get(clazz);
+            if (builder == null) {
+                builder = new ResourceStatisticsImpl.Builder();
+                resourceClassStatistics.put(clazz, builder);
+            }
+            return builder;
+        }
 
         public ExecutionStatisticsImpl.Builder getRequestStatisticsBuilder() {
             return requestStatisticsBuilder;
         }
 
-        public Map<Resource, ResourceStatisticsImpl.Builder> getRootResourceStatistics() {
-            return rootResourceStatistics;
+        public ExceptionMapperStatisticsImpl.Builder getExceptionMapperStatisticsBuilder() {
+            return exceptionMapperStatisticsBuilder;
         }
 
-        public ExceptionMapperStatistics.Builder getExceptionMapperStatisticsBuilder() {
-            return exceptionMapperStatisticsBuilder;
+        public void addExecution(String uri, ResourceMethod resourceMethod,
+                                 long methodTime, long methodDuration,
+                                 long requestTime, long requestDuration) {
+            ResourceStatisticsImpl.Builder uriStatsBuilder = uriStatistics.get(uri);
+            if (uriStatsBuilder == null) {
+                uriStatsBuilder = new ResourceStatisticsImpl.Builder(resourceMethod.getParent());
+                uriStatistics.put(uri, uriStatsBuilder);
+            }
+            uriStatsBuilder.addExecution(resourceMethod, methodTime, methodDuration,
+                    requestTime, requestDuration);
+
+            ResourceStatisticsImpl.Builder resourceClassBuilder = getOrCreateResourceBuilder(resourceMethod);
+            resourceClassBuilder.addExecution(resourceMethod, methodTime, methodDuration,
+                    requestTime, requestDuration);
         }
 
         public void addResponseCode(int responseCode) {
@@ -95,50 +142,85 @@ public class MonitoringStatisticsImpl {
         }
 
 
-        public void setApplicationStatistics(ApplicationStatistics applicationStatistics) {
-            this.applicationStatistics = applicationStatistics;
+        public void setApplicationStatisticsImpl(ApplicationStatisticsImpl applicationStatisticsImpl) {
+            this.applicationStatisticsImpl = applicationStatisticsImpl;
         }
 
         public MonitoringStatisticsImpl build() {
-            final Map<Resource, ResourceStatisticsImpl> builtResourceStatistics = Maps.newHashMap();
-            for (Map.Entry<Resource, ResourceStatisticsImpl.Builder> entry : rootResourceStatistics.entrySet()) {
-                builtResourceStatistics.put(entry.getKey(), entry.getValue().build());
-            }
+            final Function<ResourceStatisticsImpl.Builder, ResourceStatistics> buildingFunction
+                    = new Function<ResourceStatisticsImpl.Builder, ResourceStatistics>() {
+                @Override
+                public ResourceStatistics apply(ResourceStatisticsImpl.Builder builder) {
+                    return builder.build();
+                }
+            };
 
-            return new MonitoringStatisticsImpl(requestStatisticsBuilder.build(), builtResourceStatistics,
-                    responseStatisticsBuilder.build(), applicationStatistics,
+            Map<String, ResourceStatistics> uriStats = Collections.unmodifiableMap(
+                    Maps.transformValues(uriStatistics, buildingFunction));
+            Map<Class<?>, ResourceStatistics> classStats = Collections.unmodifiableMap(
+                    Maps.transformValues(this.resourceClassStatistics,
+                            buildingFunction));
+
+            return new MonitoringStatisticsImpl(
+                    uriStats, classStats,
+                    requestStatisticsBuilder.build(),
+                    responseStatisticsBuilder.build(),
+                    applicationStatisticsImpl,
                     exceptionMapperStatisticsBuilder.build());
         }
     }
 
-    private MonitoringStatisticsImpl(ExecutionStatisticsImpl requestStatistics,
-                                     Map<Resource, ResourceStatisticsImpl> rootResourceStatistics,
-                                     ResponseStatistics responseStatistics,
-                                     ApplicationStatistics applicationStatistics, ExceptionMapperStatistics exceptionMapperStatistics) {
+    private final ExecutionStatistics requestStatistics;
+    private final ResponseStatisticsImpl responseStatisticsImpl;
+    private final ApplicationStatistics applicationStatistics;
+    private final ExceptionMapperStatistics exceptionMapperStatistics;
+    private final Map<String, ResourceStatistics> uriStatistics;
+    private final Map<Class<?>, ResourceStatistics> resourceClassStatistics;
+
+
+    public MonitoringStatisticsImpl(Map<String, ResourceStatistics> uriStatistics,
+                                    Map<Class<?>, ResourceStatistics> resourceClassStatistics,
+                                    ExecutionStatistics requestStatistics,
+                                    ResponseStatisticsImpl responseStatistics,
+                                    ApplicationStatistics applicationStatistics,
+                                    ExceptionMapperStatistics exceptionMapperStatistics) {
+        this.uriStatistics = uriStatistics;
+        this.resourceClassStatistics = resourceClassStatistics;
         this.requestStatistics = requestStatistics;
-        this.rootResourceStatistics = rootResourceStatistics;
-        this.responseStatistics = responseStatistics;
+        this.responseStatisticsImpl = responseStatistics;
         this.applicationStatistics = applicationStatistics;
         this.exceptionMapperStatistics = exceptionMapperStatistics;
     }
 
-    public ExecutionStatisticsImpl getRequestStatistics() {
+
+    @Override
+    public ExecutionStatistics getRequestExecutionStatistics() {
         return requestStatistics;
     }
 
-    public Map<Resource, ResourceStatisticsImpl> getRootResourceStatistics() {
-        return rootResourceStatistics;
+
+    @Override
+    public ResponseStatisticsImpl getResponseStatistics() {
+        return responseStatisticsImpl;
     }
 
-    public ResponseStatistics getResponseStatistics() {
-        return responseStatistics;
+
+    @Override
+    public Map<String, ResourceStatistics> getUriStatisticsMap() {
+        return uriStatistics;
     }
 
+    @Override
+    public Map<Class<?>, ResourceStatistics> getResourceClassStatistics() {
+        return resourceClassStatistics;
+    }
 
+    @Override
     public ApplicationStatistics getApplicationStatistics() {
         return applicationStatistics;
     }
 
+    @Override
     public ExceptionMapperStatistics getExceptionMapperStatistics() {
         return exceptionMapperStatistics;
     }

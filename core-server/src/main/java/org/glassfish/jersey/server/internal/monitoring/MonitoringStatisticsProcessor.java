@@ -54,10 +54,10 @@ import javax.ws.rs.ProcessingException;
 import org.glassfish.jersey.server.ExtendedResourceContext;
 import org.glassfish.jersey.server.internal.RuntimeExecutorsBinder;
 import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
-import org.glassfish.jersey.server.internal.monitoring.statistics.ApplicationStatistics;
-import org.glassfish.jersey.server.internal.monitoring.statistics.ExceptionMapperStatistics;
+import org.glassfish.jersey.server.internal.monitoring.statistics.ApplicationStatisticsImpl;
+import org.glassfish.jersey.server.internal.monitoring.statistics.ExceptionMapperStatisticsImpl;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsImpl;
-import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsListener;
+import org.glassfish.jersey.server.monitoring.MonitoringStatisticsListener;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceStatisticsImpl;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
@@ -87,15 +87,15 @@ public class MonitoringStatisticsProcessor {
     }
 
     public void startMonitoringWorker() {
-        final ApplicationStatistics appStatistics = new ApplicationStatistics(monitoringEventListener.getResourceConfig(),
+        final ApplicationStatisticsImpl appStatistics = new ApplicationStatisticsImpl(monitoringEventListener.getResourceConfig(),
                 new Date(monitoringEventListener.getApplicationStartTime()));
-        statisticsBuilder.setApplicationStatistics(appStatistics);
+        statisticsBuilder.setApplicationStatisticsImpl(appStatistics);
 
         scheduler.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 try {
-                    processRequestItems();
+          //????          processRequestItems();
                     processResponseCodeEvents();
                     processExceptionMapperEvents();
                 } catch (Throwable t) {
@@ -127,7 +127,7 @@ public class MonitoringStatisticsProcessor {
         final Queue<RequestEvent> eventQueue = monitoringEventListener.getExceptionMapperEvents();
         while (!eventQueue.isEmpty()) {
             final RequestEvent event = eventQueue.remove();
-            final ExceptionMapperStatistics.Builder mapperStats = statisticsBuilder.getExceptionMapperStatisticsBuilder();
+            final ExceptionMapperStatisticsImpl.Builder mapperStats = statisticsBuilder.getExceptionMapperStatisticsBuilder();
 
             if (event.getExceptionMapper() != null) {
                 mapperStats.addExceptionMapperExecution(event.getExceptionMapper().getClass(), 1);
@@ -138,7 +138,7 @@ public class MonitoringStatisticsProcessor {
 
     }
 
-    private void processRequestItems() {
+ /*   private void processRequestItems() {
         final Queue<MonitoringEventListener.RequestStats> requestQueuedItems = monitoringEventListener.getRequestQueuedItems();
 
         while (!requestQueuedItems.isEmpty()) {
@@ -163,16 +163,16 @@ public class MonitoringStatisticsProcessor {
                         .get(resource);
 
                 if (childResource == null) {
-                    resourceBuilder.addResourceExecution(method, methodStat.getStartTime(), methodStat.getDuration(),
+                    resourceBuilder.addExecution(method, methodStat.getStartTime(), methodStat.getDuration(),
                             methodStat.getStartTime(), requestStats.getDuration());
                 } else {
-                    resourceBuilder.addResourceExecution(childResource, method,
+                    resourceBuilder.addExecution(childResource, method,
                             methodStat.getStartTime(), methodStat.getDuration(), requestStats.getStartTime(), requestStats.getDuration()
                     );
                 }
             }
         }
-    }
+    }   */
 
 
     private void processResponseCodeEvents() {
