@@ -50,6 +50,7 @@ import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventLis
 import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
 import org.glassfish.jersey.server.internal.monitoring.event.RequestEventListener;
 import org.glassfish.jersey.server.model.ResourceMethod;
+import org.glassfish.jersey.uri.UriTemplate;
 
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -104,10 +105,12 @@ public class MonitoringEventListener implements ApplicationEventListener {
     class RequestStats {
         private final TimeStats requestStats;
         private final MethodStats methodStats; // might be null if a method was not executed during a request
+        private final String requestUri;
 
-        private RequestStats(TimeStats requestStats, MethodStats methodStats) {
+        private RequestStats(TimeStats requestStats, MethodStats methodStats, String requestUri) {
             this.requestStats = requestStats;
             this.methodStats = methodStats;
+            this.requestUri = requestUri;
         }
 
         TimeStats getRequestStats() {
@@ -118,6 +121,9 @@ public class MonitoringEventListener implements ApplicationEventListener {
             return methodStats;
         }
 
+        String getRequestUri() {
+            return requestUri;
+        }
     }
 
     @Override
@@ -174,8 +180,17 @@ public class MonitoringEventListener implements ApplicationEventListener {
                     responseStatuses.add(event.getContainerResponse().getStatus());
                     break;
                 case FINISHED:
+                    StringBuffer sb = new StringBuffer();
+                    for (UriTemplate uriTemplate : event.getUriInfo().getMatchedTemplates()) {
+                        sb.append(uriTemplate.getTemplate());
+                        if (!uriTemplate.endsWithSlash()) {
+                            sb.append("/");
+                        }
+                        sb.setLength(sb.length() -1);
+                    }
+
                     requestQueuedItems.add(new RequestStats(new TimeStats(requestTimeStart, now - requestTimeStart),
-                            methodStats));
+                            methodStats, sb.toString()));
             }
         }
     }

@@ -227,7 +227,7 @@ public class MonitoringStatisticsTest {
         check(it, "/test-resource/child", 3);
         check(it, "/test-resource/prog-child", 1);
 
-        final Map<ResourceMethod,ResourceMethodStatistics> resourceMethodStatistics
+        final Map<ResourceMethod, ResourceMethodStatistics> resourceMethodStatistics
                 = stat.getUriStatisticsMap().get("/new/elefant").getResourceMethodStatistics();
         for (ResourceMethodStatistics methodStatistics : resourceMethodStatistics.values()) {
             final ResourceMethod method = methodStatistics.getResourceMethod();
@@ -244,9 +244,8 @@ public class MonitoringStatisticsTest {
     }
 
 
-
     private void check(Iterator<Map.Entry<String, ResourceStatistics>> it,
-                                                        String expectedUri, int expectedMethods) {
+                       String expectedUri, int expectedMethods) {
         Map.Entry<String, ResourceStatistics> entry = it.next();
         Assert.assertEquals(expectedUri, entry.getKey());
         Assert.assertEquals(expectedMethods, entry.getValue().getResourceMethodStatistics().size());

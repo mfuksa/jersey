@@ -57,11 +57,9 @@ import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ApplicationStatisticsImpl;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ExceptionMapperStatisticsImpl;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsImpl;
-import org.glassfish.jersey.server.monitoring.MonitoringStatisticsListener;
-import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceStatisticsImpl;
-import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
+import org.glassfish.jersey.server.monitoring.MonitoringStatisticsListener;
 
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -95,7 +93,7 @@ public class MonitoringStatisticsProcessor {
             @Override
             public void run() {
                 try {
-          //????          processRequestItems();
+                    processRequestItems();
                     processResponseCodeEvents();
                     processExceptionMapperEvents();
                 } catch (Throwable t) {
@@ -138,41 +136,24 @@ public class MonitoringStatisticsProcessor {
 
     }
 
- /*   private void processRequestItems() {
+    private void processRequestItems() {
         final Queue<MonitoringEventListener.RequestStats> requestQueuedItems = monitoringEventListener.getRequestQueuedItems();
 
         while (!requestQueuedItems.isEmpty()) {
             MonitoringEventListener.RequestStats event = requestQueuedItems.remove();
             final MonitoringEventListener.TimeStats requestStats = event.getRequestStats();
-            statisticsBuilder.getRequestStatisticsBuilder().addExecution(requestStats.getStartTime(), requestStats.getDuration()
-            );
-
+            statisticsBuilder.getRequestStatisticsBuilder().addExecution(requestStats.getStartTime(),
+                    requestStats.getDuration());
             final MonitoringEventListener.MethodStats methodStat = event.getMethodStats();
-
 
             if (methodStat != null) {
                 final ResourceMethod method = methodStat.getMethod();
-                final Resource enclosingResource = method.getParent();
-
-                final Resource resource = (enclosingResource.getParent() == null) ? enclosingResource
-                        : enclosingResource.getParent();
-                final Resource childResource = (enclosingResource.getParent() == null) ? null
-                        : enclosingResource;
-
-                final ResourceStatisticsImpl.Builder resourceBuilder = statisticsBuilder.getRootResourceStatistics()
-                        .get(resource);
-
-                if (childResource == null) {
-                    resourceBuilder.addExecution(method, methodStat.getStartTime(), methodStat.getDuration(),
-                            methodStat.getStartTime(), requestStats.getDuration());
-                } else {
-                    resourceBuilder.addExecution(childResource, method,
-                            methodStat.getStartTime(), methodStat.getDuration(), requestStats.getStartTime(), requestStats.getDuration()
-                    );
-                }
+                statisticsBuilder.addExecution(event.getRequestUri(), method,
+                        methodStat.getStartTime(), methodStat.getDuration(),
+                        requestStats.getStartTime(), requestStats.getDuration());
             }
         }
-    }   */
+    }
 
 
     private void processResponseCodeEvents() {
