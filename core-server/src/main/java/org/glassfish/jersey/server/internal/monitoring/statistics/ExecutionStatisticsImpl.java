@@ -40,38 +40,27 @@
 
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import org.glassfish.jersey.server.monitoring.ExecutionStatistics;
+import org.glassfish.jersey.server.monitoring.TimeWindowStatistics;
 
 import com.google.common.collect.Maps;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class ExecutionStatistics {
-    private final long lastStartTime;
-    private final Map<Long, IntervalStatistics> intervalStatistics;
-
-    public Map<Long, IntervalStatistics> getIntervalStatistics() {
-        return intervalStatistics;
-    }
-
-    public long getLastStartTime() {
-        return lastStartTime;
-    }
-
-    public ExecutionStatistics(long lastStartTime, Map<Long, IntervalStatistics> intervalStatistics) {
-        this.lastStartTime = lastStartTime;
-        this.intervalStatistics = intervalStatistics;
-    }
-
+public class ExecutionStatisticsImpl implements ExecutionStatistics {
     public static class Builder {
         private long lastStartTime;
-        private final Map<Long, IntervalStatistics.Builder> intervalStatistics;
+        private final Map<Long, TimeWindowStatisticsImpl.Builder> intervalStatistics;
 
         public Builder() {
-            this.intervalStatistics = new HashMap<Long, IntervalStatistics.Builder>(4);
+            this.intervalStatistics = new HashMap<Long, TimeWindowStatisticsImpl.Builder>(4);
             addInterval(0, TimeUnit.MILLISECONDS);
             addInterval(1, TimeUnit.SECONDS);
             addInterval(15, TimeUnit.SECONDS);
@@ -83,29 +72,49 @@ public class ExecutionStatistics {
         private void addInterval(long interval, TimeUnit timeUnit) {
             final long intervalInMillis = timeUnit.toMillis(interval);
             intervalStatistics.put(intervalInMillis,
-                    new IntervalStatistics.Builder(intervalInMillis, TimeUnit.MILLISECONDS));
+                    new TimeWindowStatisticsImpl.Builder(intervalInMillis, TimeUnit.MILLISECONDS));
         }
 
 
         public void addExecution(long startTime, long duration) {
-            for (IntervalStatistics.Builder statBuilder : intervalStatistics.values()) {
+            for (TimeWindowStatisticsImpl.Builder statBuilder : intervalStatistics.values()) {
                 statBuilder.addRequest(startTime, duration);
             }
 
             this.lastStartTime = startTime;
         }
 
-        public ExecutionStatistics build() {
-            Map<Long, IntervalStatistics> newIntervalStatistics = Maps.newHashMap();
-            for (Map.Entry<Long, IntervalStatistics.Builder> builderEntry : intervalStatistics.entrySet()) {
+        public ExecutionStatisticsImpl build() {
+            Map<Long, TimeWindowStatistics> newIntervalStatistics = Maps.newHashMap();
+            for (Map.Entry<Long, TimeWindowStatisticsImpl.Builder> builderEntry : intervalStatistics.entrySet()) {
                 newIntervalStatistics.put(builderEntry.getKey(), builderEntry.getValue().build());
             }
 
-            return new ExecutionStatistics(lastStartTime, newIntervalStatistics);
+            return new ExecutionStatisticsImpl(lastStartTime, Collections.unmodifiableMap(newIntervalStatistics));
         }
     }
 
-    public static ExecutionStatistics epmtyStatistics() {
+
+    private final Date lastStartTime;
+    private final Map<Long, TimeWindowStatistics> timeWindowStatistics;
+
+
+    @Override
+    public Date getLastStartTime() {
+        return lastStartTime;
+    }
+
+    @Override
+    public Map<Long, TimeWindowStatistics> getTimeWindowStatistics() {
+        return timeWindowStatistics;
+    }
+
+    public ExecutionStatisticsImpl(long lastStartTime, Map<Long, TimeWindowStatistics> timeWindowStatistics) {
+        this.lastStartTime = new Date(lastStartTime);
+        this.timeWindowStatistics = timeWindowStatistics;
+    }
+
+    public static ExecutionStatisticsImpl epmtyStatistics() {
         return new Builder().build();
     }
 

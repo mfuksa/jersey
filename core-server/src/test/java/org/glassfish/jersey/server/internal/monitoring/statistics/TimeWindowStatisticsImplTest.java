@@ -48,14 +48,14 @@ import org.junit.Test;
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class IntervalStatisticsTest {
+public class TimeWindowStatisticsImplTest {
 
     private static final double DELTA = 0.0001;
 
     @Test
     public void test() {
         final long now = System.currentTimeMillis();
-        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(1000, TimeUnit.MILLISECONDS, now);
+        TimeWindowStatisticsImpl.Builder builder = new TimeWindowStatisticsImpl.Builder(1000, TimeUnit.MILLISECONDS, now);
         builder.addRequest(now, 30);
         builder.addRequest(now + 300, 100);
         builder.addRequest(now + 600, 150);
@@ -72,7 +72,7 @@ public class IntervalStatisticsTest {
     @Test
     public void test10() {
         final long now = System.currentTimeMillis();
-        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(10000, TimeUnit.MILLISECONDS, now);
+        TimeWindowStatisticsImpl.Builder builder = new TimeWindowStatisticsImpl.Builder(10000, TimeUnit.MILLISECONDS, now);
         builder.addRequest(now, 30);
         builder.addRequest(now + 300, 100);
         builder.addRequest(now + 600, 150);
@@ -88,7 +88,7 @@ public class IntervalStatisticsTest {
     @Test
     public void test3s() {
         final long now = 0;
-        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(3000, TimeUnit.MILLISECONDS, now);
+        TimeWindowStatisticsImpl.Builder builder = new TimeWindowStatisticsImpl.Builder(3000, TimeUnit.MILLISECONDS, now);
         builder.addRequest(now, 99);
         builder.addRequest(now + 300, 98);
         builder.addRequest(now + 600, 1);
@@ -114,7 +114,7 @@ public class IntervalStatisticsTest {
     @Test
     public void testLongPause() {
         final long now = 0;
-        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(60, TimeUnit.SECONDS, now);
+        TimeWindowStatisticsImpl.Builder builder = new TimeWindowStatisticsImpl.Builder(60, TimeUnit.SECONDS, now);
         builder.addRequest(now, 99);
         final long time = now + 1000 * 60 * 60 * 23;
         builder.addRequest(time, 95);
@@ -122,9 +122,9 @@ public class IntervalStatisticsTest {
         check(builder, time + 20000, 2, 5, 95, 50, 0.03333);
     }
 
-    private void check(IntervalStatistics.Builder builder, long buildTime, int totalCount, int minimumExecTime,
+    private void check(TimeWindowStatisticsImpl.Builder builder, long buildTime, int totalCount, int minimumExecTime,
                        int maximumExecTime, long average, double requestsPerSecond) {
-        IntervalStatistics stat = builder.build(buildTime);
+        TimeWindowStatisticsImpl stat = builder.build(buildTime);
 
         Assert.assertEquals(totalCount, stat.getTotalCount());
         Assert.assertEquals(minimumExecTime, stat.getMinimumDuration());
@@ -135,13 +135,13 @@ public class IntervalStatisticsTest {
 
     @Test
     public void testGeneric() {
-        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(10, TimeUnit.SECONDS, 0);
+        TimeWindowStatisticsImpl.Builder builder = new TimeWindowStatisticsImpl.Builder(10, TimeUnit.SECONDS, 0);
         for (int i = 0; i < 100; i++) {
             final int requestTime = i * 10000;
             builder.addRequest(requestTime + 1, i);
             for (int j = 11; j < 100; j++) {
                 try {
-                    IntervalStatistics stat = builder.build(requestTime + j * 100);
+                    TimeWindowStatisticsImpl stat = builder.build(requestTime + j * 100);
                     Assert.assertEquals(1, stat.getTotalCount());
                     Assert.assertEquals(i, stat.getMinimumDuration());
                     Assert.assertEquals(i, stat.getMaximumDuration());
@@ -155,7 +155,7 @@ public class IntervalStatisticsTest {
 
     @Test
     public void testUnlimited() {
-        IntervalStatistics.Builder builder = new IntervalStatistics.Builder(0, TimeUnit.MILLISECONDS, 0);
+        TimeWindowStatisticsImpl.Builder builder = new TimeWindowStatisticsImpl.Builder(0, TimeUnit.MILLISECONDS, 0);
         builder.addRequest(0, 10);
         builder.addRequest(100 + 300, 20);
         builder.addRequest(1000 + 600, 30);

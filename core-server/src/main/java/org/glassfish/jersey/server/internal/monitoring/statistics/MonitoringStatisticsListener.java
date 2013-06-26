@@ -52,5 +52,5 @@ import org.glassfish.jersey.spi.Contract;
 @Contract
 @ConstrainedTo(RuntimeType.SERVER)
 public interface MonitoringStatisticsListener {
-    public void onStatistics(MonitoringStatistics statistics);
+    public void onStatistics(MonitoringStatisticsImpl statistics);
 }

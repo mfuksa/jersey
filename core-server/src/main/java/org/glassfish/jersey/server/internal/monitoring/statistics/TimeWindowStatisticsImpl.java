@@ -44,10 +44,12 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
+import org.glassfish.jersey.server.monitoring.TimeWindowStatistics;
+
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class IntervalStatistics {
+public class TimeWindowStatisticsImpl implements TimeWindowStatistics {
 
 
     static class Builder {
@@ -180,20 +182,20 @@ public class IntervalStatistics {
         }
 
 
-        public IntervalStatistics build() {
+        public TimeWindowStatisticsImpl build() {
             return build(System.currentTimeMillis());
         }
 
 
-        public IntervalStatistics build(long currentTime) {
+        public TimeWindowStatisticsImpl build(long currentTime) {
             if (interval == 0) {
                 final long diff = currentTime - startTime;
                 if (diff < MINIMUM_UNIT_SIZE) {
-                    return new IntervalStatistics(interval, 0, 0, 0, 0, 0);
+                    return new TimeWindowStatisticsImpl(interval, 0, 0, 0, 0, 0);
                 } else {
                     double requestsPerSecond = (double) (1000 * lastUnitCount) / diff;
                     long avg = lastUnitCount == 0 ? -1 : lastUnitDuration / lastUnitCount;
-                    return new IntervalStatistics(interval, requestsPerSecond, lastUnitMin, lastUnitMax, avg, lastUnitCount);
+                    return new TimeWindowStatisticsImpl(interval, requestsPerSecond, lastUnitMin, lastUnitMax, avg, lastUnitCount);
                 }
             }
 
@@ -220,7 +222,7 @@ public class IntervalStatistics {
             }
 
             long avg = totalCount == 0 ? -1 : totalDuration / totalCount;
-            return new IntervalStatistics(interval, requestsPerSecond, min, max, avg, totalCount);
+            return new TimeWindowStatisticsImpl(interval, requestsPerSecond, min, max, avg, totalCount);
         }
 
         public long getInterval() {
@@ -238,8 +240,8 @@ public class IntervalStatistics {
     private long totalCount;
 
 
-    private IntervalStatistics(long interval, double requestsPerSecond, long minimumDuration,
-                               long maximumDuration, long averageDuration, long totalCount) {
+    private TimeWindowStatisticsImpl(long interval, double requestsPerSecond, long minimumDuration,
+                                     long maximumDuration, long averageDuration, long totalCount) {
         this.interval = interval;
         this.requestsPerSecond = requestsPerSecond;
         this.minimumDuration = minimumDuration;
@@ -249,29 +251,33 @@ public class IntervalStatistics {
     }
 
 
-    public long getInterval() {
+    @Override
+    public long getTimeWindow() {
         return interval;
     }
 
+    @Override
     public double getRequestsPerSecond() {
         return requestsPerSecond;
     }
 
+    @Override
     public long getMinimumDuration() {
         return minimumDuration;
     }
 
+    @Override
     public long getMaximumDuration() {
         return maximumDuration;
     }
 
-    public long getTotalCount() {
+    @Override
+    public long getRequestCount() {
         return totalCount;
     }
 
+    @Override
     public long getAverageDuration() {
         return averageDuration;
     }
-
-
 }

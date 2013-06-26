@@ -50,27 +50,27 @@ import com.google.common.collect.Maps;
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class MonitoringStatistics {
-    private final ExecutionStatistics requestStatistics;
-    private final Map<Resource, ResourceStatistics> rootResourceStatistics;
+public class MonitoringStatisticsImpl {
+    private final ExecutionStatisticsImpl requestStatistics;
+    private final Map<Resource, ResourceStatisticsImpl> rootResourceStatistics;
     private final ResponseStatistics responseStatistics;
     private final ApplicationStatistics applicationStatistics;
     private final ExceptionMapperStatistics exceptionMapperStatistics;
 
     public static class Builder {
 
-        private ExecutionStatistics.Builder requestStatisticsBuilder;
-        private final Map<Resource, ResourceStatistics.Builder> rootResourceStatistics = Maps.newHashMap();
+        private ExecutionStatisticsImpl.Builder requestStatisticsBuilder;
+        private final Map<Resource, ResourceStatisticsImpl.Builder> rootResourceStatistics = Maps.newHashMap();
         private final ResponseStatistics.Builder responseStatisticsBuilder;
         private ApplicationStatistics applicationStatistics;
         private ExceptionMapperStatistics.Builder exceptionMapperStatisticsBuilder;
 
 
         public Builder(ResourceModel resourceModel) {
-            this.requestStatisticsBuilder = new ExecutionStatistics.Builder();
+            this.requestStatisticsBuilder = new ExecutionStatisticsImpl.Builder();
             this.responseStatisticsBuilder = new ResponseStatistics.Builder();
             for (Resource resource : resourceModel.getRootResources()) {
-                final ResourceStatistics.Builder builder = new ResourceStatistics.Builder(resource);
+                final ResourceStatisticsImpl.Builder builder = new ResourceStatisticsImpl.Builder(resource);
                 rootResourceStatistics.put(resource, builder);
             }
             this.exceptionMapperStatisticsBuilder = new ExceptionMapperStatistics.Builder();
@@ -78,11 +78,11 @@ public class MonitoringStatistics {
 
 
 
-        public ExecutionStatistics.Builder getRequestStatisticsBuilder() {
+        public ExecutionStatisticsImpl.Builder getRequestStatisticsBuilder() {
             return requestStatisticsBuilder;
         }
 
-        public Map<Resource, ResourceStatistics.Builder> getRootResourceStatistics() {
+        public Map<Resource, ResourceStatisticsImpl.Builder> getRootResourceStatistics() {
             return rootResourceStatistics;
         }
 
@@ -99,22 +99,22 @@ public class MonitoringStatistics {
             this.applicationStatistics = applicationStatistics;
         }
 
-        public MonitoringStatistics build() {
-            final Map<Resource, ResourceStatistics> builtResourceStatistics = Maps.newHashMap();
-            for (Map.Entry<Resource, ResourceStatistics.Builder> entry : rootResourceStatistics.entrySet()) {
+        public MonitoringStatisticsImpl build() {
+            final Map<Resource, ResourceStatisticsImpl> builtResourceStatistics = Maps.newHashMap();
+            for (Map.Entry<Resource, ResourceStatisticsImpl.Builder> entry : rootResourceStatistics.entrySet()) {
                 builtResourceStatistics.put(entry.getKey(), entry.getValue().build());
             }
 
-            return new MonitoringStatistics(requestStatisticsBuilder.build(), builtResourceStatistics,
+            return new MonitoringStatisticsImpl(requestStatisticsBuilder.build(), builtResourceStatistics,
                     responseStatisticsBuilder.build(), applicationStatistics,
                     exceptionMapperStatisticsBuilder.build());
         }
     }
 
-    private MonitoringStatistics(ExecutionStatistics requestStatistics,
-                                 Map<Resource, ResourceStatistics> rootResourceStatistics,
-                                 ResponseStatistics responseStatistics,
-                                 ApplicationStatistics applicationStatistics, ExceptionMapperStatistics exceptionMapperStatistics) {
+    private MonitoringStatisticsImpl(ExecutionStatisticsImpl requestStatistics,
+                                     Map<Resource, ResourceStatisticsImpl> rootResourceStatistics,
+                                     ResponseStatistics responseStatistics,
+                                     ApplicationStatistics applicationStatistics, ExceptionMapperStatistics exceptionMapperStatistics) {
         this.requestStatistics = requestStatistics;
         this.rootResourceStatistics = rootResourceStatistics;
         this.responseStatistics = responseStatistics;
@@ -122,11 +122,11 @@ public class MonitoringStatistics {
         this.exceptionMapperStatistics = exceptionMapperStatistics;
     }
 
-    public ExecutionStatistics getRequestStatistics() {
+    public ExecutionStatisticsImpl getRequestStatistics() {
         return requestStatistics;
     }
 
-    public Map<Resource, ResourceStatistics> getRootResourceStatistics() {
+    public Map<Resource, ResourceStatisticsImpl> getRootResourceStatistics() {
         return rootResourceStatistics;
     }
 

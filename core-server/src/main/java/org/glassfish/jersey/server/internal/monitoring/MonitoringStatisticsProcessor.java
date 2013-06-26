@@ -56,9 +56,9 @@ import org.glassfish.jersey.server.internal.RuntimeExecutorsBinder;
 import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ApplicationStatistics;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ExceptionMapperStatistics;
-import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatistics;
+import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsImpl;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsListener;
-import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceStatistics;
+import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceStatisticsImpl;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
@@ -72,7 +72,7 @@ public class MonitoringStatisticsProcessor {
 
     private static final Logger LOGGER = Logger.getLogger(MonitoringStatisticsProcessor.class.getName());
     private final MonitoringEventListener monitoringEventListener;
-    private final MonitoringStatistics.Builder statisticsBuilder;
+    private final MonitoringStatisticsImpl.Builder statisticsBuilder;
     private final List<MonitoringStatisticsListener> statisticsCallbackList;
     private final ScheduledExecutorService scheduler;
 
@@ -80,7 +80,7 @@ public class MonitoringStatisticsProcessor {
     public MonitoringStatisticsProcessor(ServiceLocator serviceLocator, MonitoringEventListener monitoringEventListener) {
         this.monitoringEventListener = monitoringEventListener;
         final ResourceModel resourceModel = serviceLocator.getService(ExtendedResourceContext.class).getResourceModel();
-        this.statisticsBuilder = new MonitoringStatistics.Builder(resourceModel);
+        this.statisticsBuilder = new MonitoringStatisticsImpl.Builder(resourceModel);
         this.statisticsCallbackList = serviceLocator.getAllServices(MonitoringStatisticsListener.class);
         this.scheduler = serviceLocator.getService(ScheduledExecutorService.class,
                 new RuntimeExecutorsBinder.BackgroundSchedulerLiteral());
@@ -159,7 +159,7 @@ public class MonitoringStatisticsProcessor {
                 final Resource childResource = (enclosingResource.getParent() == null) ? null
                         : enclosingResource;
 
-                final ResourceStatistics.Builder resourceBuilder = statisticsBuilder.getRootResourceStatistics()
+                final ResourceStatisticsImpl.Builder resourceBuilder = statisticsBuilder.getRootResourceStatistics()
                         .get(resource);
 
                 if (childResource == null) {

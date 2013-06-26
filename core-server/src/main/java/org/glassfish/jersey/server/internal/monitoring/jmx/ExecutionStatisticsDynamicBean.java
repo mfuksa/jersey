@@ -53,8 +53,8 @@ import javax.management.MBeanInfo;
 import javax.management.ReflectionException;
 
 import org.glassfish.jersey.internal.util.collection.Value;
-import org.glassfish.jersey.server.internal.monitoring.statistics.ExecutionStatistics;
-import org.glassfish.jersey.server.internal.monitoring.statistics.IntervalStatistics;
+import org.glassfish.jersey.server.internal.monitoring.statistics.ExecutionStatisticsImpl;
+import org.glassfish.jersey.server.internal.monitoring.statistics.TimeWindowStatisticsImpl;
 
 import com.google.common.collect.Maps;
 
@@ -62,18 +62,18 @@ import com.google.common.collect.Maps;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable {
-    private volatile ExecutionStatistics executionStatistics;
+    private volatile ExecutionStatisticsImpl executionStatisticsImpl;
     private final String beanName;
     private final Map<String, Value<Object>> attributeValues = Maps.newHashMap();
 
     private final MBeanInfo mBeanInfo;
 
 
-    private MBeanInfo initMBeanInfo(final ExecutionStatistics initialStatistics) {
-        final Map<Long, IntervalStatistics> statsMap = initialStatistics.getIntervalStatistics();
+    private MBeanInfo initMBeanInfo(final ExecutionStatisticsImpl initialStatistics) {
+        final Map<Long, TimeWindowStatisticsImpl> statsMap = initialStatistics.getTimeWindowStatistics();
         MBeanAttributeInfo[] attrs = new MBeanAttributeInfo[statsMap.size() * 5];
         int i = 0;
-        for (final IntervalStatistics stats : statsMap.values()) {
+        for (final TimeWindowStatisticsImpl stats : statsMap.values()) {
             final long interval = stats.getInterval();
             final String prefix = convertIntervalToString((int) interval);
 
@@ -84,7 +84,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return executionStatistics.getIntervalStatistics().get(interval).getMinimumDuration();
+                    return executionStatisticsImpl.getTimeWindowStatistics().get(interval).getMinimumDuration();
                 }
             });
 
@@ -95,7 +95,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return executionStatistics.getIntervalStatistics().get(interval).getMaximumDuration();
+                    return executionStatisticsImpl.getTimeWindowStatistics().get(interval).getMaximumDuration();
                 }
             });
 
@@ -106,7 +106,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return executionStatistics.getIntervalStatistics().get(interval).getAverageDuration();
+                    return executionStatisticsImpl.getTimeWindowStatistics().get(interval).getAverageDuration();
                 }
             });
 
@@ -118,7 +118,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return executionStatistics.getIntervalStatistics().get(interval).getRequestsPerSecond();
+                    return executionStatisticsImpl.getTimeWindowStatistics().get(interval).getRequestsPerSecond();
                 }
             });
 
@@ -130,7 +130,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return executionStatistics.getIntervalStatistics().get(interval).getTotalCount();
+                    return executionStatisticsImpl.getTimeWindowStatistics().get(interval).getTotalCount();
                 }
             });
         }
@@ -164,15 +164,15 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
         return sb.toString();
     }
 
-    public ExecutionStatisticsDynamicBean(ExecutionStatistics executionStatistics, String beanName) {
-        this.executionStatistics = executionStatistics;
+    public ExecutionStatisticsDynamicBean(ExecutionStatisticsImpl executionStatisticsImpl, String beanName) {
+        this.executionStatisticsImpl = executionStatisticsImpl;
         this.beanName = beanName;
-        this.mBeanInfo = initMBeanInfo(executionStatistics);
+        this.mBeanInfo = initMBeanInfo(executionStatisticsImpl);
 
     }
 
-    public void setExecutionStatistics(ExecutionStatistics executionStatistics) {
-        this.executionStatistics = executionStatistics;
+    public void setExecutionStatisticsImpl(ExecutionStatisticsImpl executionStatisticsImpl) {
+        this.executionStatisticsImpl = executionStatisticsImpl;
     }
 
 

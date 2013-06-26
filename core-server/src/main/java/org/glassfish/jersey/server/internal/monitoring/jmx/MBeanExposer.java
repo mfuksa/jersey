@@ -49,11 +49,7 @@ import javax.management.*;
 import javax.ws.rs.*;
 
 import org.glassfish.jersey.server.*;
-import org.glassfish.jersey.server.internal.monitoring.*;
-import org.glassfish.jersey.server.internal.monitoring.event.*;
 import org.glassfish.jersey.server.internal.monitoring.statistics.*;
-
-import org.glassfish.hk2.utilities.binding.*;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
@@ -75,7 +71,7 @@ public class MBeanExposer implements MonitoringStatisticsListener {
             throws MalformedObjectNameException, NotCompliantMBeanException,
             InstanceAlreadyExistsException, MBeanRegistrationException {
 
-        MonitoringStatistics blankStatistics = new MonitoringStatistics.Builder(resourceContext.getResourceModel()).build();
+        MonitoringStatisticsImpl blankStatistics = new MonitoringStatisticsImpl.Builder(resourceContext.getResourceModel()).build();
         resourcesGroup = new ResourcesMBeanGroup(blankStatistics.getRootResourceStatistics());
         responseMXBean = new ResponseMXBeanImpl();
         requestMBean = new ExecutionStatisticsDynamicBean(blankStatistics.getRequestStatistics(), "GlobalRequestStatistics");
@@ -101,7 +97,7 @@ public class MBeanExposer implements MonitoringStatisticsListener {
     }
 
     @Override
-    public void onStatistics(MonitoringStatistics statistics) {
+    public void onStatistics(MonitoringStatisticsImpl statistics) {
         if (exposed.compareAndSet(false, true)) {
             String appName = statistics.getApplicationStatistics().getResourceConfig().getApplicationName();
             if (appName == null) {
@@ -116,7 +112,7 @@ public class MBeanExposer implements MonitoringStatisticsListener {
             exceptionMapperMXBean.register(this, "");
         }
 
-        requestMBean.setExecutionStatistics(statistics.getRequestStatistics());
+        requestMBean.setExecutionStatisticsImpl(statistics.getRequestStatistics());
         resourcesGroup.setResourcesStatistics(statistics.getRootResourceStatistics());
         responseMXBean.setResponseCodesToCountMap(statistics.getResponseStatistics());
         exceptionMapperMXBean.setNewStatistics(statistics.getExceptionMapperStatistics());

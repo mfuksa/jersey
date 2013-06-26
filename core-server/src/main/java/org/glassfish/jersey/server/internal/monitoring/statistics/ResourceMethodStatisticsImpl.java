@@ -41,36 +41,30 @@
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
 import org.glassfish.jersey.server.model.ResourceMethod;
+import org.glassfish.jersey.server.monitoring.ExecutionStatistics;
+import org.glassfish.jersey.server.monitoring.ResourceMethodStatistics;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
-public class ResourceMethodStatistics {
-    private final ExecutionStatistics resourceMethodExecutionStatistics;
-    private final ExecutionStatistics requestExecutionStatistics;
-    private final ResourceMethod resourceMethod;
-
+public class ResourceMethodStatisticsImpl implements ResourceMethodStatistics {
     public static class Builder {
-        private final ExecutionStatistics.Builder resourceMethodExecutionStatisticsBuilder;
-        private final ExecutionStatistics.Builder requestExecutionStatisticsBuilder;
+        private final ExecutionStatisticsImpl.Builder resourceMethodExecutionStatisticsBuilder;
+        private final ExecutionStatisticsImpl.Builder requestExecutionStatisticsBuilder;
         private final ResourceMethod resourceMethod;
 
 
         public Builder(ResourceMethod resourceMethod) {
             this.resourceMethod = resourceMethod;
-            this.resourceMethodExecutionStatisticsBuilder = new ExecutionStatistics.Builder();
-            this.requestExecutionStatisticsBuilder = new ExecutionStatistics.Builder();
+            this.resourceMethodExecutionStatisticsBuilder = new ExecutionStatisticsImpl.Builder();
+            this.requestExecutionStatisticsBuilder = new ExecutionStatisticsImpl.Builder();
         }
 
-        public ResourceMethodStatistics build() {
-            return new ResourceMethodStatistics(resourceMethod, resourceMethodExecutionStatisticsBuilder.build(),
+        public ResourceMethodStatisticsImpl build() {
+            return new ResourceMethodStatisticsImpl(resourceMethod, resourceMethodExecutionStatisticsBuilder.build(),
                     requestExecutionStatisticsBuilder.build());
         }
 
-        public ExecutionStatistics.Builder getResourceMethodExecutionStatisticsBuilder() {
-            return resourceMethodExecutionStatisticsBuilder;
-        }
 
         public void addResourceMethodExecution(long methodExecutionTime, long methodStartTime,
                                                long requestExecutionTime, long requestStartTime) {
@@ -79,19 +73,26 @@ public class ResourceMethodStatistics {
         }
     }
 
-    public ResourceMethodStatistics(ResourceMethod resourceMethod, ExecutionStatistics resourceMethodExecutionStatistics,
-                                    ExecutionStatistics requestExecutionStatistics) {
-        this.resourceMethodExecutionStatistics = resourceMethodExecutionStatistics;
+    private final ExecutionStatisticsImpl resourceMethodExecutionStatisticsImpl;
+    private final ExecutionStatisticsImpl requestExecutionStatisticsImpl;
+    private final ResourceMethod resourceMethod;
+
+
+    public ResourceMethodStatisticsImpl(ResourceMethod resourceMethod, ExecutionStatisticsImpl resourceMethodExecutionStatisticsImpl,
+                                        ExecutionStatisticsImpl requestExecutionStatisticsImpl) {
+        this.resourceMethodExecutionStatisticsImpl = resourceMethodExecutionStatisticsImpl;
         this.resourceMethod = resourceMethod;
-        this.requestExecutionStatistics = requestExecutionStatistics;
+        this.requestExecutionStatisticsImpl = requestExecutionStatisticsImpl;
     }
 
-    public ExecutionStatistics getResourceMethodExecutionStatistics() {
-        return resourceMethodExecutionStatistics;
+    @Override
+    public ExecutionStatistics getRequestStatistics() {
+        return requestExecutionStatisticsImpl;
     }
 
-    public ExecutionStatistics getRequestExecutionStatistics() {
-        return requestExecutionStatistics;
+    @Override
+    public ExecutionStatistics getMethodStatistics() {
+        return resourceMethodExecutionStatisticsImpl;
     }
 
     public ResourceMethod getResourceMethod() {
