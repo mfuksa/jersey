@@ -43,19 +43,20 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
 import java.util.Map;
 
 import org.glassfish.jersey.server.internal.monitoring.statistics.ResponseStatisticsImpl;
+import org.glassfish.jersey.server.monitoring.ResponseStatistics;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
 public class ResponseMXBeanImpl implements ResponseMXBean {
-    ResponseStatisticsImpl responseStatistics;
+    ResponseStatistics responseStatistics;
 
 
     public ResponseMXBeanImpl() {
     }
 
-    public void setResponseCodesToCountMap(ResponseStatisticsImpl responseStatistics) {
+    public void updateResponseStatistics(ResponseStatistics responseStatistics) {
         this.responseStatistics = responseStatistics;
     }
 

@@ -206,7 +206,7 @@ public class MonitoringStatisticsImpl implements MonitoringStatistics {
 
 
     @Override
-    public Map<String, ResourceStatistics> getUriStatisticsMap() {
+    public Map<String, ResourceStatistics> getUriStatistics() {
         return uriStatistics;
     }
 

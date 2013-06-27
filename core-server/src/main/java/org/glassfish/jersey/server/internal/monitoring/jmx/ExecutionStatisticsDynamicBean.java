@@ -53,8 +53,7 @@ import javax.management.MBeanInfo;
 import javax.management.ReflectionException;
 
 import org.glassfish.jersey.internal.util.collection.Value;
-import org.glassfish.jersey.server.internal.monitoring.statistics.ExecutionStatisticsImpl;
-import org.glassfish.jersey.server.internal.monitoring.statistics.TimeWindowStatisticsImpl;
+import org.glassfish.jersey.server.monitoring.ExecutionStatistics;
 import org.glassfish.jersey.server.monitoring.TimeWindowStatistics;
 
 import com.google.common.collect.Maps;
@@ -63,14 +62,14 @@ import com.google.common.collect.Maps;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable {
-    private volatile ExecutionStatisticsImpl executionStatisticsImpl;
+    private volatile ExecutionStatistics executionStatistics;
     private final String beanName;
     private final Map<String, Value<Object>> attributeValues = Maps.newHashMap();
 
     private final MBeanInfo mBeanInfo;
 
 
-    private MBeanInfo initMBeanInfo(final ExecutionStatisticsImpl initialStatistics) {
+    private MBeanInfo initMBeanInfo(final ExecutionStatistics initialStatistics) {
         final Map<Long, TimeWindowStatistics> statsMap = initialStatistics.getTimeWindowStatistics();
         MBeanAttributeInfo[] attrs = new MBeanAttributeInfo[statsMap.size() * 5];
         int i = 0;
@@ -85,7 +84,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return executionStatisticsImpl.getTimeWindowStatistics().get(interval).getMinimumDuration();
+                    return executionStatistics.getTimeWindowStatistics().get(interval).getMinimumDuration();
                 }
             });
 
@@ -96,7 +95,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return executionStatisticsImpl.getTimeWindowStatistics().get(interval).getMaximumDuration();
+                    return executionStatistics.getTimeWindowStatistics().get(interval).getMaximumDuration();
                 }
             });
 
@@ -107,7 +106,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return executionStatisticsImpl.getTimeWindowStatistics().get(interval).getAverageDuration();
+                    return executionStatistics.getTimeWindowStatistics().get(interval).getAverageDuration();
                 }
             });
 
@@ -119,7 +118,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return executionStatisticsImpl.getTimeWindowStatistics().get(interval).getRequestsPerSecond();
+                    return executionStatistics.getTimeWindowStatistics().get(interval).getRequestsPerSecond();
                 }
             });
 
@@ -131,7 +130,7 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
             attributeValues.put(name, new Value<Object>() {
                 @Override
                 public Object get() {
-                    return executionStatisticsImpl.getTimeWindowStatistics().get(interval).getRequestCount();
+                    return executionStatistics.getTimeWindowStatistics().get(interval).getRequestCount();
                 }
             });
         }
@@ -165,15 +164,15 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
         return sb.toString();
     }
 
-    public ExecutionStatisticsDynamicBean(ExecutionStatisticsImpl executionStatisticsImpl, String beanName) {
-        this.executionStatisticsImpl = executionStatisticsImpl;
+    public ExecutionStatisticsDynamicBean(ExecutionStatistics executionStatistics, String beanName) {
+        this.executionStatistics = executionStatistics;
         this.beanName = beanName;
-        this.mBeanInfo = initMBeanInfo(executionStatisticsImpl);
+        this.mBeanInfo = initMBeanInfo(executionStatistics);
 
     }
 
-    public void setExecutionStatisticsImpl(ExecutionStatisticsImpl executionStatisticsImpl) {
-        this.executionStatisticsImpl = executionStatisticsImpl;
+    public void updateExecutionStatistics(ExecutionStatistics executionStatistics) {
+        this.executionStatistics = executionStatistics;
     }
 
 

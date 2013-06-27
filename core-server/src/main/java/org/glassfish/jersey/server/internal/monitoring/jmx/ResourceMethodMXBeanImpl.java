@@ -41,9 +41,8 @@
 package org.glassfish.jersey.server.internal.monitoring.jmx;
 
 import org.glassfish.jersey.message.internal.MediaTypes;
-import org.glassfish.jersey.server.internal.monitoring.statistics.ExecutionStatisticsImpl;
-import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceMethodStatisticsImpl;
 import org.glassfish.jersey.server.model.ResourceMethod;
+import org.glassfish.jersey.server.monitoring.ResourceMethodStatistics;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
@@ -55,19 +54,18 @@ public class ResourceMethodMXBeanImpl implements ResourceMethodMXBean, Registrab
     private final String name;
     private final ResourceMethod resourceMethod;
 
-
-    public ResourceMethodMXBeanImpl(ResourceMethodStatisticsImpl methodStatistics, String path) {
-        this.methodExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(ExecutionStatisticsImpl.epmtyStatistics(), "MethodStatistics");
-        this.requestExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(ExecutionStatisticsImpl.epmtyStatistics(), "RequestStatistics");
-        this.path = path;
-        this.name = methodStatistics.getResourceMethod().getInvocable().getHandlingMethod().getName() + "_"
-                + Integer.toHexString(methodStatistics.getResourceMethod().hashCode());
+    public ResourceMethodMXBeanImpl(ResourceMethodStatistics methodStatistics, String path) {
+        this.methodExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(methodStatistics.getMethodStatistics(), "MethodStatistics");
+        this.requestExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(methodStatistics.getRequestStatistics(), "RequestStatistics");
         this.resourceMethod = methodStatistics.getResourceMethod();
+        this.path = path;
+        this.name = resourceMethod.getHttpMethod() + "_" + methodStatistics.getResourceMethod().getInvocable().getHandlingMethod().getName() + "_"
+                + Integer.toHexString(methodStatistics.getResourceMethod().hashCode());
     }
 
-    public void setResourceMethodStatistics(ResourceMethodStatisticsImpl resourceMethodStatisticsImpl) {
-// ?????       this.methodExecutionStatisticsMxBean.setExecutionStatisticsImpl(resourceMethodStatisticsImpl.getResourceMethodExecutionStatisticsImpl());
-//        this.requestExecutionStatisticsMxBean.setExecutionStatisticsImpl(resourceMethodStatisticsImpl.getRequestExecutionStatisticsImpl());
+    public void setResourceMethodStatistics(ResourceMethodStatistics resourceMethodStatisticsImpl) {
+        this.methodExecutionStatisticsMxBean.updateExecutionStatistics(resourceMethodStatisticsImpl.getMethodStatistics());
+        this.requestExecutionStatisticsMxBean.updateExecutionStatistics(resourceMethodStatisticsImpl.getRequestStatistics());
     }
 
 
@@ -96,7 +94,6 @@ public class ResourceMethodMXBeanImpl implements ResourceMethodMXBean, Registrab
         return MediaTypes.convertToString(resourceMethod.getProducedTypes());
     }
 
-
     @Override
     public String getName() {
         return name;
@@ -107,6 +104,5 @@ public class ResourceMethodMXBeanImpl implements ResourceMethodMXBean, Registrab
         mBeanExposer.registerMBean(this, methodBeanName);
         methodExecutionStatisticsMxBean.register(mBeanExposer, methodBeanName);
         requestExecutionStatisticsMxBean.register(mBeanExposer, methodBeanName);
-
     }
 }

@@ -42,47 +42,35 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
 
 import java.util.Map;
 
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-
-import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceStatisticsImpl;
-import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.monitoring.ResourceStatistics;
 
 import com.google.common.collect.Maps;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public class ResourcesMBeanGroup implements Registrable {
-    private final Map<Resource, ResourceMxBeanImpl> resourceMBeans = Maps.newHashMap();
     private final Map<String, ResourceMxBeanImpl> exposedResourceMBeans = Maps.newHashMap();
 
-    /*??????public ResourcesMBeanGroup(Map<Resource, ResourceStatisticsImpl> resourceStatistics)
-            throws MalformedObjectNameException, NotCompliantMBeanException, InstanceAlreadyExistsException,
-            MBeanRegistrationException {
-        for (Map.Entry<Resource, ResourceStatisticsImpl> entry : resourceStatistics.entrySet()) {
-            final Resource resource = entry.getKey();
-            final String path = resource.getPath();
-            final ResourceMxBeanImpl mxBean = new ResourceMxBeanImpl(entry.getValue(), path);
-            resourceMBeans.put(resource, mxBean);
-            exposedResourceMBeans.put(path, mxBean);
+    public ResourcesMBeanGroup(Map<String, ResourceStatistics> resourceStatistics) {
+
+        for (Map.Entry<String, ResourceStatistics> entry : resourceStatistics.entrySet()) {
+            final String name = entry.getKey();
+            final ResourceMxBeanImpl mxBean = new ResourceMxBeanImpl(entry.getValue(), name);
+            exposedResourceMBeans.put(name, mxBean);
         }
     }
-      */
 
-    public void setResourcesStatistics(Map<Resource, ResourceStatisticsImpl> resourceStatistics) {
-       /* ???????for (Map.Entry<Resource, ResourceStatisticsImpl> entry : resourceStatistics.entrySet()) {
-            resourceMBeans.get(entry.getKey()).setResourceStatistics(entry.getValue());
-        } */
+    public void updateResourcesStatistics(Map<String, ResourceStatistics> resourceStatistics) {
+        for (Map.Entry<String, ResourceStatistics> entry : resourceStatistics.entrySet()) {
+            exposedResourceMBeans.get(entry.getKey()).updateResourceStatistics(entry.getValue());
+        }
     }
 
     @Override
     public void register(MBeanExposer mBeanExposer, String parentName) {
         for (Map.Entry<String, ResourceMxBeanImpl> entry : exposedResourceMBeans.entrySet()) {
-            entry.getValue().register(mBeanExposer, parentName + "type=Resources" );
+            entry.getValue().register(mBeanExposer, parentName + "type=Uris");
         }
 
     }

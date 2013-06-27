@@ -47,7 +47,7 @@ import java.util.Map;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public interface MonitoringStatistics {
-    public Map<String, ResourceStatistics> getUriStatisticsMap();
+    public Map<String, ResourceStatistics> getUriStatistics();
 
     public Map<Class<?>, ResourceStatistics> getResourceClassStatistics();
 

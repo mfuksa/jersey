@@ -40,12 +40,9 @@
 
 package org.glassfish.jersey.server.internal.monitoring.jmx;
 
-import java.util.List;
-
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public interface ResourceMXBean {
-    public String getPath();
+    public String getName();
 }

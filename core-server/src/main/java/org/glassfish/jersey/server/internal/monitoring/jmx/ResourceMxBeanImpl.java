@@ -40,92 +40,58 @@
 
 package org.glassfish.jersey.server.internal.monitoring.jmx;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.glassfish.jersey.server.internal.monitoring.statistics.ExecutionStatisticsImpl;
-import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceMethodStatisticsImpl;
-import org.glassfish.jersey.server.internal.monitoring.statistics.ResourceStatisticsImpl;
-import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
+import org.glassfish.jersey.server.monitoring.ResourceMethodStatistics;
+import org.glassfish.jersey.server.monitoring.ResourceStatistics;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public class ResourceMxBeanImpl implements ResourceMXBean, Registrable {
-    private final String path = null; // ?????
+    private final String name;
     private ExecutionStatisticsDynamicBean resourceExecutionStatisticsBean;
     private ExecutionStatisticsDynamicBean requestExecutionStatisticsBean;
     private final Map<ResourceMethod, ResourceMethodMXBeanImpl> resourceMethods = Maps.newHashMap();
-    private final List<ResourceMethodMXBeanImpl> exposedResourceMethods = Lists.newArrayList();
-    private final Map<Resource, Map<ResourceMethod, ResourceMethodMXBeanImpl>> childResourceMethods = Maps.newHashMap();
 
-          /*
-    public ResourceMxBeanImpl(ResourceStatisticsImpl resourceStatisticsImpl, String path) {
-        this.path = path;
-        this.resourceExecutionStatisticsBean = new ExecutionStatisticsDynamicBean(ExecutionStatisticsImpl.epmtyStatistics(), "ResourceStatistics");
-        this.requestExecutionStatisticsBean = new ExecutionStatisticsDynamicBean(ExecutionStatisticsImpl.epmtyStatistics(), "RequestStatistics");
+    public ResourceMxBeanImpl(ResourceStatistics resourceStatistics, String name) {
+        this.name = name;
+        this.resourceExecutionStatisticsBean = new ExecutionStatisticsDynamicBean(resourceStatistics.getRequestExecutionStatistics(), "ResourceStatistics");
+        this.requestExecutionStatisticsBean = new ExecutionStatisticsDynamicBean(resourceStatistics.getResourceMethodExecutionStatistics(), "RequestStatistics");
 
-        for (Map.Entry<ResourceMethod, ResourceMethodStatisticsImpl> entry
-                : resourceStatisticsImpl.getResourceMethods().entrySet()) {
-            final ResourceMethod method = entry.getKey();
-            final ResourceMethodMXBeanImpl resourceMxBean = new ResourceMethodMXBeanImpl(entry.getValue(), null);
-            resourceMethods.put(method, resourceMxBean);
-            exposedResourceMethods.add(resourceMxBean);
-        }
-
-        for (Map.Entry<Resource, ResourceStatisticsImpl> childEntry : resourceStatisticsImpl.getChildResources().entrySet()) {
-            final Resource childResource = childEntry.getKey();
-            final HashMap<ResourceMethod, ResourceMethodMXBeanImpl> childMap = new HashMap<ResourceMethod,
-                    ResourceMethodMXBeanImpl>();
-            childResourceMethods.put(childResource, childMap);
-            for (Map.Entry<ResourceMethod, ResourceMethodStatisticsImpl> methodEntry
-                    : childEntry.getValue().getResourceMethods().entrySet()) {
-                final ResourceMethodMXBeanImpl subResourceMethodMXBean
-                        = new ResourceMethodMXBeanImpl(methodEntry.getValue(), childResource.getPath());
-                childMap.put(methodEntry.getKey(), subResourceMethodMXBean);
-                exposedResourceMethods.add(subResourceMethodMXBean);
-            }
+        for (ResourceMethodStatistics methodStatistics : resourceStatistics.getResourceMethodStatistics().values()) {
+            final ResourceMethodMXBeanImpl methodMxBean = new ResourceMethodMXBeanImpl(methodStatistics, null);
+            resourceMethods.put(methodStatistics.getResourceMethod(), methodMxBean);
         }
     }
 
-    public void setResourceStatistics(ResourceStatisticsImpl resourceStatisticsImpl) {
-        this.resourceExecutionStatisticsBean.setExecutionStatisticsImpl(resourceStatisticsImpl.getResourceMethodExecutionStatistics());
-        this.requestExecutionStatisticsBean.setExecutionStatisticsImpl(resourceStatisticsImpl.getRequestExecutionStatistics());
-        for (Map.Entry<ResourceMethod, ResourceMethodStatisticsImpl> methodEntry
-                : resourceStatisticsImpl.getResourceMethods().entrySet()) {
-            this.resourceMethods.get(methodEntry.getKey()).setResourceMethodStatistics(methodEntry.getValue());
+    public void updateResourceStatistics(ResourceStatistics resourceStatistics) {
+        this.resourceExecutionStatisticsBean.updateExecutionStatistics(resourceStatistics.getResourceMethodExecutionStatistics());
+        this.requestExecutionStatisticsBean.updateExecutionStatistics(resourceStatistics.getRequestExecutionStatistics());
+
+        for (Map.Entry<ResourceMethod, ResourceMethodStatistics> entry
+                : resourceStatistics.getResourceMethodStatistics().entrySet()) {
+            this.resourceMethods.get(entry.getKey()).setResourceMethodStatistics(entry.getValue());
         }
-
-        for (Map.Entry<Resource, ResourceStatisticsImpl> childEntry : resourceStatisticsImpl.getChildResources().entrySet()) {
-            for (Map.Entry<ResourceMethod, ResourceMethodStatisticsImpl> subMethodEntry
-                    : childEntry.getValue().getResourceMethods().entrySet()) {
-                this.childResourceMethods.get(childEntry.getKey()).get(subMethodEntry.getKey())
-                        .setResourceMethodStatistics(subMethodEntry.getValue());
-            }
-
-        }
-
-    }        */
+    }
 
 
     @Override
-    public String getPath() {
-        return this.path;
+    public String getName() {
+        return this.name;
     }
 
     @Override
     public void register(MBeanExposer mBeanExposer, String parentName) {
-        final String resourcePath = parentName + ",resource=" + path;
+        final String resourcePath = parentName + ",resource=" + name;
         mBeanExposer.registerMBean(this, resourcePath);
         requestExecutionStatisticsBean.register(mBeanExposer, resourcePath);
         resourceExecutionStatisticsBean.register(mBeanExposer, resourcePath);
-        for (ResourceMethodMXBeanImpl methodMxBean : exposedResourceMethods) {
+        for (ResourceMethodMXBeanImpl methodMxBean : resourceMethods.values()) {
             methodMxBean.register(mBeanExposer, resourcePath);
         }
 

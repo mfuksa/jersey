@@ -40,16 +40,23 @@
 
 package org.glassfish.jersey.server.internal.monitoring.jmx;
 
-import java.lang.management.*;
-import java.util.concurrent.atomic.*;
-import java.util.logging.*;
+import java.lang.management.ManagementFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.inject.*;
-import javax.management.*;
-import javax.ws.rs.*;
+import javax.inject.Inject;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.JMException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+import javax.ws.rs.ProcessingException;
 
-import org.glassfish.jersey.server.*;
-import org.glassfish.jersey.server.internal.monitoring.statistics.*;
+import org.glassfish.jersey.server.ExtendedResourceContext;
+import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsImpl;
 import org.glassfish.jersey.server.monitoring.MonitoringStatistics;
 import org.glassfish.jersey.server.monitoring.MonitoringStatisticsListener;
 
@@ -60,7 +67,7 @@ public class MBeanExposer implements MonitoringStatisticsListener {
 
     private final ExecutionStatisticsDynamicBean requestMBean;
     private final ResponseMXBeanImpl responseMXBean;
-    private final ResourcesMBeanGroup resourcesGroup;
+    private final ResourcesMBeanGroup uriStatsGroup;
     private volatile ApplicationMXBeanImpl applicationMXBean;
     private final AtomicBoolean exposed = new AtomicBoolean(false);
     private volatile String domain;
@@ -74,9 +81,9 @@ public class MBeanExposer implements MonitoringStatisticsListener {
             InstanceAlreadyExistsException, MBeanRegistrationException {
 
         MonitoringStatisticsImpl blankStatistics = new MonitoringStatisticsImpl.Builder(resourceContext.getResourceModel()).build();
-        resourcesGroup = null;//new ResourcesMBeanGroup(blankStatistics.getRootResourceStatistics());               /// ?????
+        uriStatsGroup = new ResourcesMBeanGroup(blankStatistics.getUriStatistics());
         responseMXBean = new ResponseMXBeanImpl();
-        requestMBean = null; //new ExecutionStatisticsDynamicBean(blankStatistics.getRequestExecutionStatistics(), "GlobalRequestStatistics");
+        requestMBean = new ExecutionStatisticsDynamicBean(blankStatistics.getRequestExecutionStatistics(), "GlobalRequestStatistics");
         exceptionMapperMXBean = new ExceptionMapperMXBeanImpl();
     }
 
@@ -106,19 +113,19 @@ public class MBeanExposer implements MonitoringStatisticsListener {
                 appName = "App_" + Integer.toHexString(statistics.getApplicationStatistics().getResourceConfig().hashCode());
             }
             domain = "org.glassfish.jersey." + appName;
-            registerMBean(requestMBean,  "type=Requests");
+            registerMBean(requestMBean, "type=Requests");
             registerMBean(responseMXBean, "type=Responses");
-            resourcesGroup.register(this, "");
+            uriStatsGroup.register(this, "");
             applicationMXBean = new ApplicationMXBeanImpl(statistics.getApplicationStatistics());
             applicationMXBean.register(this, "");
             exceptionMapperMXBean.register(this, "");
         }
 
-//        requestMBean.setExecutionStatisticsImpl(statistics.getRequestExecutionStatistics());
-//        resourcesGroup.setResourcesStatistics(statistics.getRootResourceStatistics());
-//        responseMXBean.setResponseCodesToCountMap(statistics.getResponseStatistics());
-//        exceptionMapperMXBean.setNewStatistics(statistics.getExceptionMapperStatistics());
-        //???????
+        requestMBean.updateExecutionStatistics(statistics.getRequestExecutionStatistics());
+        uriStatsGroup.updateResourcesStatistics(statistics.getUriStatistics());
+        responseMXBean.updateResponseStatistics(statistics.getResponseStatistics());
+        exceptionMapperMXBean.updateExceptionMapperStatistics(statistics.getExceptionMapperStatistics());
+
     }
 
 

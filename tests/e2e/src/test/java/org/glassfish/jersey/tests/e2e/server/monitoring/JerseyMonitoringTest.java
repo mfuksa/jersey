@@ -68,8 +68,8 @@ public class JerseyMonitoringTest extends JerseyTest {
         final ResourceConfig resourceConfig = new ResourceConfig(TestResource.class, MyExceptionMapper.class);
         resourceConfig.property("very-important", "yes");
         resourceConfig.property("another-property", 48);
-        resourceConfig.property(ServerProperties.MONITORING_STATISTICS_ENABLED, true);
-//        resourceConfig.property(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED, true);
+//        resourceConfig.property(ServerProperties.MONITORING_STATISTICS_ENABLED, true);
+        resourceConfig.property(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED, true);
         return resourceConfig;
     }
 

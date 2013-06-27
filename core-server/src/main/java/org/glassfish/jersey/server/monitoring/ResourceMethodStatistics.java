@@ -40,8 +40,6 @@
 
 package org.glassfish.jersey.server.monitoring;
 
-import java.util.Date;
-
 import org.glassfish.jersey.server.model.ResourceMethod;
 
 /**
@@ -49,6 +47,8 @@ import org.glassfish.jersey.server.model.ResourceMethod;
  */
 public interface ResourceMethodStatistics {
     public ExecutionStatistics getRequestStatistics();
+
     public ExecutionStatistics getMethodStatistics();
+
     public ResourceMethod getResourceMethod();
 }

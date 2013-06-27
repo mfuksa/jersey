@@ -127,7 +127,7 @@ public class MonitoringStatisticsTest {
     @Test
     public void testSimpleUris() {
         final MonitoringStatisticsImpl stats = getSimpleStats();
-        final Set<String> keys = stats.getUriStatisticsMap().keySet();
+        final Set<String> keys = stats.getUriStatistics().keySet();
         final Iterator<String> iterator = keys.iterator();
         Assert.assertEquals("/hello", iterator.next());
         Assert.assertEquals("/hello/world", iterator.next());
@@ -183,7 +183,7 @@ public class MonitoringStatisticsTest {
     @Test
     public void testUrisWithProgrammaticResources() {
         final MonitoringStatisticsImpl stats = getProgStats().build();
-        final Iterator<Map.Entry<String, ResourceStatistics>> it = stats.getUriStatisticsMap().entrySet().iterator();
+        final Iterator<Map.Entry<String, ResourceStatistics>> it = stats.getUriStatistics().entrySet().iterator();
 
         check(it, "/hello", 2);
         check(it, "/hello/world", 1);
@@ -217,7 +217,7 @@ public class MonitoringStatisticsTest {
         statBuilder.addExecution("/new/elefant", postMethod, 30, 2, 28, 4);
 
         final MonitoringStatisticsImpl stat = statBuilder.build();
-        final Iterator<Map.Entry<String, ResourceStatistics>> it = stat.getUriStatisticsMap().entrySet().iterator();
+        final Iterator<Map.Entry<String, ResourceStatistics>> it = stat.getUriStatistics().entrySet().iterator();
 
         check(it, "/hello", 2);
         check(it, "/hello/world", 1);
@@ -228,7 +228,7 @@ public class MonitoringStatisticsTest {
         check(it, "/test-resource/prog-child", 1);
 
         final Map<ResourceMethod, ResourceMethodStatistics> resourceMethodStatistics
-                = stat.getUriStatisticsMap().get("/new/elefant").getResourceMethodStatistics();
+                = stat.getUriStatistics().get("/new/elefant").getResourceMethodStatistics();
         for (ResourceMethodStatistics methodStatistics : resourceMethodStatistics.values()) {
             final ResourceMethod method = methodStatistics.getResourceMethod();
             final ExecutionStatistics st = methodStatistics.getMethodStatistics();

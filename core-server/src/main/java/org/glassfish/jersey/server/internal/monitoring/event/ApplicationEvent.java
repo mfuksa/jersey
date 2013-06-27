@@ -58,6 +58,7 @@ public class ApplicationEvent implements Event {
 
     private final Type type;
     private final ResourceConfig resourceConfig;
+    // TODO: M: add resource model
 
     // TODO: M: builder?
 
