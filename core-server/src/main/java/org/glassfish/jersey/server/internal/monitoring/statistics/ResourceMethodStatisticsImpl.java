@@ -98,4 +98,10 @@ public class ResourceMethodStatisticsImpl implements ResourceMethodStatistics {
     public ResourceMethod getResourceMethod() {
         return resourceMethod;
     }
+
+    @Override
+    public ResourceMethodStatistics snapshot() {
+        // snapshot functionality not yet implemented
+        return this;
+    }
 }

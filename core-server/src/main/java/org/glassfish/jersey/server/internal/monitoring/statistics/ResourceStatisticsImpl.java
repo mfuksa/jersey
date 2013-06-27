@@ -102,4 +102,10 @@ public class ResourceStatisticsImpl implements ResourceStatistics {
     public Map<ResourceMethod, ResourceMethodStatistics> getResourceMethodStatistics() {
         return resourceMethods;
     }
+
+    @Override
+    public ResourceStatistics snapshot() {
+        // snapshot functionality not yet implemented
+        return this;
+    }
 }

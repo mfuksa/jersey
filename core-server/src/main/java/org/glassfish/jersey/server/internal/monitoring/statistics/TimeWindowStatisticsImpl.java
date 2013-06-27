@@ -277,6 +277,12 @@ public class TimeWindowStatisticsImpl implements TimeWindowStatistics {
     }
 
     @Override
+    public TimeWindowStatistics snapshot() {
+        // snapshot functionality not yet implemented
+        return this;
+    }
+
+    @Override
     public long getAverageDuration() {
         return averageDuration;
     }

@@ -84,5 +84,11 @@ public class ExceptionMapperStatisticsImpl implements ExceptionMapperStatistics 
         return totalMappings;
     }
 
+    @Override
+    public ExceptionMapperStatistics snapshot() {
+        // snapshot functionality not yet implemented
+        return this;
+    }
+
 
 }

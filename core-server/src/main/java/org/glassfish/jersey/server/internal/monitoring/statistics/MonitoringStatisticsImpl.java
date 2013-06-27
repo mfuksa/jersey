@@ -224,4 +224,10 @@ public class MonitoringStatisticsImpl implements MonitoringStatistics {
     public ExceptionMapperStatistics getExceptionMapperStatistics() {
         return exceptionMapperStatistics;
     }
+
+    @Override
+    public MonitoringStatistics snapshot() {
+        // snapshot functionality not yet implemented
+        return this;
+    }
 }

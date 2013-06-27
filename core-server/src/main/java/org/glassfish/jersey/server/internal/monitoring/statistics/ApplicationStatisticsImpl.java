@@ -64,4 +64,10 @@ public class ApplicationStatisticsImpl implements ApplicationStatistics {
     public Date getStartTime() {
         return startTime;
     }
+
+    @Override
+    public ApplicationStatistics snapshot() {
+        // snapshot functionality not yet implemented
+        return this;
+    }
 }

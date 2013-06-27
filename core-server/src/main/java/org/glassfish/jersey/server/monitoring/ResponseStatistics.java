@@ -50,4 +50,6 @@ public interface ResponseStatistics {
     public Integer getLastResponseCode();
 
     public Map<Integer, Long> getResponseCodes();
+
+    public ResponseStatistics snapshot();
 }

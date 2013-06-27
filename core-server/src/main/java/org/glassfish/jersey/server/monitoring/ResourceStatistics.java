@@ -54,5 +54,6 @@ public interface ResourceStatistics {
 
     public Map<ResourceMethod, ResourceMethodStatistics> getResourceMethodStatistics();
 
+    public ResourceStatistics snapshot();
 
 }

@@ -59,4 +59,6 @@ public interface MonitoringStatistics {
 
     public ExceptionMapperStatistics getExceptionMapperStatistics();
 
+    public MonitoringStatistics snapshot();
+
 }

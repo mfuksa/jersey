@@ -51,4 +51,6 @@ public interface ApplicationStatistics {
     public ResourceConfig getResourceConfig();
 
     public Date getStartTime();
+
+    public ApplicationStatistics snapshot();
 }

@@ -88,4 +88,10 @@ public class ResponseStatisticsImpl implements ResponseStatistics {
     public Map<Integer, Long> getResponseCodes() {
         return responseCodes;
     }
+
+    @Override
+    public ResponseStatistics snapshot() {
+        // snapshot functionality not yet implemented
+        return this;
+    }
 }

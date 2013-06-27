@@ -54,4 +54,6 @@ public interface ExceptionMapperStatistics {
     public long getUnsuccessfulMappings();
 
     public long getTotalMappings();
+
+    public ExceptionMapperStatistics snapshot();
 }

@@ -51,4 +51,6 @@ public interface ResourceMethodStatistics {
     public ExecutionStatistics getMethodStatistics();
 
     public ResourceMethod getResourceMethod();
+
+    public ResourceMethodStatistics snapshot();
 }

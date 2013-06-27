@@ -51,4 +51,6 @@ public interface ExecutionStatistics {
     public Date getLastStartTime();
 
     public Map<Long, TimeWindowStatistics> getTimeWindowStatistics();
+
+    public ExecutionStatistics snapshot();
 }

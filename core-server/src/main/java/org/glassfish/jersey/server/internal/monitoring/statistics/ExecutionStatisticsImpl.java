@@ -109,6 +109,12 @@ public class ExecutionStatisticsImpl implements ExecutionStatistics {
         return timeWindowStatistics;
     }
 
+    @Override
+    public ExecutionStatistics snapshot() {
+        // snapshot functionality not yet implemented
+        return this;
+    }
+
     public ExecutionStatisticsImpl(long lastStartTime, Map<Long, TimeWindowStatistics> timeWindowStatistics) {
         this.lastStartTime = new Date(lastStartTime);
         this.timeWindowStatistics = timeWindowStatistics;

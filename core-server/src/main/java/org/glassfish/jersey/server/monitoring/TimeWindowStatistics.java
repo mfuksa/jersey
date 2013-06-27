@@ -55,4 +55,6 @@ public interface TimeWindowStatistics {
     public long getAverageDuration();
 
     public long getRequestCount();
+
+    public TimeWindowStatistics snapshot();
 }
