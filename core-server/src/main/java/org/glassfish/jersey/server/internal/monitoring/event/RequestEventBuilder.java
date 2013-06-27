@@ -21,6 +21,8 @@ public interface RequestEventBuilder {
 
     public RequestEventBuilder setSuccess(boolean success);
 
+    public RequestEventBuilder setResponseWritten(boolean responseWritten);
+
     public RequestEventBuilder setThrowable(Throwable throwable, RequestEvent.ExceptionCause exceptionCause);
 
 

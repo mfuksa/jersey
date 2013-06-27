@@ -488,7 +488,7 @@ class ServerRuntime {
 
             if (!response.hasEntity()) {
                 writer.writeResponseStatusAndHeaders(0, response);
-                triggerResponseWrittenEvent(response);
+                setWrittenResponse(response);
                 return response;
             }
 
@@ -529,7 +529,7 @@ class ServerRuntime {
                     }
                     throw mpe;
                 }
-                triggerResponseWrittenEvent(response);
+                setWrittenResponse(response);
 
             } catch (Throwable ex) {
                 if (response.isCommitted()) {
@@ -580,10 +580,10 @@ class ServerRuntime {
             return response;
         }
 
-        private void triggerResponseWrittenEvent(ContainerResponse response) {
+        private void setWrittenResponse(ContainerResponse response) {
             request.getRequestEventBuilder().setContainerResponse(response);
-            request.getRequestEventBuilder().setSuccess(true);
-            request.triggerEvent(RequestEvent.Type.RESP_WRITTEN);
+            request.getRequestEventBuilder().setSuccess(response.getStatus() < 400);
+            request.getRequestEventBuilder().setResponseWritten(true);
         }
 
         private void release(ContainerResponse responseContext) {

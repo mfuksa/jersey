@@ -35,6 +35,11 @@ public class EmptyRequestEventBuilder implements RequestEventBuilder {
     }
 
     @Override
+    public RequestEventBuilder setResponseWritten(boolean responseWritten) {
+        return this;
+    }
+
+    @Override
     public RequestEventBuilder setThrowable(Throwable throwable, RequestEvent.ExceptionCause exceptionCause) {
         return this;
     }

@@ -176,10 +176,10 @@ public class MonitoringEventListener implements ApplicationEventListener {
                 case EXCEPTION_MAPPING_FINISHED:
                     exceptionMapperEvents.add(event);
                     break;
-                case RESP_WRITTEN:
-                    responseStatuses.add(event.getContainerResponse().getStatus());
-                    break;
                 case FINISHED:
+                    if (event.isResponseWritten()) {
+                        responseStatuses.add(event.getContainerResponse().getStatus());
+                    }
                     StringBuffer sb = new StringBuffer();
                     for (UriTemplate uriTemplate : event.getUriInfo().getMatchedTemplates()) {
                         sb.append(uriTemplate.getTemplate());
