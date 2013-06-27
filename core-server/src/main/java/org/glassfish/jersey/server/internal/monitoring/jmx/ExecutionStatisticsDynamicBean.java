@@ -74,11 +74,11 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean {
         int i = 0;
         for (final TimeWindowStatistics stats : statsMap.values()) {
             final long interval = stats.getTimeWindow();
-            final String prefix = convertIntervalToString((int) interval);
+            final String postfix = convertIntervalToString((int) interval);
 
-            String name = prefix + "_MinTime_ms";
+            String name = "MinTime[ms]_" + postfix;
             attrs[i++] = new MBeanAttributeInfo(name, "long", "Minimum request processing time in milliseconds in last "
-                    + prefix + " seconds.", true, false, false);
+                    + postfix + ".", true, false, false);
 
             attributeValues.put(name, new Value<Object>() {
                 @Override
@@ -87,9 +87,9 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean {
                 }
             });
 
-            name = prefix + "_MaxTime_ms";
+            name = "MaxTime[ms]_" + postfix;
             attrs[i++] = new MBeanAttributeInfo(name, "long", "Minimum request processing time  in milliseconds in last "
-                    + prefix + " seconds.", true, false, false);
+                    + postfix + ".", true, false, false);
 
             attributeValues.put(name, new Value<Object>() {
                 @Override
@@ -98,9 +98,9 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean {
                 }
             });
 
-            name = prefix + "_AverageTime_ms";
+            name = "AverageTime[ms]_" + postfix;
             attrs[i++] = new MBeanAttributeInfo(name, "long", "Average request processing time in milliseconds in last "
-                    + prefix + " seconds.", true, false, false);
+                    + postfix + ".", true, false, false);
 
             attributeValues.put(name, new Value<Object>() {
                 @Override
@@ -110,9 +110,9 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean {
             });
 
 
-            name = prefix + "_RequestsPerSecond";
+            name =  "RequestRate[requestsPerSeconds]_" + postfix;
             attrs[i++] = new MBeanAttributeInfo(name, "double", "Average requests per second in last "
-                    + prefix + " seconds.", true, false, false);
+                    + postfix + ".", true, false, false);
 
             attributeValues.put(name, new Value<Object>() {
                 @Override
@@ -122,9 +122,9 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean {
             });
 
 
-            name = prefix + "_RequestCount";
+            name = "RequestCount_" + postfix;
             attrs[i++] = new MBeanAttributeInfo(name, "double", "Request count in last "
-                    + prefix + " seconds.", true, false, false);
+                    + postfix + ".", true, false, false);
 
             attributeValues.put(name, new Value<Object>() {
                 @Override
