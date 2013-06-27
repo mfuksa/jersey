@@ -41,56 +41,54 @@
 package org.glassfish.jersey.server.internal.monitoring.jmx;
 
 import java.lang.management.ManagementFactory;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.management.InstanceAlreadyExistsException;
 import javax.management.JMException;
-import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import javax.ws.rs.ProcessingException;
 
-import org.glassfish.jersey.server.ExtendedResourceContext;
-import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsImpl;
 import org.glassfish.jersey.server.monitoring.MonitoringStatistics;
 import org.glassfish.jersey.server.monitoring.MonitoringStatisticsListener;
+import org.glassfish.jersey.server.monitoring.ResourceStatistics;
+
+import com.google.common.collect.Maps;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public class MBeanExposer implements MonitoringStatisticsListener {
 
-    private final ExecutionStatisticsDynamicBean requestMBean;
-    private final ResponseMXBeanImpl responseMXBean;
-    private final ResourcesMBeanGroup uriStatsGroup;
+    // MBeans
+    private volatile ExecutionStatisticsDynamicBean requestMBean;
+    private volatile ResponseMXBeanImpl responseMXBean;
+    private volatile ResourcesMBeanGroup uriStatsGroup;
+    private volatile ResourcesMBeanGroup resourceClassStatsGroup;
     private volatile ApplicationMXBeanImpl applicationMXBean;
+    private volatile ExceptionMapperMXBeanImpl exceptionMapperMXBean;
+
     private final AtomicBoolean exposed = new AtomicBoolean(false);
     private volatile String domain;
-    private final ExceptionMapperMXBeanImpl exceptionMapperMXBean;
 
     private static final Logger LOGGER = Logger.getLogger(MBeanExposer.class.getName());
 
-    @Inject
-    public MBeanExposer(ExtendedResourceContext resourceContext)
-            throws MalformedObjectNameException, NotCompliantMBeanException,
-            InstanceAlreadyExistsException, MBeanRegistrationException {
 
-        MonitoringStatisticsImpl blankStatistics = new MonitoringStatisticsImpl.Builder(resourceContext.getResourceModel()).build();
-        uriStatsGroup = new ResourcesMBeanGroup(blankStatistics.getUriStatistics());
-        responseMXBean = new ResponseMXBeanImpl();
-        requestMBean = new ExecutionStatisticsDynamicBean(blankStatistics.getRequestExecutionStatistics(), "GlobalRequestStatistics");
-        exceptionMapperMXBean = new ExceptionMapperMXBeanImpl();
+    private Map<String, ResourceStatistics> transformToStringKeys(Map<Class<?>, ResourceStatistics> stats) {
+        Map<String, ResourceStatistics> newMap = Maps.newHashMap();
+        for (Map.Entry<Class<?>, ResourceStatistics> entry : stats.entrySet()) {
+            newMap.put(entry.getKey().getName(), entry.getValue());
+        }
+        return newMap;
     }
 
     void registerMBean(Object mbean, String namePostfix) {
         final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+        final String name = domain + ":" + namePostfix;
         try {
-            final ObjectName objectName = new ObjectName(domain + ":" + namePostfix);
+            final ObjectName objectName = new ObjectName(name);
             if (mBeanServer.isRegistered(objectName)) {
                 // TODO: M: loc
                 LOGGER.log(Level.SEVERE, "Monitoring Mbeans for Jersey application " + objectName.getCanonicalName() +
@@ -101,7 +99,8 @@ public class MBeanExposer implements MonitoringStatisticsListener {
             mBeanServer.registerMBean(mbean, objectName);
         } catch (JMException e) {
 
-            throw new ProcessingException("Error when registering Jersey monitoring MXBeans.", e);
+            throw new ProcessingException(
+                    "Error when registering Jersey monitoring MXBeans. MxBean with name '" + name + "' failed.", e);
         }
     }
 
@@ -113,18 +112,30 @@ public class MBeanExposer implements MonitoringStatisticsListener {
                 appName = "App_" + Integer.toHexString(statistics.getApplicationStatistics().getResourceConfig().hashCode());
             }
             domain = "org.glassfish.jersey." + appName;
-            registerMBean(requestMBean, "type=Requests");
+
+            uriStatsGroup = new ResourcesMBeanGroup(statistics.getUriStatistics(), true, this, "type=Uris");
+            Map<String, ResourceStatistics> newMap = transformToStringKeys(statistics.getResourceClassStatistics());
+
+            resourceClassStatsGroup = new ResourcesMBeanGroup(newMap, false, this, "type=ResourceClasses");
+
+            responseMXBean = new ResponseMXBeanImpl();
+            // TODO: M: move register to Respbean
             registerMBean(responseMXBean, "type=Responses");
-            uriStatsGroup.register(this, "");
-            applicationMXBean = new ApplicationMXBeanImpl(statistics.getApplicationStatistics());
-            applicationMXBean.register(this, "");
-            exceptionMapperMXBean.register(this, "");
+
+            requestMBean = new ExecutionStatisticsDynamicBean(statistics.getRequestExecutionStatistics(),
+                    this, "type=Requests", "GlobalRequestStatistics");
+
+            exceptionMapperMXBean = new ExceptionMapperMXBeanImpl(statistics.getExceptionMapperStatistics(), this);
+
+            applicationMXBean = new ApplicationMXBeanImpl(statistics.getApplicationStatistics(), this);
+
         }
 
         requestMBean.updateExecutionStatistics(statistics.getRequestExecutionStatistics());
         uriStatsGroup.updateResourcesStatistics(statistics.getUriStatistics());
         responseMXBean.updateResponseStatistics(statistics.getResponseStatistics());
         exceptionMapperMXBean.updateExceptionMapperStatistics(statistics.getExceptionMapperStatistics());
+        this.resourceClassStatsGroup.updateResourcesStatistics(transformToStringKeys(statistics.getResourceClassStatistics()));
 
     }
 

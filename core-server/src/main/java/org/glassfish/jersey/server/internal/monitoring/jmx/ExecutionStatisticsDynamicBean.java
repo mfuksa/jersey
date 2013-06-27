@@ -61,9 +61,8 @@ import com.google.common.collect.Maps;
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable {
+public class ExecutionStatisticsDynamicBean implements DynamicMBean {
     private volatile ExecutionStatistics executionStatistics;
-    private final String beanName;
     private final Map<String, Value<Object>> attributeValues = Maps.newHashMap();
 
     private final MBeanInfo mBeanInfo;
@@ -164,10 +163,10 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
         return sb.toString();
     }
 
-    public ExecutionStatisticsDynamicBean(ExecutionStatistics executionStatistics, String beanName) {
+    public ExecutionStatisticsDynamicBean(ExecutionStatistics executionStatistics, MBeanExposer mBeanExposer, String parentBeanName, String beanName) {
         this.executionStatistics = executionStatistics;
-        this.beanName = beanName;
         this.mBeanInfo = initMBeanInfo(executionStatistics);
+        mBeanExposer.registerMBean(this, parentBeanName + ",statistics=" + beanName);
 
     }
 
@@ -204,10 +203,5 @@ public class ExecutionStatisticsDynamicBean implements DynamicMBean, Registrable
     @Override
     public MBeanInfo getMBeanInfo() {
         return mBeanInfo;
-    }
-
-    @Override
-    public void register(MBeanExposer mBeanExposer, String parentName) {
-        mBeanExposer.registerMBean(this, parentName + ",statistics=" + beanName);
     }
 }

@@ -49,29 +49,31 @@ import com.google.common.collect.Maps;
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class ResourcesMBeanGroup implements Registrable {
+public class ResourcesMBeanGroup {
     private final Map<String, ResourceMxBeanImpl> exposedResourceMBeans = Maps.newHashMap();
+    private final String parentName;
+    private final boolean exposeMethodPath;
+    private final MBeanExposer exposer;
 
-    public ResourcesMBeanGroup(Map<String, ResourceStatistics> resourceStatistics) {
+    public ResourcesMBeanGroup(Map<String, ResourceStatistics> resourceStatistics,
+                               boolean exposeMethodPath,
+                               MBeanExposer mBeanExposer,
+                               String parentName) {
+        this.exposeMethodPath = exposeMethodPath;
+        this.exposer = mBeanExposer;
+        this.parentName = parentName;
 
-        for (Map.Entry<String, ResourceStatistics> entry : resourceStatistics.entrySet()) {
-            final String name = entry.getKey();
-            final ResourceMxBeanImpl mxBean = new ResourceMxBeanImpl(entry.getValue(), name);
-            exposedResourceMBeans.put(name, mxBean);
-        }
+        updateResourcesStatistics(resourceStatistics);
     }
 
     public void updateResourcesStatistics(Map<String, ResourceStatistics> resourceStatistics) {
         for (Map.Entry<String, ResourceStatistics> entry : resourceStatistics.entrySet()) {
-            exposedResourceMBeans.get(entry.getKey()).updateResourceStatistics(entry.getValue());
+            ResourceMxBeanImpl resourceMxBean = exposedResourceMBeans.get(entry.getKey());
+            if (resourceMxBean == null) {
+                resourceMxBean = new ResourceMxBeanImpl(entry.getValue(), entry.getKey(), exposeMethodPath, exposer, parentName);
+                exposedResourceMBeans.put(entry.getKey(), resourceMxBean);
+            }
+            resourceMxBean.updateResourceStatistics(entry.getValue());
         }
-    }
-
-    @Override
-    public void register(MBeanExposer mBeanExposer, String parentName) {
-        for (Map.Entry<String, ResourceMxBeanImpl> entry : exposedResourceMBeans.entrySet()) {
-            entry.getValue().register(mBeanExposer, parentName + "type=Uris");
-        }
-
     }
 }

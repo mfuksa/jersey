@@ -46,7 +46,7 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
  */
 public interface ResourceMethodMXBean {
 
-    public String getName();
+    public String getJavaName();
     public String getPath();
     public String getHttpMethod();
     public String getDeclaringClassName();

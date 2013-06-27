@@ -10,9 +10,15 @@ import com.google.common.collect.Maps;
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class ExceptionMapperMXBeanImpl implements ExceptionMapperMXBean, Registrable {
+public class ExceptionMapperMXBeanImpl implements ExceptionMapperMXBean {
     private volatile ExceptionMapperStatistics mapperStatistics;
     private volatile Map<String, Long> mapperExcecutions = Maps.newHashMap();
+
+    public ExceptionMapperMXBeanImpl(ExceptionMapperStatistics mapperStatistics,
+                                     MBeanExposer mBeanExposer) {
+        mBeanExposer.registerMBean(this, "type=ExceptionMapper");
+        updateExceptionMapperStatistics(mapperStatistics);
+    }
 
     public void updateExceptionMapperStatistics(ExceptionMapperStatistics mapperStatistics) {
         this.mapperStatistics = mapperStatistics;
@@ -20,7 +26,6 @@ public class ExceptionMapperMXBeanImpl implements ExceptionMapperMXBean, Registr
         for (Map.Entry<Class<?>, Long> entry : mapperStatistics.getExceptionMapperExecutions().entrySet()) {
             mapperExcecutions.put(entry.getKey().getName(), entry.getValue());
         }
-
     }
 
     @Override
@@ -43,9 +48,5 @@ public class ExceptionMapperMXBeanImpl implements ExceptionMapperMXBean, Registr
         return mapperStatistics.getTotalMappings();
     }
 
-    @Override
-    public void register(MBeanExposer mBeanExposer, String parentName) {
-        mBeanExposer.registerMBean(this, parentName + "type=ExceptionMapper");
-    }
 
 }

@@ -52,13 +52,13 @@ import com.google.common.collect.Maps;
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class ApplicationMXBeanImpl implements ApplicationMXBean, Registrable {
+public class ApplicationMXBeanImpl implements ApplicationMXBean {
     private final String applicationName;
     private final String applicationClass;
     private final Map<String, String> configurationProperties;
     private final Date startTime;
 
-    public ApplicationMXBeanImpl(ApplicationStatistics applicationStatistics) {
+    public ApplicationMXBeanImpl(ApplicationStatistics applicationStatistics, MBeanExposer mBeanExposer) {
         final ResourceConfig resourceConfig = applicationStatistics.getResourceConfig();
         this.applicationName = resourceConfig.getApplicationName();
         this.applicationClass = resourceConfig.getApplication().getClass().getName();
@@ -67,6 +67,8 @@ public class ApplicationMXBeanImpl implements ApplicationMXBean, Registrable {
             configurationProperties.put(entry.getKey(), entry.getValue().toString());
         }
         this.startTime = applicationStatistics.getStartTime();
+
+        mBeanExposer.registerMBean(this, "type=Configuration");
     }
 
     @Override
@@ -89,8 +91,4 @@ public class ApplicationMXBeanImpl implements ApplicationMXBean, Registrable {
         return startTime;
     }
 
-    @Override
-    public void register(MBeanExposer mBeanExposer, String parentName) {
-        mBeanExposer.registerMBean(this, parentName + "type=Configuration");
-    }
 }

@@ -42,7 +42,6 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
 
 import java.util.Map;
 
-import org.glassfish.jersey.server.internal.monitoring.statistics.ExecutionStatisticsImpl;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.monitoring.ResourceMethodStatistics;
 import org.glassfish.jersey.server.monitoring.ResourceStatistics;
@@ -52,21 +51,28 @@ import com.google.common.collect.Maps;
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class ResourceMxBeanImpl implements ResourceMXBean, Registrable {
+public class ResourceMxBeanImpl implements ResourceMXBean {
     private final String name;
     private ExecutionStatisticsDynamicBean resourceExecutionStatisticsBean;
     private ExecutionStatisticsDynamicBean requestExecutionStatisticsBean;
     private final Map<ResourceMethod, ResourceMethodMXBeanImpl> resourceMethods = Maps.newHashMap();
+    private final String resourcePropertyName;
+    private final boolean exposeMethodPath;
+    private final MBeanExposer mBeanExposer;
 
-    public ResourceMxBeanImpl(ResourceStatistics resourceStatistics, String name) {
+    public ResourceMxBeanImpl(ResourceStatistics resourceStatistics, String name, boolean exposeMethodPath, MBeanExposer mBeanExposer,
+                              String parentName) {
         this.name = name;
-        this.resourceExecutionStatisticsBean = new ExecutionStatisticsDynamicBean(resourceStatistics.getRequestExecutionStatistics(), "ResourceStatistics");
-        this.requestExecutionStatisticsBean = new ExecutionStatisticsDynamicBean(resourceStatistics.getResourceMethodExecutionStatistics(), "RequestStatistics");
+        this.exposeMethodPath = exposeMethodPath;
+        this.mBeanExposer = mBeanExposer;
+        this.resourcePropertyName = parentName + ",resource=" + name;
+        mBeanExposer.registerMBean(this, resourcePropertyName);
+        this.resourceExecutionStatisticsBean = new ExecutionStatisticsDynamicBean(
+                resourceStatistics.getRequestExecutionStatistics(), mBeanExposer, resourcePropertyName, "ResourceStatistics");
+        this.requestExecutionStatisticsBean = new ExecutionStatisticsDynamicBean(
+                resourceStatistics.getResourceMethodExecutionStatistics(), mBeanExposer, resourcePropertyName, "RequestStatistics");
 
-        for (ResourceMethodStatistics methodStatistics : resourceStatistics.getResourceMethodStatistics().values()) {
-            final ResourceMethodMXBeanImpl methodMxBean = new ResourceMethodMXBeanImpl(methodStatistics, null);
-            resourceMethods.put(methodStatistics.getResourceMethod(), methodMxBean);
-        }
+        updateResourceStatistics(resourceStatistics);
     }
 
     public void updateResourceStatistics(ResourceStatistics resourceStatistics) {
@@ -75,7 +81,14 @@ public class ResourceMxBeanImpl implements ResourceMXBean, Registrable {
 
         for (Map.Entry<ResourceMethod, ResourceMethodStatistics> entry
                 : resourceStatistics.getResourceMethodStatistics().entrySet()) {
-            this.resourceMethods.get(entry.getKey()).setResourceMethodStatistics(entry.getValue());
+            final ResourceMethodStatistics methodStats = entry.getValue();
+            final ResourceMethod method = entry.getKey();
+            ResourceMethodMXBeanImpl methodMXBean = this.resourceMethods.get(method);
+            if (methodMXBean == null) {
+                methodMXBean = new ResourceMethodMXBeanImpl(methodStats, exposeMethodPath, mBeanExposer, resourcePropertyName);
+                resourceMethods.put(method, methodMXBean);
+            }
+            methodMXBean.updateResourceMethodStatistics(methodStats);
         }
     }
 
@@ -85,15 +98,5 @@ public class ResourceMxBeanImpl implements ResourceMXBean, Registrable {
         return this.name;
     }
 
-    @Override
-    public void register(MBeanExposer mBeanExposer, String parentName) {
-        final String resourcePath = parentName + ",resource=" + name;
-        mBeanExposer.registerMBean(this, resourcePath);
-        requestExecutionStatisticsBean.register(mBeanExposer, resourcePath);
-        resourceExecutionStatisticsBean.register(mBeanExposer, resourcePath);
-        for (ResourceMethodMXBeanImpl methodMxBean : resourceMethods.values()) {
-            methodMxBean.register(mBeanExposer, resourcePath);
-        }
 
-    }
 }

@@ -47,23 +47,37 @@ import org.glassfish.jersey.server.monitoring.ResourceMethodStatistics;
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class ResourceMethodMXBeanImpl implements ResourceMethodMXBean, Registrable {
+public class ResourceMethodMXBeanImpl implements ResourceMethodMXBean {
     private ExecutionStatisticsDynamicBean methodExecutionStatisticsMxBean;
     private ExecutionStatisticsDynamicBean requestExecutionStatisticsMxBean;
     private final String path;
     private final String name;
     private final ResourceMethod resourceMethod;
+    final String methodBeanName;
 
-    public ResourceMethodMXBeanImpl(ResourceMethodStatistics methodStatistics, String path) {
-        this.methodExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(methodStatistics.getMethodStatistics(), "MethodStatistics");
-        this.requestExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(methodStatistics.getRequestStatistics(), "RequestStatistics");
+    public ResourceMethodMXBeanImpl(ResourceMethodStatistics methodStatistics, boolean exposePath, MBeanExposer mBeanExposer,
+                                    String parentName) {
         this.resourceMethod = methodStatistics.getResourceMethod();
-        this.path = path;
-        this.name = resourceMethod.getHttpMethod() + "_" + methodStatistics.getResourceMethod().getInvocable().getHandlingMethod().getName() + "_"
+        if (exposePath) {
+            this.path = resourceMethod.getParent().getParent() == null ? "" : resourceMethod.getParent().getPath();
+        } else {
+            path = "N/A";
+        }
+        this.name = methodStatistics.getResourceMethod().getInvocable().getHandlingMethod().getName();
+        String beanName = resourceMethod.getHttpMethod()
+                + "_" + name + "_"
                 + Integer.toHexString(methodStatistics.getResourceMethod().hashCode());
+
+        this.methodBeanName = parentName + ",detail=methods,method=" + beanName;
+        mBeanExposer.registerMBean(this, methodBeanName);
+
+        methodExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(methodStatistics.getMethodStatistics(),
+                mBeanExposer, methodBeanName, "MethodStatistics");
+        requestExecutionStatisticsMxBean = new ExecutionStatisticsDynamicBean(methodStatistics.getRequestStatistics(),
+                mBeanExposer, methodBeanName, "RequestStatistics");
     }
 
-    public void setResourceMethodStatistics(ResourceMethodStatistics resourceMethodStatisticsImpl) {
+    public void updateResourceMethodStatistics(ResourceMethodStatistics resourceMethodStatisticsImpl) {
         this.methodExecutionStatisticsMxBean.updateExecutionStatistics(resourceMethodStatisticsImpl.getMethodStatistics());
         this.requestExecutionStatisticsMxBean.updateExecutionStatistics(resourceMethodStatisticsImpl.getRequestStatistics());
     }
@@ -95,14 +109,7 @@ public class ResourceMethodMXBeanImpl implements ResourceMethodMXBean, Registrab
     }
 
     @Override
-    public String getName() {
+    public String getJavaName() {
         return name;
-    }
-
-    public void register(MBeanExposer mBeanExposer, String parentName) {
-        final String methodBeanName = parentName + ",detail=methods,method=" + name;
-        mBeanExposer.registerMBean(this, methodBeanName);
-        methodExecutionStatisticsMxBean.register(mBeanExposer, methodBeanName);
-        requestExecutionStatisticsMxBean.register(mBeanExposer, methodBeanName);
     }
 }
