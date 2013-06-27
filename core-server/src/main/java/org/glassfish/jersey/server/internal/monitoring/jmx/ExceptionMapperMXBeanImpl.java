@@ -16,7 +16,7 @@ public class ExceptionMapperMXBeanImpl implements ExceptionMapperMXBean {
 
     public ExceptionMapperMXBeanImpl(ExceptionMapperStatistics mapperStatistics,
                                      MBeanExposer mBeanExposer) {
-        mBeanExposer.registerMBean(this, "type=ExceptionMapper");
+        mBeanExposer.registerMBean(this, ",subType=ExceptionMapper");
         updateExceptionMapperStatistics(mapperStatistics);
     }
 

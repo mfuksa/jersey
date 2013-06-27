@@ -86,7 +86,7 @@ public class MBeanExposer implements MonitoringStatisticsListener {
 
     void registerMBean(Object mbean, String namePostfix) {
         final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-        final String name = domain + ":" + namePostfix;
+        final String name = domain + namePostfix;
         try {
             final ObjectName objectName = new ObjectName(name);
             if (mBeanServer.isRegistered(objectName)) {
@@ -111,19 +111,19 @@ public class MBeanExposer implements MonitoringStatisticsListener {
             if (appName == null) {
                 appName = "App_" + Integer.toHexString(statistics.getApplicationStatistics().getResourceConfig().hashCode());
             }
-            domain = "org.glassfish.jersey." + appName;
+            domain = "org.glassfish.jersey:type=" + appName;
 
-            uriStatsGroup = new ResourcesMBeanGroup(statistics.getUriStatistics(), true, this, "type=Uris");
+            uriStatsGroup = new ResourcesMBeanGroup(statistics.getUriStatistics(), true, this, ",subType=Uris");
             Map<String, ResourceStatistics> newMap = transformToStringKeys(statistics.getResourceClassStatistics());
 
-            resourceClassStatsGroup = new ResourcesMBeanGroup(newMap, false, this, "type=ResourceClasses");
+            resourceClassStatsGroup = new ResourcesMBeanGroup(newMap, false, this, ",subType=ResourceClasses");
 
             responseMXBean = new ResponseMXBeanImpl();
             // TODO: M: move register to Respbean
-            registerMBean(responseMXBean, "type=Responses");
+            registerMBean(responseMXBean, ",subType=Responses");
 
             requestMBean = new ExecutionStatisticsDynamicBean(statistics.getRequestExecutionStatistics(),
-                    this, "type=Requests", "GlobalRequestStatistics");
+                    this, ",subType=Requests", "GlobalRequestStatistics");
 
             exceptionMapperMXBean = new ExceptionMapperMXBeanImpl(statistics.getExceptionMapperStatistics(), this);
 

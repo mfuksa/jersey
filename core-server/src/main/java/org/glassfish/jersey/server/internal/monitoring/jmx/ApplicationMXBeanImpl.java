@@ -68,7 +68,7 @@ public class ApplicationMXBeanImpl implements ApplicationMXBean {
         }
         this.startTime = applicationStatistics.getStartTime();
 
-        mBeanExposer.registerMBean(this, "type=Configuration");
+        mBeanExposer.registerMBean(this, ",subType=Configuration");
     }
 
     @Override
