@@ -51,6 +51,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.ws.rs.ProcessingException;
 
+import org.glassfish.jersey.server.monitoring.ApplicationStatistics;
 import org.glassfish.jersey.server.monitoring.MonitoringStatistics;
 import org.glassfish.jersey.server.monitoring.MonitoringStatisticsListener;
 import org.glassfish.jersey.server.monitoring.ResourceStatistics;
@@ -107,9 +108,10 @@ public class MBeanExposer implements MonitoringStatisticsListener {
     @Override
     public void onStatistics(MonitoringStatistics statistics) {
         if (exposed.compareAndSet(false, true)) {
-            String appName = statistics.getApplicationStatistics().getResourceConfig().getApplicationName();
+            final ApplicationStatistics appStats = statistics.getApplicationStatistics();
+            String appName = appStats.getResourceConfig().getApplicationName();
             if (appName == null) {
-                appName = "App_" + Integer.toHexString(statistics.getApplicationStatistics().getResourceConfig().hashCode());
+                appName = "App_" + Integer.toHexString(appStats.getResourceConfig().hashCode());
             }
             domain = "org.glassfish.jersey:type=" + appName;
 
@@ -127,8 +129,8 @@ public class MBeanExposer implements MonitoringStatisticsListener {
 
             exceptionMapperMXBean = new ExceptionMapperMXBeanImpl(statistics.getExceptionMapperStatistics(), this);
 
-            applicationMXBean = new ApplicationMXBeanImpl(statistics.getApplicationStatistics(), this);
-
+            applicationMXBean = new ApplicationMXBeanImpl(appStats, this,
+                    appStats.getProviders(), appStats.getRegisteredClasses(), appStats.getRegisteredInstances());
         }
 
         requestMBean.updateExecutionStatistics(statistics.getRequestExecutionStatistics());

@@ -398,7 +398,7 @@ public final class ApplicationHandler {
                 compositeListener = new CompositeApplicationEventListener(
                         appEventListeners);
                 compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_START,
-                        this.runtimeConfig));
+                        this.runtimeConfig, componentBag.getRegistrations(), resourceBag.classes, resourceBag.instances));
             }
 
             processingProviders = getProcessingProviders(componentBag);
@@ -524,7 +524,8 @@ public final class ApplicationHandler {
         }
 
         if (compositeListener != null) {
-            compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_FINISHED, runtimeConfig));
+            compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_FINISHED, runtimeConfig,
+                    componentBag.getRegistrations(), resourceBag.classes, resourceBag.instances));
         }
     }
 

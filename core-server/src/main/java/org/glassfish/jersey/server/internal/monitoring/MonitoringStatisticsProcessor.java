@@ -53,6 +53,7 @@ import javax.ws.rs.ProcessingException;
 
 import org.glassfish.jersey.server.ExtendedResourceContext;
 import org.glassfish.jersey.server.internal.RuntimeExecutorsBinder;
+import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
 import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ApplicationStatisticsImpl;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ExceptionMapperStatisticsImpl;
@@ -85,8 +86,11 @@ public class MonitoringStatisticsProcessor {
     }
 
     public void startMonitoringWorker() {
-        final ApplicationStatisticsImpl appStatistics = new ApplicationStatisticsImpl(monitoringEventListener.getResourceConfig(),
-                new Date(monitoringEventListener.getApplicationStartTime()));
+        final ApplicationEvent appEvent = monitoringEventListener.getApplicationEvents().remove();
+
+        final ApplicationStatisticsImpl appStatistics = new ApplicationStatisticsImpl(appEvent.getResourceConfig(),
+                new Date(monitoringEventListener.getApplicationStartTime()), appEvent.getRegisteredClasses(),
+                appEvent.getRegisteredInstances(), appEvent.getProviders());
         statisticsBuilder.setApplicationStatisticsImpl(appStatistics);
 
         scheduler.scheduleWithFixedDelay(new Runnable() {

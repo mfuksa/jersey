@@ -42,12 +42,13 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.internal.monitoring.statistics.ApplicationStatisticsImpl;
 import org.glassfish.jersey.server.monitoring.ApplicationStatistics;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
@@ -57,8 +58,29 @@ public class ApplicationMXBeanImpl implements ApplicationMXBean {
     private final String applicationClass;
     private final Map<String, String> configurationProperties;
     private final Date startTime;
+    private final Set<String> providers;
+    private final Set<String> registeredClasses;
+    private final Set<String> registeredInstances;
 
-    public ApplicationMXBeanImpl(ApplicationStatistics applicationStatistics, MBeanExposer mBeanExposer) {
+    public ApplicationMXBeanImpl(ApplicationStatistics applicationStatistics,
+                                 MBeanExposer mBeanExposer, Set<Class<?>> providers,
+                                 Set<Class<?>> registeredClasses, Set<Object> registeredInstances) {
+        this.providers = Sets.newHashSet();
+        this.registeredClasses = Sets.newHashSet();
+        this.registeredInstances = Sets.newHashSet();
+
+        for (Class<?> provider : providers) {
+            this.providers.add(provider.getName());
+        }
+
+        for (Class<?> registeredClass : registeredClasses) {
+            this.registeredClasses.add(registeredClass.toString());
+        }
+
+        for (Object registeredInstance : registeredInstances) {
+            this.registeredInstances.add(registeredInstance.getClass().getName());
+        }
+
         final ResourceConfig resourceConfig = applicationStatistics.getResourceConfig();
         this.applicationName = resourceConfig.getApplicationName();
         this.applicationClass = resourceConfig.getApplication().getClass().getName();
@@ -91,4 +113,18 @@ public class ApplicationMXBeanImpl implements ApplicationMXBean {
         return startTime;
     }
 
+    @Override
+    public Set<String> getRegisteredClasses() {
+        return registeredClasses;
+    }
+
+    @Override
+    public Set<String> getRegisteredInstances() {
+        return registeredInstances;
+    }
+
+    @Override
+    public Set<String> getProviderClasses() {
+        return providers;
+    }
 }

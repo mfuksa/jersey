@@ -42,14 +42,25 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public interface ApplicationMXBean {
     public String getApplicationName();
+
     public String getApplicationClass();
+
     public Map<String, String> getConfigurationProperties();
+
     public Date getStartTime();
+
+    public Set<String> getRegisteredClasses();
+
+    public Set<String> getRegisteredInstances();
+
+    public Set<String> getProviderClasses();
+
 
 }

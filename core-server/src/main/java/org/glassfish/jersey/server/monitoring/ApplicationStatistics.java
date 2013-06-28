@@ -41,6 +41,7 @@
 package org.glassfish.jersey.server.monitoring;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -53,4 +54,11 @@ public interface ApplicationStatistics {
     public Date getStartTime();
 
     public ApplicationStatistics snapshot();
+
+    public Set<Class<?>> getRegisteredClasses();
+
+    public Set<Object> getRegisteredInstances();
+
+    public Set<Class<?>> getProviders();
 }
+

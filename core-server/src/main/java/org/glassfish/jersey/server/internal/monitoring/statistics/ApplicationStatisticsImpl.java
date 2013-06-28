@@ -41,6 +41,7 @@
 package org.glassfish.jersey.server.internal.monitoring.statistics;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.monitoring.ApplicationStatistics;
@@ -51,10 +52,21 @@ import org.glassfish.jersey.server.monitoring.ApplicationStatistics;
 public class ApplicationStatisticsImpl implements ApplicationStatistics {
     private final ResourceConfig resourceConfig;
     private final Date startTime;
+    private final Set<Class<?>> registeredClasses;
+    private final Set<Object> registeredInstances;
+    private final Set<Class<?>> providers;
 
-    public ApplicationStatisticsImpl(ResourceConfig resourceConfig, Date startTime) {
+
+
+
+    public ApplicationStatisticsImpl(ResourceConfig resourceConfig, Date startTime, Set<Class<?>> registeredClasses,
+                                     Set<Object> registeredInstances, Set<Class<?>> providers) {
         this.resourceConfig = resourceConfig;
         this.startTime = startTime;
+
+        this.registeredClasses = registeredClasses;
+        this.registeredInstances = registeredInstances;
+        this.providers = providers;
     }
 
     public ResourceConfig getResourceConfig() {
@@ -65,9 +77,22 @@ public class ApplicationStatisticsImpl implements ApplicationStatistics {
         return startTime;
     }
 
+    public Set<Class<?>> getRegisteredClasses() {
+        return registeredClasses;
+    }
+
+    public Set<Object> getRegisteredInstances() {
+        return registeredInstances;
+    }
+
+    public Set<Class<?>> getProviders() {
+        return providers;
+    }
+
     @Override
     public ApplicationStatistics snapshot() {
         // snapshot functionality not yet implemented
         return this;
     }
+
 }

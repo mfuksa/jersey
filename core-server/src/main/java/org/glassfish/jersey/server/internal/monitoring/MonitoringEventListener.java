@@ -63,11 +63,13 @@ public class MonitoringEventListener implements ApplicationEventListener {
     @Inject
     private ServiceLocator serviceLocator;
 
+    private final Queue<ApplicationEvent> applicationEvents = Queues.newArrayBlockingQueue(20);
     private final Queue<RequestStats> requestQueuedItems = Queues.newArrayBlockingQueue(50000);
     private final Queue<Integer> responseStatuses = Queues.newArrayBlockingQueue(50000);
     private final Queue<RequestEvent> exceptionMapperEvents = Queues.newArrayBlockingQueue(50000);
     private volatile ResourceConfig resourceConfig;
     private volatile long applicationStartTime;
+
 
 
 
@@ -146,6 +148,7 @@ public class MonitoringEventListener implements ApplicationEventListener {
             case INITIALIZATION_FINISHED:
                 this.resourceConfig = event.getResourceConfig();
                 this.applicationStartTime = now;
+                this.applicationEvents.add(event);
                 final MonitoringStatisticsProcessor monitoringStatisticsProcessor = new MonitoringStatisticsProcessor(serviceLocator, this);
                 monitoringStatisticsProcessor.startMonitoringWorker();
                 break;
@@ -196,12 +199,12 @@ public class MonitoringEventListener implements ApplicationEventListener {
     }
 
 
-    ResourceConfig getResourceConfig() {
-        return resourceConfig;
-    }
-
     long getApplicationStartTime() {
         return applicationStartTime;
+    }
+
+    public Queue<ApplicationEvent> getApplicationEvents() {
+        return applicationEvents;
     }
 
     Queue<RequestEvent> getExceptionMapperEvents() {

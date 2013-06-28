@@ -40,11 +40,12 @@
 
 package org.glassfish.jersey.server.internal.monitoring.event;
 
-import org.glassfish.jersey.server.*;
+import java.util.Set;
+
+import org.glassfish.jersey.server.ResourceConfig;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public class ApplicationEvent implements Event {
     public enum Type {
@@ -58,12 +59,21 @@ public class ApplicationEvent implements Event {
 
     private final Type type;
     private final ResourceConfig resourceConfig;
+    private final Set<Class<?>> providers;
+    private final Set<Class<?>> registeredClasses;
+    private final Set<Object> registeredInstances;
+
     // TODO: M: add resource model
 
     // TODO: M: builder?
 
-    public ApplicationEvent(Type type, ResourceConfig resourceConfig) {this.type = type;
+    public ApplicationEvent(Type type, ResourceConfig resourceConfig,
+                            Set<Class<?>> providers, Set<Class<?>> registeredClasses, Set<Object> registeredInstances) {
+        this.type = type;
         this.resourceConfig = resourceConfig;
+        this.providers = providers;
+        this.registeredClasses = registeredClasses;
+        this.registeredInstances = registeredInstances;
     }
 
     public ResourceConfig getResourceConfig() {
@@ -72,5 +82,18 @@ public class ApplicationEvent implements Event {
 
     public Type getType() {
         return type;
+    }
+
+
+    public Set<Class<?>> getRegisteredClasses() {
+        return registeredClasses;
+    }
+
+    public Set<Object> getRegisteredInstances() {
+        return registeredInstances;
+    }
+
+    public Set<Class<?>> getProviders() {
+        return providers;
     }
 }
