@@ -100,6 +100,7 @@ import org.glassfish.jersey.server.internal.JerseyRequestTimeoutHandler;
 import org.glassfish.jersey.server.internal.JerseyResourceContext;
 import org.glassfish.jersey.server.internal.LocalizationMessages;
 import org.glassfish.jersey.server.internal.ProcessingProviders;
+import org.glassfish.jersey.server.internal.monitoring.MonitoringContainerListener;
 import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
 import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
 import org.glassfish.jersey.server.internal.monitoring.event.CompositeApplicationEventListener;
@@ -398,7 +399,8 @@ public final class ApplicationHandler {
                 compositeListener = new CompositeApplicationEventListener(
                         appEventListeners);
                 compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_START,
-                        this.runtimeConfig, componentBag.getRegistrations(), resourceBag.classes, resourceBag.instances));
+                        this.runtimeConfig, componentBag.getRegistrations(), resourceBag.classes, resourceBag.instances,
+                        null));
             }
 
             processingProviders = getProcessingProviders(componentBag);
@@ -524,8 +526,14 @@ public final class ApplicationHandler {
         }
 
         if (compositeListener != null) {
-            compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_FINISHED, runtimeConfig,
-                    componentBag.getRegistrations(), resourceBag.classes, resourceBag.instances));
+            final ApplicationEvent initFinishedEvent = new ApplicationEvent(
+                    ApplicationEvent.Type.INITIALIZATION_FINISHED, runtimeConfig,
+                    componentBag.getRegistrations(), resourceBag.classes, resourceBag.instances, resourceModel);
+            compositeListener.onEvent(initFinishedEvent);
+
+            final MonitoringContainerListener containerListener
+                    = locator.getService(MonitoringContainerListener.class);
+            containerListener.init(compositeListener, initFinishedEvent);
         }
     }
 

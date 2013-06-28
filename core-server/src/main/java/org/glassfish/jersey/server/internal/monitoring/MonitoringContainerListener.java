@@ -38,69 +38,59 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.event;
+package org.glassfish.jersey.server.internal.monitoring;
 
-import java.util.Set;
+import javax.inject.Singleton;
 
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.model.ResourceModel;
+import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
+import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
+import org.glassfish.jersey.server.spi.AbstractContainerLifecycleListener;
+import org.glassfish.jersey.server.spi.Container;
+import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
+
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class ApplicationEvent implements Event {
+public class MonitoringContainerListener extends AbstractContainerLifecycleListener {
 
-    public enum Type {
-        INITIALIZATION_START,
-        INITIALIZATION_FINISHED,
-        // TODO: M: implement
-        DESTROY_FINISHED,
-        RELOAD
+    private volatile ApplicationEvent initFinishedEvent;
+    private volatile ApplicationEventListener listener;
+
+    public void init(ApplicationEventListener listener, ApplicationEvent initFinishedEvent) {
+        this.listener = listener;
+        this.initFinishedEvent = initFinishedEvent;
     }
 
-    private final Type type;
-    private final ResourceConfig resourceConfig;
-    private final Set<Class<?>> providers;
-    private final Set<Class<?>> registeredClasses;
-    private final Set<Object> registeredInstances;
-    private final ResourceModel resourceModel;
-
-
-    // TODO: M: builder?
-
-    public ApplicationEvent(Type type, ResourceConfig resourceConfig,
-                            Set<Class<?>> providers, Set<Class<?>> registeredClasses,
-                            Set<Object> registeredInstances, ResourceModel resourceModel) {
-        this.type = type;
-        this.resourceConfig = resourceConfig;
-        this.providers = providers;
-        this.registeredClasses = registeredClasses;
-        this.registeredInstances = registeredInstances;
-        this.resourceModel = resourceModel;
+    @Override
+    public void onReload(Container container) {
+        if (listener != null) {
+            listener.onEvent(getApplicationEvent(ApplicationEvent.Type.RELOAD));
+        }
     }
 
-    public ResourceConfig getResourceConfig() {
-        return resourceConfig;
+    private ApplicationEvent getApplicationEvent(ApplicationEvent.Type type) {
+        return new ApplicationEvent(type,
+                initFinishedEvent.getResourceConfig(), initFinishedEvent.getProviders(),
+                initFinishedEvent.getRegisteredClasses(), initFinishedEvent.getRegisteredInstances(),
+                initFinishedEvent.getResourceModel());
     }
 
-    public Type getType() {
-        return type;
+    @Override
+    public void onShutdown(Container container) {
+        if (listener != null) {
+
+            listener.onEvent(getApplicationEvent(ApplicationEvent.Type.DESTROY_FINISHED));
+        }
     }
 
+    public static class Binder extends AbstractBinder {
 
-    public Set<Class<?>> getRegisteredClasses() {
-        return registeredClasses;
-    }
-
-    public Set<Object> getRegisteredInstances() {
-        return registeredInstances;
-    }
-
-    public Set<Class<?>> getProviders() {
-        return providers;
-    }
-
-    public ResourceModel getResourceModel() {
-        return resourceModel;
+        @Override
+        protected void configure() {
+            bind(MonitoringContainerListener.class).to(MonitoringContainerListener.class)
+                    .to(ContainerLifecycleListener.class).in(Singleton.class);
+        }
     }
 }
