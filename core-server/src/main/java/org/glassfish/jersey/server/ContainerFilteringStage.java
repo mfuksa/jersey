@@ -51,7 +51,7 @@ import org.glassfish.jersey.model.internal.RankedComparator;
 import org.glassfish.jersey.model.internal.RankedProvider;
 import org.glassfish.jersey.process.internal.AbstractChainableStage;
 import org.glassfish.jersey.process.internal.Stages;
-import org.glassfish.jersey.server.internal.monitoring.event.RequestEventImpl;
+import org.glassfish.jersey.server.internal.monitoring.RequestEventImpl;
 import org.glassfish.jersey.server.internal.process.Endpoint;
 import org.glassfish.jersey.server.internal.process.MappableException;
 import org.glassfish.jersey.server.internal.process.RespondingContext;

@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.event;
+package org.glassfish.jersey.server.internal.monitoring;
 
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseFilter;

@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.statistics;
+package org.glassfish.jersey.server.internal.monitoring;
 
 import java.util.LinkedList;
 import java.util.Queue;

@@ -42,7 +42,6 @@ package org.glassfish.jersey.server.internal.monitoring;
 
 import javax.inject.Singleton;
 
-import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventImpl;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.spi.AbstractContainerLifecycleListener;

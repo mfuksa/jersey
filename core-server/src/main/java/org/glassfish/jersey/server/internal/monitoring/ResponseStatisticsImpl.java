@@ -38,21 +38,60 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.event;
+package org.glassfish.jersey.server.internal.monitoring;
 
-import org.glassfish.jersey.server.monitoring.RequestEvent;
-import org.glassfish.jersey.server.monitoring.RequestEventListener;
+import java.util.Map;
+
+import org.glassfish.jersey.server.monitoring.ResponseStatistics;
+
+import com.google.common.collect.Maps;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
+ *
  */
-public class Events {
-    public static final RequestEventListener EMPTY_REQUEST_LISTENER = new RequestEventListener() {
-        @Override
-        public void onEvent(RequestEvent event) {
-            // no op
+public class ResponseStatisticsImpl implements ResponseStatistics {
+    private final Map<Integer, Long> responseCodes;
+    private final Integer lastResponseCode;
+
+
+    static class Builder {
+        private Map<Integer, Long> responseCodes = Maps.newHashMap();
+        private Integer lastResponseCode = null;
+
+        void addResponseCode(int responseCode) {
+            lastResponseCode = responseCode;
+            Long currentValue = responseCodes.get(responseCode);
+            if (currentValue == null) {
+                currentValue = 0l;
+            }
+            responseCodes.put(responseCode, currentValue + 1);
         }
-    };
 
+        ResponseStatisticsImpl build() {
+            return new ResponseStatisticsImpl(lastResponseCode, responseCodes);
+        }
 
+    }
+
+    private ResponseStatisticsImpl(Integer lastResponseCode, Map<Integer, Long> responseCodes) {
+        this.lastResponseCode = lastResponseCode;
+        this.responseCodes = responseCodes;
+    }
+
+    @Override
+    public Integer getLastResponseCode() {
+        return lastResponseCode;
+    }
+
+    @Override
+    public Map<Integer, Long> getResponseCodes() {
+        return responseCodes;
+    }
+
+    @Override
+    public ResponseStatistics snapshot() {
+        // snapshot functionality not yet implemented
+        return this;
+    }
 }

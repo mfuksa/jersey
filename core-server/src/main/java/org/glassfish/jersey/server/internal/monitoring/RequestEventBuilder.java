@@ -1,4 +1,4 @@
-package org.glassfish.jersey.server.internal.monitoring.event;
+package org.glassfish.jersey.server.internal.monitoring;
 
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -25,16 +25,13 @@ public interface RequestEventBuilder {
 
     public RequestEventBuilder setThrowable(Throwable throwable, RequestEventImpl.ExceptionCause exceptionCause);
 
-
     public RequestEventBuilder setExtendedUriInfo(ExtendedUriInfo extendedUriInfo);
 
     public RequestEventBuilder setContainerResponseFilters(Iterable<ContainerResponseFilter> containerResponseFilters);
 
     public RequestEventBuilder setContainerRequestFilters(Iterable<ContainerRequestFilter> containerRequestFilters);
 
-
     public RequestEventBuilder setResponseSuccessfullyMapped(boolean responseSuccessfullyMapped);
-
 
     public RequestEventImpl build(RequestEventImpl.Type eventType);
 }

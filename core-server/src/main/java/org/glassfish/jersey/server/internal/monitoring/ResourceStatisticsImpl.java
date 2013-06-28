@@ -1,4 +1,4 @@
-package org.glassfish.jersey.server.internal.monitoring.statistics;
+package org.glassfish.jersey.server.internal.monitoring;
 
 import java.util.Collections;
 import java.util.Map;

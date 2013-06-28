@@ -47,7 +47,7 @@ import org.glassfish.jersey.process.internal.Inflecting;
 import org.glassfish.jersey.process.internal.Stage;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ContainerResponse;
-import org.glassfish.jersey.server.internal.monitoring.event.*;
+import org.glassfish.jersey.server.internal.monitoring.RequestEventImpl;
 
 /**
  * Request pre-processing stage that encapsulates hierarchical resource matching

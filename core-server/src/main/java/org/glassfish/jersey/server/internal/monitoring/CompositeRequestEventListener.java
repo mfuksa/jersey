@@ -40,21 +40,26 @@
 
 package org.glassfish.jersey.server.internal.monitoring;
 
-import javax.ws.rs.core.Feature;
-import javax.ws.rs.core.FeatureContext;
+import java.util.List;
 
-import org.glassfish.jersey.server.internal.monitoring.jmx.MBeanExposer;
+import org.glassfish.jersey.server.monitoring.RequestEvent;
+import org.glassfish.jersey.server.monitoring.RequestEventListener;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class MonitoringMBeansFeature implements Feature {
+public class CompositeRequestEventListener implements RequestEventListener {
+
+    private final List<RequestEventListener> requestEventListeners;
+
+    public CompositeRequestEventListener(List<RequestEventListener> requestEventListeners) {
+        this.requestEventListeners = requestEventListeners;
+    }
+
     @Override
-    public boolean configure(FeatureContext context) {
-        if (!context.getConfiguration().isRegistered(MonitoringFeature.class)) {
-            context.register(MonitoringFeature.class);
+    public void onEvent(RequestEvent event) {
+        for (RequestEventListener requestEventListener : requestEventListeners) {
+            requestEventListener.onEvent(event);
         }
-        context.register(MBeanExposer.class);
-        return true;
     }
 }

@@ -38,9 +38,11 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.statistics;
+package org.glassfish.jersey.server.internal.monitoring;
 
 import java.util.concurrent.TimeUnit;
+
+import org.glassfish.jersey.server.internal.monitoring.TimeWindowStatisticsImpl;
 
 import org.junit.Assert;
 import org.junit.Test;

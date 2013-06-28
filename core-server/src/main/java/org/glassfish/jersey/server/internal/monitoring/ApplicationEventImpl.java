@@ -38,60 +38,67 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.statistics;
+package org.glassfish.jersey.server.internal.monitoring;
 
-import java.util.Map;
+import java.util.Set;
 
-import org.glassfish.jersey.server.monitoring.ResponseStatistics;
-
-import com.google.common.collect.Maps;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.model.ResourceModel;
+import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
-public class ResponseStatisticsImpl implements ResponseStatistics {
-    private final Map<Integer, Long> responseCodes;
-    private final Integer lastResponseCode;
+public class ApplicationEventImpl implements ApplicationEvent {
+
+    private final Type type;
+    private final ResourceConfig resourceConfig;
+    private final Set<Class<?>> providers;
+    private final Set<Class<?>> registeredClasses;
+    private final Set<Object> registeredInstances;
+    private final ResourceModel resourceModel;
 
 
-    static class Builder {
-        private Map<Integer, Long> responseCodes = Maps.newHashMap();
-        private Integer lastResponseCode = null;
+    // TODO: M: builder?
 
-        void addResponseCode(int responseCode) {
-            lastResponseCode = responseCode;
-            Long currentValue = responseCodes.get(responseCode);
-            if (currentValue == null) {
-                currentValue = 0l;
-            }
-            responseCodes.put(responseCode, currentValue + 1);
-        }
-
-        ResponseStatisticsImpl build() {
-            return new ResponseStatisticsImpl(lastResponseCode, responseCodes);
-        }
-
-    }
-
-    private ResponseStatisticsImpl(Integer lastResponseCode, Map<Integer, Long> responseCodes) {
-        this.lastResponseCode = lastResponseCode;
-        this.responseCodes = responseCodes;
+    public ApplicationEventImpl(Type type, ResourceConfig resourceConfig,
+                                Set<Class<?>> providers, Set<Class<?>> registeredClasses,
+                                Set<Object> registeredInstances, ResourceModel resourceModel) {
+        this.type = type;
+        this.resourceConfig = resourceConfig;
+        this.providers = providers;
+        this.registeredClasses = registeredClasses;
+        this.registeredInstances = registeredInstances;
+        this.resourceModel = resourceModel;
     }
 
     @Override
-    public Integer getLastResponseCode() {
-        return lastResponseCode;
+    public ResourceConfig getResourceConfig() {
+        return resourceConfig;
     }
 
     @Override
-    public Map<Integer, Long> getResponseCodes() {
-        return responseCodes;
+    public Type getType() {
+        return type;
     }
 
     @Override
-    public ResponseStatistics snapshot() {
-        // snapshot functionality not yet implemented
-        return this;
+    public Set<Class<?>> getRegisteredClasses() {
+        return registeredClasses;
+    }
+
+    @Override
+    public Set<Object> getRegisteredInstances() {
+        return registeredInstances;
+    }
+
+    @Override
+    public Set<Class<?>> getProviders() {
+        return providers;
+    }
+
+    @Override
+    public ResourceModel getResourceModel() {
+        return resourceModel;
     }
 }

@@ -42,7 +42,6 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
 
 import java.util.Map;
 
-import org.glassfish.jersey.server.internal.monitoring.statistics.ResponseStatisticsImpl;
 import org.glassfish.jersey.server.monitoring.ResponseStatistics;
 
 /**

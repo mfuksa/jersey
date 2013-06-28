@@ -43,7 +43,6 @@ package org.glassfish.jersey.server.monitoring;
 import javax.ws.rs.ConstrainedTo;
 import javax.ws.rs.RuntimeType;
 
-import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsImpl;
 import org.glassfish.jersey.spi.Contract;
 
 /**

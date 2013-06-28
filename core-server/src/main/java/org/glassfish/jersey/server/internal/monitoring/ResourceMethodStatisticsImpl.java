@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.statistics;
+package org.glassfish.jersey.server.internal.monitoring;
 
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.monitoring.ExecutionStatistics;

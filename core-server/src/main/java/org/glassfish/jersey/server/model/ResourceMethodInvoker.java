@@ -76,7 +76,7 @@ import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.internal.ProcessingProviders;
-import org.glassfish.jersey.server.internal.monitoring.event.RequestEventImpl;
+import org.glassfish.jersey.server.internal.monitoring.RequestEventImpl;
 import org.glassfish.jersey.server.internal.process.AsyncContext;
 import org.glassfish.jersey.server.internal.process.Endpoint;
 import org.glassfish.jersey.server.internal.process.RespondingContext;

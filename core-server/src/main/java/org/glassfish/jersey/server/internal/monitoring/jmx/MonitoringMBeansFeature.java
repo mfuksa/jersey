@@ -38,67 +38,24 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.event;
+package org.glassfish.jersey.server.internal.monitoring.jmx;
 
-import java.util.Set;
+import javax.ws.rs.core.Feature;
+import javax.ws.rs.core.FeatureContext;
 
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.model.ResourceModel;
-import org.glassfish.jersey.server.monitoring.ApplicationEvent;
+import org.glassfish.jersey.server.internal.monitoring.MonitoringFeature;
+import org.glassfish.jersey.server.internal.monitoring.jmx.MBeanExposer;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class ApplicationEventImpl implements ApplicationEvent {
-
-    private final Type type;
-    private final ResourceConfig resourceConfig;
-    private final Set<Class<?>> providers;
-    private final Set<Class<?>> registeredClasses;
-    private final Set<Object> registeredInstances;
-    private final ResourceModel resourceModel;
-
-
-    // TODO: M: builder?
-
-    public ApplicationEventImpl(Type type, ResourceConfig resourceConfig,
-                                Set<Class<?>> providers, Set<Class<?>> registeredClasses,
-                                Set<Object> registeredInstances, ResourceModel resourceModel) {
-        this.type = type;
-        this.resourceConfig = resourceConfig;
-        this.providers = providers;
-        this.registeredClasses = registeredClasses;
-        this.registeredInstances = registeredInstances;
-        this.resourceModel = resourceModel;
-    }
-
+public class MonitoringMBeansFeature implements Feature {
     @Override
-    public ResourceConfig getResourceConfig() {
-        return resourceConfig;
-    }
-
-    @Override
-    public Type getType() {
-        return type;
-    }
-
-    @Override
-    public Set<Class<?>> getRegisteredClasses() {
-        return registeredClasses;
-    }
-
-    @Override
-    public Set<Object> getRegisteredInstances() {
-        return registeredInstances;
-    }
-
-    @Override
-    public Set<Class<?>> getProviders() {
-        return providers;
-    }
-
-    @Override
-    public ResourceModel getResourceModel() {
-        return resourceModel;
+    public boolean configure(FeatureContext context) {
+        if (!context.getConfiguration().isRegistered(MonitoringFeature.class)) {
+            context.register(MonitoringFeature.class);
+        }
+        context.register(MBeanExposer.class);
+        return true;
     }
 }

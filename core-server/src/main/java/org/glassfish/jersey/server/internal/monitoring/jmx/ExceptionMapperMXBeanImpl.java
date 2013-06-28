@@ -2,7 +2,6 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
 
 import java.util.Map;
 
-import org.glassfish.jersey.server.internal.monitoring.statistics.ExceptionMapperStatisticsImpl;
 import org.glassfish.jersey.server.monitoring.ExceptionMapperStatistics;
 
 import com.google.common.collect.Maps;

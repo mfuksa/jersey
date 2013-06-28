@@ -1,12 +1,9 @@
-package org.glassfish.jersey.server.internal.monitoring.statistics;
+package org.glassfish.jersey.server.internal.monitoring;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.Map;
 
 import org.glassfish.jersey.server.monitoring.ExceptionMapperStatistics;
-import org.glassfish.jersey.server.monitoring.ExecutionStatistics;
-import org.glassfish.jersey.server.monitoring.TimeWindowStatistics;
 
 import com.google.common.collect.Maps;
 

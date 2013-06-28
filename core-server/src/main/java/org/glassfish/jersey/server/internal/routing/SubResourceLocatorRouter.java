@@ -59,7 +59,7 @@ import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.internal.JerseyResourceContext;
 import org.glassfish.jersey.server.internal.LocalizationMessages;
-import org.glassfish.jersey.server.internal.monitoring.event.*;
+import org.glassfish.jersey.server.internal.monitoring.RequestEventImpl;
 import org.glassfish.jersey.server.internal.process.MappableException;
 import org.glassfish.jersey.server.model.ComponentModelValidator;
 import org.glassfish.jersey.server.model.ModelProcessor;

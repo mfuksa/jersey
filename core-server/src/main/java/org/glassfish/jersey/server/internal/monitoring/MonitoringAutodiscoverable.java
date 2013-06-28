@@ -47,6 +47,8 @@ import javax.ws.rs.core.FeatureContext;
 import org.glassfish.jersey.internal.spi.AutoDiscoverable;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.internal.monitoring.MonitoringFeature;
+import org.glassfish.jersey.server.internal.monitoring.jmx.MonitoringMBeansFeature;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)

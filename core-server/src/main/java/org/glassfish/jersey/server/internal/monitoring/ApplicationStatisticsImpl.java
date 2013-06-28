@@ -38,46 +38,61 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.event;
+package org.glassfish.jersey.server.internal.monitoring;
 
-import java.util.List;
+import java.util.Date;
+import java.util.Set;
 
-import org.glassfish.jersey.server.monitoring.ApplicationEvent;
-import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
-import org.glassfish.jersey.server.monitoring.RequestEvent;
-import org.glassfish.jersey.server.monitoring.RequestEventListener;
-
-import com.google.common.collect.Lists;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.monitoring.ApplicationStatistics;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class CompositeApplicationEventListener implements ApplicationEventListener {
+public class ApplicationStatisticsImpl implements ApplicationStatistics {
+    private final ResourceConfig resourceConfig;
+    private final Date startTime;
+    private final Set<Class<?>> registeredClasses;
+    private final Set<Object> registeredInstances;
+    private final Set<Class<?>> providers;
 
-    private final List<ApplicationEventListener> applicationEventListeners;
 
-    public CompositeApplicationEventListener(List<ApplicationEventListener> applicationEventListeners) {
-        this.applicationEventListeners = applicationEventListeners;
+
+
+    public ApplicationStatisticsImpl(ResourceConfig resourceConfig, Date startTime, Set<Class<?>> registeredClasses,
+                                     Set<Object> registeredInstances, Set<Class<?>> providers) {
+        this.resourceConfig = resourceConfig;
+        this.startTime = startTime;
+
+        this.registeredClasses = registeredClasses;
+        this.registeredInstances = registeredInstances;
+        this.providers = providers;
+    }
+
+    public ResourceConfig getResourceConfig() {
+        return resourceConfig;
+    }
+
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public Set<Class<?>> getRegisteredClasses() {
+        return registeredClasses;
+    }
+
+    public Set<Object> getRegisteredInstances() {
+        return registeredInstances;
+    }
+
+    public Set<Class<?>> getProviders() {
+        return providers;
     }
 
     @Override
-    public void onEvent(ApplicationEvent event) {
-        for (ApplicationEventListener applicationEventListener : applicationEventListeners) {
-            applicationEventListener.onEvent(event);
-        }
+    public ApplicationStatistics snapshot() {
+        // snapshot functionality not yet implemented
+        return this;
     }
 
-    @Override
-    public RequestEventListener onNewRequest(RequestEvent requestEvent) {
-        List<RequestEventListener> requestEventListeners = Lists.newArrayList();
-        for (ApplicationEventListener applicationEventListener : applicationEventListeners) {
-            RequestEventListener requestEventListener = applicationEventListener.onNewRequest(requestEvent);
-            if (requestEventListener != null) {
-                requestEventListeners.add(requestEventListener);
-            }
-        }
-
-        return requestEventListeners.isEmpty() ? null
-                : new CompositeRequestEventListener(requestEventListeners);
-    }
 }

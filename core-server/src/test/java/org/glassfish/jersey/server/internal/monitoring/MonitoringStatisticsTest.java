@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.statistics;
+package org.glassfish.jersey.server.internal.monitoring;
 
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +53,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.process.Inflector;
+import org.glassfish.jersey.server.internal.monitoring.MonitoringStatisticsImpl;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
