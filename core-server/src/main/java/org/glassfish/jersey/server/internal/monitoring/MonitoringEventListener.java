@@ -45,11 +45,11 @@ import java.util.Queue;
 import javax.inject.Inject;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
-import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
-import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
-import org.glassfish.jersey.server.internal.monitoring.event.RequestEventListener;
+import org.glassfish.jersey.server.monitoring.RequestEventListener;
 import org.glassfish.jersey.server.model.ResourceMethod;
+import org.glassfish.jersey.server.monitoring.ApplicationEvent;
+import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
+import org.glassfish.jersey.server.monitoring.RequestEvent;
 import org.glassfish.jersey.uri.UriTemplate;
 
 import org.glassfish.hk2.api.ServiceLocator;
@@ -69,8 +69,6 @@ public class MonitoringEventListener implements ApplicationEventListener {
     private final Queue<RequestEvent> exceptionMapperEvents = Queues.newArrayBlockingQueue(50000);
     private volatile ResourceConfig resourceConfig;
     private volatile long applicationStartTime;
-
-
 
 
     static class TimeStats {
@@ -189,7 +187,7 @@ public class MonitoringEventListener implements ApplicationEventListener {
                         if (!uriTemplate.endsWithSlash()) {
                             sb.append("/");
                         }
-                        sb.setLength(sb.length() -1);
+                        sb.setLength(sb.length() - 1);
                     }
 
                     requestQueuedItems.add(new RequestStats(new TimeStats(requestTimeStart, now - requestTimeStart),

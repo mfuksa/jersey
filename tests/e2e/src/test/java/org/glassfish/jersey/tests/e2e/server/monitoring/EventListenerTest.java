@@ -61,11 +61,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
-import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
-import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
-import org.glassfish.jersey.server.internal.monitoring.event.RequestEventListener;
+import org.glassfish.jersey.server.monitoring.RequestEventListener;
 import org.glassfish.jersey.server.model.ResourceMethod;
+import org.glassfish.jersey.server.monitoring.ApplicationEvent;
+import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
+import org.glassfish.jersey.server.monitoring.RequestEvent;
 import org.glassfish.jersey.test.JerseyTest;
 
 import org.junit.Test;

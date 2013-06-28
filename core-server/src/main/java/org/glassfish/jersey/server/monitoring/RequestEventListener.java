@@ -38,46 +38,13 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.event;
+package org.glassfish.jersey.server.monitoring;
 
-import java.util.List;
-
-import org.glassfish.jersey.server.monitoring.ApplicationEvent;
-import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.monitoring.RequestEvent;
-import org.glassfish.jersey.server.monitoring.RequestEventListener;
-
-import com.google.common.collect.Lists;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class CompositeApplicationEventListener implements ApplicationEventListener {
-
-    private final List<ApplicationEventListener> applicationEventListeners;
-
-    public CompositeApplicationEventListener(List<ApplicationEventListener> applicationEventListeners) {
-        this.applicationEventListeners = applicationEventListeners;
-    }
-
-    @Override
-    public void onEvent(ApplicationEvent event) {
-        for (ApplicationEventListener applicationEventListener : applicationEventListeners) {
-            applicationEventListener.onEvent(event);
-        }
-    }
-
-    @Override
-    public RequestEventListener onNewRequest(RequestEvent requestEvent) {
-        List<RequestEventListener> requestEventListeners = Lists.newArrayList();
-        for (ApplicationEventListener applicationEventListener : applicationEventListeners) {
-            RequestEventListener requestEventListener = applicationEventListener.onNewRequest(requestEvent);
-            if (requestEventListener != null) {
-                requestEventListeners.add(requestEventListener);
-            }
-        }
-
-        return requestEventListeners.isEmpty() ? null
-                : new CompositeRequestEventListener(requestEventListeners);
-    }
+public interface RequestEventListener {
+    public void onEvent(RequestEvent event);
 }

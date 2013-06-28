@@ -38,15 +38,90 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.event;
+package org.glassfish.jersey.server.monitoring;
 
-import javax.ws.rs.ConstrainedTo;
-import javax.ws.rs.RuntimeType;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.ext.ExceptionMapper;
+
+import org.glassfish.jersey.server.ContainerRequest;
+import org.glassfish.jersey.server.ContainerResponse;
+import org.glassfish.jersey.server.ExtendedUriInfo;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
-public interface RequestEventListener {
-    public void onEvent(RequestEvent event);
+public interface RequestEvent {
+
+    public static enum Type {
+        /**
+         * This event type is used only when calling {@link org.glassfish.jersey.server.monitoring.ApplicationEventListener#onNewRequest(RequestEventImpl)}.
+         */
+        START,
+
+        MATCHING_START,
+        MATCHED_LOCATOR,
+
+        // TODO: remove
+        MATCHED_SUB_RESOURCE,
+
+        /**
+         * similar to MATCHING_FINISHED
+         */
+        REQ_FILTERS_START,
+        REQ_FILTERS_FINISHED,
+        /**
+         * Directly before execution
+         */
+        RESOURCE_METHOD_START,
+        RESOURCE_METHOD_FINISHED,
+
+
+        RESP_FILTERS_START,
+        RESP_FILTERS_FINISHED,
+
+
+        ON_EXCEPTION,
+
+        /**
+         * After the ExceptionMapper is successfully found and before execution of this mapper
+         */
+        EXCEPTION_MAPPER_FOUND,
+        EXCEPTION_MAPPING_FINISHED,
+
+
+        FINISHED;
+    }
+
+
+    public static enum ExceptionCause {
+        STANDARD_PROCESSING,
+        MAPPED_RESPONSE_PROCESSING;
+    }
+
+    public ContainerRequest getContainerRequest();
+
+    public ContainerResponse getContainerResponse();
+
+    public Throwable getThrowable();
+
+    public Type getType();
+
+    public ExtendedUriInfo getUriInfo();
+
+    public ExceptionMapper<?> getExceptionMapper();
+
+    public Iterable<ContainerRequestFilter> getContainerRequestFilters();
+
+    public Iterable<ContainerResponseFilter> getContainerResponseFilters();
+
+    public boolean isSuccess();
+
+    public boolean isResponseSuccessfullyMapped();
+
+    public ExceptionCause getExceptionCause();
+
+    public boolean isResponseWritten();
+
+
 }

@@ -74,10 +74,9 @@ import org.glassfish.jersey.message.internal.MatchingEntityTag;
 import org.glassfish.jersey.message.internal.VariantSelector;
 import org.glassfish.jersey.server.internal.LocalizationMessages;
 import org.glassfish.jersey.server.internal.monitoring.event.EmptyRequestEventBuilder;
-import org.glassfish.jersey.server.internal.monitoring.event.Events;
-import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
+import org.glassfish.jersey.server.internal.monitoring.event.RequestEventImpl;
 import org.glassfish.jersey.server.internal.monitoring.event.RequestEventBuilder;
-import org.glassfish.jersey.server.internal.monitoring.event.RequestEventListener;
+import org.glassfish.jersey.server.monitoring.RequestEventListener;
 import org.glassfish.jersey.server.spi.ContainerResponseWriter;
 import org.glassfish.jersey.server.spi.RequestScopedInitializer;
 import org.glassfish.jersey.uri.UriComponent;
@@ -441,7 +440,7 @@ public class ContainerRequest extends InboundMessageContext
     }
 
 
-    public void triggerEvent(RequestEvent.Type requestEventType) {
+    public void triggerEvent(RequestEventImpl.Type requestEventType) {
         if (requestEventListener != null) {
             requestEventListener.onEvent(requestEventBuilder.build(requestEventType));
         }

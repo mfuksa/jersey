@@ -40,7 +40,7 @@ public class EmptyRequestEventBuilder implements RequestEventBuilder {
     }
 
     @Override
-    public RequestEventBuilder setThrowable(Throwable throwable, RequestEvent.ExceptionCause exceptionCause) {
+    public RequestEventBuilder setThrowable(Throwable throwable, RequestEventImpl.ExceptionCause exceptionCause) {
         return this;
     }
 
@@ -65,7 +65,7 @@ public class EmptyRequestEventBuilder implements RequestEventBuilder {
     }
 
     @Override
-    public RequestEvent build(RequestEvent.Type eventType) {
+    public RequestEventImpl build(RequestEventImpl.Type eventType) {
         return null;
     }
 }

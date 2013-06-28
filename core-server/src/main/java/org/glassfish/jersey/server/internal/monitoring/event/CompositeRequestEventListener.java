@@ -42,9 +42,11 @@ package org.glassfish.jersey.server.internal.monitoring.event;
 
 import java.util.List;
 
+import org.glassfish.jersey.server.monitoring.RequestEvent;
+import org.glassfish.jersey.server.monitoring.RequestEventListener;
+
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public class CompositeRequestEventListener implements RequestEventListener {
 

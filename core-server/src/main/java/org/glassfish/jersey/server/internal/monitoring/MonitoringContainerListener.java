@@ -42,8 +42,9 @@ package org.glassfish.jersey.server.internal.monitoring;
 
 import javax.inject.Singleton;
 
-import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
-import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
+import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventImpl;
+import org.glassfish.jersey.server.monitoring.ApplicationEvent;
+import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.spi.AbstractContainerLifecycleListener;
 import org.glassfish.jersey.server.spi.Container;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
@@ -70,8 +71,8 @@ public class MonitoringContainerListener extends AbstractContainerLifecycleListe
         }
     }
 
-    private ApplicationEvent getApplicationEvent(ApplicationEvent.Type type) {
-        return new ApplicationEvent(type,
+    private ApplicationEventImpl getApplicationEvent(ApplicationEvent.Type type) {
+        return new ApplicationEventImpl(type,
                 initFinishedEvent.getResourceConfig(), initFinishedEvent.getProviders(),
                 initFinishedEvent.getRegisteredClasses(), initFinishedEvent.getRegisteredInstances(),
                 initFinishedEvent.getResourceModel());

@@ -40,18 +40,65 @@
 
 package org.glassfish.jersey.server.internal.monitoring.event;
 
-import javax.ws.rs.ConstrainedTo;
-import javax.ws.rs.RuntimeType;
+import java.util.Set;
 
-import org.glassfish.jersey.spi.*;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.model.ResourceModel;
+import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
-@Contract
-@ConstrainedTo(RuntimeType.SERVER)
-public interface ApplicationEventListener {
-    public void onEvent(ApplicationEvent event);
-    public RequestEventListener onNewRequest(RequestEvent requestEvent);
+public class ApplicationEventImpl implements ApplicationEvent {
+
+    private final Type type;
+    private final ResourceConfig resourceConfig;
+    private final Set<Class<?>> providers;
+    private final Set<Class<?>> registeredClasses;
+    private final Set<Object> registeredInstances;
+    private final ResourceModel resourceModel;
+
+
+    // TODO: M: builder?
+
+    public ApplicationEventImpl(Type type, ResourceConfig resourceConfig,
+                                Set<Class<?>> providers, Set<Class<?>> registeredClasses,
+                                Set<Object> registeredInstances, ResourceModel resourceModel) {
+        this.type = type;
+        this.resourceConfig = resourceConfig;
+        this.providers = providers;
+        this.registeredClasses = registeredClasses;
+        this.registeredInstances = registeredInstances;
+        this.resourceModel = resourceModel;
+    }
+
+    @Override
+    public ResourceConfig getResourceConfig() {
+        return resourceConfig;
+    }
+
+    @Override
+    public Type getType() {
+        return type;
+    }
+
+    @Override
+    public Set<Class<?>> getRegisteredClasses() {
+        return registeredClasses;
+    }
+
+    @Override
+    public Set<Object> getRegisteredInstances() {
+        return registeredInstances;
+    }
+
+    @Override
+    public Set<Class<?>> getProviders() {
+        return providers;
+    }
+
+    @Override
+    public ResourceModel getResourceModel() {
+        return resourceModel;
+    }
 }

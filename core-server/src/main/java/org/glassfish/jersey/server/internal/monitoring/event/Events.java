@@ -40,9 +40,11 @@
 
 package org.glassfish.jersey.server.internal.monitoring.event;
 
+import org.glassfish.jersey.server.monitoring.RequestEvent;
+import org.glassfish.jersey.server.monitoring.RequestEventListener;
+
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- *
  */
 public class Events {
     public static final RequestEventListener EMPTY_REQUEST_LISTENER = new RequestEventListener() {
@@ -51,7 +53,6 @@ public class Events {
             // no op
         }
     };
-
 
 
 }

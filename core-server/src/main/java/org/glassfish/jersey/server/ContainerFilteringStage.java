@@ -51,7 +51,7 @@ import org.glassfish.jersey.model.internal.RankedComparator;
 import org.glassfish.jersey.model.internal.RankedProvider;
 import org.glassfish.jersey.process.internal.AbstractChainableStage;
 import org.glassfish.jersey.process.internal.Stages;
-import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
+import org.glassfish.jersey.server.internal.monitoring.event.RequestEventImpl;
 import org.glassfish.jersey.server.internal.process.Endpoint;
 import org.glassfish.jersey.server.internal.process.MappableException;
 import org.glassfish.jersey.server.internal.process.RespondingContext;
@@ -141,7 +141,7 @@ class ContainerFilteringStage extends AbstractChainableStage<ContainerRequest> {
                     rc.getBoundRequestFilters());
 
             requestContext.getRequestEventBuilder().setContainerRequestFilters(sortedRequestFilters);
-            requestContext.triggerEvent(RequestEvent.Type.REQ_FILTERS_START);
+            requestContext.triggerEvent(RequestEventImpl.Type.REQ_FILTERS_START);
 
         } else {
             // pre-matching (response filter stage is pushed in pre-matching phase, so that if pre-matching filter
@@ -175,7 +175,7 @@ class ContainerFilteringStage extends AbstractChainableStage<ContainerRequest> {
             }
         } finally {
             if (postMatching) {
-                requestContext.triggerEvent(RequestEvent.Type.REQ_FILTERS_FINISHED);
+                requestContext.triggerEvent(RequestEventImpl.Type.REQ_FILTERS_FINISHED);
             }
 
         }
@@ -204,7 +204,7 @@ class ContainerFilteringStage extends AbstractChainableStage<ContainerRequest> {
 
             final ContainerRequest request = responseContext.getRequestContext();
             request.getRequestEventBuilder().setContainerResponseFilters(sortedResponseFilters);
-            request.triggerEvent(RequestEvent.Type.RESP_FILTERS_START);
+            request.triggerEvent(RequestEventImpl.Type.RESP_FILTERS_START);
             try {
                 for (ContainerResponseFilter filter : sortedResponseFilters) {
                     try {
@@ -216,7 +216,7 @@ class ContainerFilteringStage extends AbstractChainableStage<ContainerRequest> {
                     }
                 }
             } finally {
-                request.triggerEvent(RequestEvent.Type.RESP_FILTERS_FINISHED);
+                request.triggerEvent(RequestEventImpl.Type.RESP_FILTERS_FINISHED);
             }
 
             return Continuation.of(responseContext, getDefaultNext());

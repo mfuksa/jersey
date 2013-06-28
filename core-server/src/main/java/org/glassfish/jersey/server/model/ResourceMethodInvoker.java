@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.ProcessingException;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.DynamicFeature;
@@ -77,7 +76,7 @@ import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.internal.ProcessingProviders;
-import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
+import org.glassfish.jersey.server.internal.monitoring.event.RequestEventImpl;
 import org.glassfish.jersey.server.internal.process.AsyncContext;
 import org.glassfish.jersey.server.internal.process.Endpoint;
 import org.glassfish.jersey.server.internal.process.RespondingContext;
@@ -349,11 +348,11 @@ public class ResourceMethodInvoker implements Endpoint, ResourceInfo {
     private Response invoke(ContainerRequest requestContext, Object resource) {
 
         Response jaxrsResponse;
-        requestContext.triggerEvent(RequestEvent.Type.RESOURCE_METHOD_START);
+        requestContext.triggerEvent(RequestEventImpl.Type.RESOURCE_METHOD_START);
         try {
             jaxrsResponse = dispatcher.dispatch(resource, requestContext);
         } finally {
-            requestContext.triggerEvent(RequestEvent.Type.RESOURCE_METHOD_FINISHED);
+            requestContext.triggerEvent(RequestEventImpl.Type.RESOURCE_METHOD_FINISHED);
         }
 
         if (jaxrsResponse == null) {

@@ -92,6 +92,8 @@ import org.glassfish.jersey.server.internal.process.Endpoint;
 import org.glassfish.jersey.server.internal.process.MappableException;
 import org.glassfish.jersey.server.internal.process.RespondingContext;
 import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
+import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
+import org.glassfish.jersey.server.monitoring.RequestEventListener;
 import org.glassfish.jersey.server.spi.ContainerResponseWriter;
 import org.glassfish.jersey.spi.ExceptionMappers;
 import static org.glassfish.jersey.server.internal.process.AsyncContext.State.COMPLETED;
@@ -244,15 +246,15 @@ class ServerRuntime {
                 }
             });
         } finally {
-            request.triggerEvent(RequestEvent.Type.FINISHED);
+            request.triggerEvent(RequestEventImpl.Type.FINISHED);
         }
     }
 
     private void initRequestEventLiteners(ContainerRequest request) {
         if (applicationEventListener != null) {
-        final RequestEventBuilder requestEventBuilder = new RequestEvent.Builder().setContainerRequest(request);
+        final RequestEventBuilder requestEventBuilder = new RequestEventImpl.Builder().setContainerRequest(request);
         final RequestEventListener requestEventEventListener =
-                applicationEventListener.onNewRequest(requestEventBuilder.build(RequestEvent.Type.START));
+                applicationEventListener.onNewRequest(requestEventBuilder.build(RequestEventImpl.Type.START));
 
             if (requestEventEventListener != null) {
                 request.setRequestEventListener(requestEventEventListener, requestEventBuilder);
@@ -367,8 +369,8 @@ class ServerRuntime {
 
         public void process(Throwable throwable) {
 
-            request.getRequestEventBuilder().setThrowable(throwable, RequestEvent.ExceptionCause.STANDARD_PROCESSING);
-            request.triggerEvent(RequestEvent.Type.ON_EXCEPTION);
+            request.getRequestEventBuilder().setThrowable(throwable, RequestEventImpl.ExceptionCause.STANDARD_PROCESSING);
+            request.triggerEvent(RequestEventImpl.Type.ON_EXCEPTION);
 
             ContainerResponse response = null;
             try {
@@ -378,14 +380,14 @@ class ServerRuntime {
                         response = convertResponse(exceptionResponse);
                         request.getRequestEventBuilder().setContainerResponse(response).setResponseSuccessfullyMapped(true);
                     } finally {
-                        request.triggerEvent(RequestEvent.Type.EXCEPTION_MAPPING_FINISHED);
+                        request.triggerEvent(RequestEventImpl.Type.EXCEPTION_MAPPING_FINISHED);
                     }
 
                     processResponse(response);
                 } catch (Throwable respError) {
                     LOGGER.log(Level.SEVERE, LocalizationMessages.ERROR_PROCESSING_RESPONSE_FROM_ALREADY_MAPPED_EXCEPTION());
-                    request.getRequestEventBuilder().setThrowable(respError, RequestEvent.ExceptionCause.MAPPED_RESPONSE_PROCESSING);
-                    request.triggerEvent(RequestEvent.Type.ON_EXCEPTION);
+                    request.getRequestEventBuilder().setThrowable(respError, RequestEventImpl.ExceptionCause.MAPPED_RESPONSE_PROCESSING);
+                    request.triggerEvent(RequestEventImpl.Type.ON_EXCEPTION);
                     throw respError;
                 }
             } catch (Throwable responseError) {
@@ -435,7 +437,7 @@ class ServerRuntime {
                     ExceptionMapper mapper = exceptionMappers.findMapping(throwable);
                     if (mapper != null) {
                         request.getRequestEventBuilder().setExceptionMapper(mapper);
-                        request.triggerEvent(RequestEvent.Type.EXCEPTION_MAPPER_FOUND);
+                        request.triggerEvent(RequestEventImpl.Type.EXCEPTION_MAPPER_FOUND);
                         try {
                             final Response mappedResponse = mapper.toResponse(throwable);
                             if (mappedResponse != null) {

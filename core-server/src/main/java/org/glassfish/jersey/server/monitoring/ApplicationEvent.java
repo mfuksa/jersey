@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.jersey.server.internal.monitoring.event;
+package org.glassfish.jersey.server.monitoring;
 
 import java.util.Set;
 
@@ -48,59 +48,26 @@ import org.glassfish.jersey.server.model.ResourceModel;
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class ApplicationEvent implements Event {
+public interface ApplicationEvent {
 
-    public enum Type {
+    public static enum Type {
         INITIALIZATION_START,
         INITIALIZATION_FINISHED,
-        // TODO: M: implement
         DESTROY_FINISHED,
         RELOAD
     }
 
-    private final Type type;
-    private final ResourceConfig resourceConfig;
-    private final Set<Class<?>> providers;
-    private final Set<Class<?>> registeredClasses;
-    private final Set<Object> registeredInstances;
-    private final ResourceModel resourceModel;
+    public ResourceConfig getResourceConfig();
+
+    public Type getType();
 
 
-    // TODO: M: builder?
+    public Set<Class<?>> getRegisteredClasses();
 
-    public ApplicationEvent(Type type, ResourceConfig resourceConfig,
-                            Set<Class<?>> providers, Set<Class<?>> registeredClasses,
-                            Set<Object> registeredInstances, ResourceModel resourceModel) {
-        this.type = type;
-        this.resourceConfig = resourceConfig;
-        this.providers = providers;
-        this.registeredClasses = registeredClasses;
-        this.registeredInstances = registeredInstances;
-        this.resourceModel = resourceModel;
-    }
+    public Set<Object> getRegisteredInstances();
 
-    public ResourceConfig getResourceConfig() {
-        return resourceConfig;
-    }
+    public Set<Class<?>> getProviders();
 
-    public Type getType() {
-        return type;
-    }
+    public ResourceModel getResourceModel();
 
-
-    public Set<Class<?>> getRegisteredClasses() {
-        return registeredClasses;
-    }
-
-    public Set<Object> getRegisteredInstances() {
-        return registeredInstances;
-    }
-
-    public Set<Class<?>> getProviders() {
-        return providers;
-    }
-
-    public ResourceModel getResourceModel() {
-        return resourceModel;
-    }
 }

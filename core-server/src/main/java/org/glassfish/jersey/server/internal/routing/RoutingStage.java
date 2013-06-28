@@ -100,7 +100,7 @@ public class RoutingStage extends AbstractChainableStage<ContainerRequest> {
      */
     @Override
     public Continuation<ContainerRequest> apply(ContainerRequest request) {
-        request.triggerEvent(RequestEvent.Type.MATCHING_START);
+        request.triggerEvent(RequestEventImpl.Type.MATCHING_START);
         final TransformableData<ContainerRequest, ContainerResponse> result =
                 _apply(request, routingRoot);
 

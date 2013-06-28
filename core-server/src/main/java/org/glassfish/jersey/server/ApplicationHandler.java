@@ -101,8 +101,7 @@ import org.glassfish.jersey.server.internal.JerseyResourceContext;
 import org.glassfish.jersey.server.internal.LocalizationMessages;
 import org.glassfish.jersey.server.internal.ProcessingProviders;
 import org.glassfish.jersey.server.internal.monitoring.MonitoringContainerListener;
-import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
-import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventListener;
+import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEventImpl;
 import org.glassfish.jersey.server.internal.monitoring.event.CompositeApplicationEventListener;
 import org.glassfish.jersey.server.internal.routing.RoutedInflectorExtractorStage;
 import org.glassfish.jersey.server.internal.routing.Router;
@@ -114,6 +113,8 @@ import org.glassfish.jersey.server.model.ModelValidationException;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceModel;
 import org.glassfish.jersey.server.model.internal.ModelErrors;
+import org.glassfish.jersey.server.monitoring.ApplicationEvent;
+import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.spi.ComponentProvider;
 import org.glassfish.jersey.server.spi.ContainerResponseWriter;
 
@@ -398,7 +399,7 @@ public final class ApplicationHandler {
             if (appEventListeners.size() > 0) {
                 compositeListener = new CompositeApplicationEventListener(
                         appEventListeners);
-                compositeListener.onEvent(new ApplicationEvent(ApplicationEvent.Type.INITIALIZATION_START,
+                compositeListener.onEvent(new ApplicationEventImpl(ApplicationEvent.Type.INITIALIZATION_START,
                         this.runtimeConfig, componentBag.getRegistrations(), resourceBag.classes, resourceBag.instances,
                         null));
             }
@@ -526,7 +527,7 @@ public final class ApplicationHandler {
         }
 
         if (compositeListener != null) {
-            final ApplicationEvent initFinishedEvent = new ApplicationEvent(
+            final ApplicationEventImpl initFinishedEvent = new ApplicationEventImpl(
                     ApplicationEvent.Type.INITIALIZATION_FINISHED, runtimeConfig,
                     componentBag.getRegistrations(), resourceBag.classes, resourceBag.instances, resourceModel);
             compositeListener.onEvent(initFinishedEvent);

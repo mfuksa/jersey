@@ -23,7 +23,7 @@ public interface RequestEventBuilder {
 
     public RequestEventBuilder setResponseWritten(boolean responseWritten);
 
-    public RequestEventBuilder setThrowable(Throwable throwable, RequestEvent.ExceptionCause exceptionCause);
+    public RequestEventBuilder setThrowable(Throwable throwable, RequestEventImpl.ExceptionCause exceptionCause);
 
 
     public RequestEventBuilder setExtendedUriInfo(ExtendedUriInfo extendedUriInfo);
@@ -36,5 +36,5 @@ public interface RequestEventBuilder {
     public RequestEventBuilder setResponseSuccessfullyMapped(boolean responseSuccessfullyMapped);
 
 
-    public RequestEvent build(RequestEvent.Type eventType);
+    public RequestEventImpl build(RequestEventImpl.Type eventType);
 }

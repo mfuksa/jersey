@@ -53,14 +53,14 @@ import javax.ws.rs.ProcessingException;
 
 import org.glassfish.jersey.server.ExtendedResourceContext;
 import org.glassfish.jersey.server.internal.RuntimeExecutorsBinder;
-import org.glassfish.jersey.server.internal.monitoring.event.ApplicationEvent;
-import org.glassfish.jersey.server.internal.monitoring.event.RequestEvent;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ApplicationStatisticsImpl;
 import org.glassfish.jersey.server.internal.monitoring.statistics.ExceptionMapperStatisticsImpl;
 import org.glassfish.jersey.server.internal.monitoring.statistics.MonitoringStatisticsImpl;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
+import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.MonitoringStatisticsListener;
+import org.glassfish.jersey.server.monitoring.RequestEvent;
 
 import org.glassfish.hk2.api.ServiceLocator;
 

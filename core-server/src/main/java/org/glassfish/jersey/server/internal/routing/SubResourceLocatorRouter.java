@@ -158,7 +158,7 @@ class SubResourceLocatorRouter implements Router {
         }
 
         subResource = resourceModel.getResources().get(0);
-        request.triggerEvent(RequestEvent.Type.MATCHED_SUB_RESOURCE);
+        request.triggerEvent(RequestEventImpl.Type.MATCHED_SUB_RESOURCE);
 
 
         for (Class<?> handlerClass : subResource.getHandlerClasses()) {
@@ -214,7 +214,7 @@ class SubResourceLocatorRouter implements Router {
             Method handlingMethod = locatorModel.getInvocable().getHandlingMethod();
             final Object[] parameterValues = ParameterValueHelper.getParameterValues(valueProviders);
 
-            request.triggerEvent(RequestEvent.Type.MATCHED_LOCATOR);
+            request.triggerEvent(RequestEventImpl.Type.MATCHED_LOCATOR);
             return handlingMethod.invoke(resource, parameterValues);
         } catch (IllegalAccessException ex) {
             throw new ProcessingException("Resource Java method invocation error.", ex);

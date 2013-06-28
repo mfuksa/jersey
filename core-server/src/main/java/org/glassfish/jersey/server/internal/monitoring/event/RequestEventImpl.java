@@ -47,11 +47,12 @@ import javax.ws.rs.ext.ExceptionMapper;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.ExtendedUriInfo;
+import org.glassfish.jersey.server.monitoring.RequestEvent;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-public class RequestEvent implements Event {
+public class RequestEventImpl implements RequestEvent {
 
 
     // TODO: M: volatile
@@ -135,21 +136,21 @@ public class RequestEvent implements Event {
         }
 
         @Override
-        public RequestEvent build(Type type) {
-            return new RequestEvent(type, containerRequest, containerResponse, throwable,
+        public RequestEventImpl build(Type type) {
+            return new RequestEventImpl(type, containerRequest, containerResponse, throwable,
                     extendedUriInfo, containerResponseFilters, containerRequestFilters, exceptionMapper, success,
                     responseSuccessfullyMapped, exceptionCause, responseWritten);
         }
     }
 
 
-    private RequestEvent(Type type, ContainerRequest containerRequest, ContainerResponse containerResponse,
-                         Throwable throwable,
-                         ExtendedUriInfo extendedUriInfo, Iterable<ContainerResponseFilter> containerResponseFilters,
-                         Iterable<ContainerRequestFilter> containerRequestFilters,
-                         ExceptionMapper<?> exceptionMapper,
-                         boolean success,
-                         boolean responseSuccessfullyMapped, ExceptionCause exceptionCause, boolean responseWritten) {
+    private RequestEventImpl(Type type, ContainerRequest containerRequest, ContainerResponse containerResponse,
+                             Throwable throwable,
+                             ExtendedUriInfo extendedUriInfo, Iterable<ContainerResponseFilter> containerResponseFilters,
+                             Iterable<ContainerRequestFilter> containerRequestFilters,
+                             ExceptionMapper<?> exceptionMapper,
+                             boolean success,
+                             boolean responseSuccessfullyMapped, ExceptionCause exceptionCause, boolean responseWritten) {
         this.type = type;
         this.containerRequest = containerRequest;
         this.containerResponse = containerResponse;
@@ -162,52 +163,6 @@ public class RequestEvent implements Event {
         this.responseSuccessfullyMapped = responseSuccessfullyMapped;
         this.exceptionCause = exceptionCause;
         this.responseWritten = responseWritten;
-    }
-
-    public static enum Type {
-        /**
-         * This event type is used only when calling {@link ApplicationEventListener#onNewRequest(RequestEvent)}.
-         */
-        START,
-
-        MATCHING_START,
-        MATCHED_LOCATOR,
-
-        // TODO: remove
-        MATCHED_SUB_RESOURCE,
-
-        /**
-         * similar to MATCHING_FINISHED
-         */
-        REQ_FILTERS_START,
-        REQ_FILTERS_FINISHED,
-        /**
-         * Directly before execution
-         */
-        RESOURCE_METHOD_START,
-        RESOURCE_METHOD_FINISHED,
-
-
-        RESP_FILTERS_START,
-        RESP_FILTERS_FINISHED,
-
-
-        ON_EXCEPTION,
-
-        /**
-         * After the ExceptionMapper is successfully found and before execution of this mapper
-         */
-        EXCEPTION_MAPPER_FOUND,
-        EXCEPTION_MAPPING_FINISHED,
-
-
-        FINISHED;
-    }
-
-
-    public static enum ExceptionCause {
-        STANDARD_PROCESSING,
-        MAPPED_RESPONSE_PROCESSING;
     }
 
 
@@ -228,50 +183,62 @@ public class RequestEvent implements Event {
     private final boolean responseWritten;
 
 
+    @Override
     public ContainerRequest getContainerRequest() {
         return containerRequest;
     }
 
+    @Override
     public ContainerResponse getContainerResponse() {
         return containerResponse;
     }
 
+    @Override
     public Throwable getThrowable() {
         return throwable;
     }
 
+    @Override
     public Type getType() {
         return type;
     }
 
+    @Override
     public ExtendedUriInfo getUriInfo() {
         return extendedUriInfo;
     }
 
+    @Override
     public ExceptionMapper<?> getExceptionMapper() {
         return exceptionMapper;
     }
 
+    @Override
     public Iterable<ContainerRequestFilter> getContainerRequestFilters() {
         return containerRequestFilters;
     }
 
+    @Override
     public Iterable<ContainerResponseFilter> getContainerResponseFilters() {
         return containerResponseFilters;
     }
 
+    @Override
     public boolean isSuccess() {
         return success;
     }
 
+    @Override
     public boolean isResponseSuccessfullyMapped() {
         return responseSuccessfullyMapped;
     }
 
+    @Override
     public ExceptionCause getExceptionCause() {
         return exceptionCause;
     }
 
+    @Override
     public boolean isResponseWritten() {
         return responseWritten;
     }
