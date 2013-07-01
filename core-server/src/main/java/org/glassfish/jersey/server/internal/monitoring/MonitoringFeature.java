@@ -40,8 +40,22 @@
 
 package org.glassfish.jersey.server.internal.monitoring;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
+import javax.ws.rs.core.Request;
+
+import org.glassfish.jersey.internal.inject.ReferencingFactory;
+import org.glassfish.jersey.internal.util.collection.Ref;
+import org.glassfish.jersey.process.internal.RequestScoped;
+import org.glassfish.jersey.server.monitoring.MonitoringStatistics;
+import org.glassfish.jersey.server.monitoring.MonitoringStatisticsListener;
+
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.TypeLiteral;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
@@ -52,6 +66,52 @@ public class MonitoringFeature implements Feature {
     @Override
     public boolean configure(FeatureContext context) {
         context.register(MonitoringEventListener.class);
+        context.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bindFactory(ReferencingFactory.<MonitoringStatistics>referenceFactory()).to(
+                        new TypeLiteral<Ref<MonitoringStatistics>>() {}).in(Singleton.class);
+
+                bindFactory(StatisticsInjectionFactory.class).to(MonitoringStatistics.class).in(PerLookup.class);
+
+//                bindFactory(StatisticsInjectionFactory.class).to(MonitoringStatistics.class).in(Singleton.class);
+                bind(StatisticsListener.class).to(MonitoringStatisticsListener.class).in(Singleton.class);
+            }
+        });
         return true;
     }
+
+    private static class StatisticsInjectionFactory extends ReferencingFactory<MonitoringStatistics> {
+
+        /**
+         * Create new referencing injection factory.
+         *
+         * @param referenceFactory reference provider backing the factory.
+         */
+        @Inject
+        public StatisticsInjectionFactory(Provider<Ref<MonitoringStatistics>> referenceFactory) {
+            super(referenceFactory);
+        }
+
+        @Override
+        public MonitoringStatistics provide() {
+            return super.provide();
+        }
+
+        @Override
+        public void dispose(MonitoringStatistics monitoringStatistics) {
+        }
+
+    }
+
+    private static class StatisticsListener implements MonitoringStatisticsListener {
+        @Inject
+        Provider<Ref<MonitoringStatistics>> statisticsFactory;
+
+        @Override
+        public void onStatistics(MonitoringStatistics statistics) {
+            statisticsFactory.get().set(statistics);
+        }
+    }
+
 }
