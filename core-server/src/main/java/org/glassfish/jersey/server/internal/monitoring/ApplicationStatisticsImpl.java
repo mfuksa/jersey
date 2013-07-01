@@ -52,6 +52,7 @@ import org.glassfish.jersey.server.monitoring.ApplicationStatistics;
 public class ApplicationStatisticsImpl implements ApplicationStatistics {
     private final ResourceConfig resourceConfig;
     private final Date startTime;
+    private final Date destroyTime;
     private final Set<Class<?>> registeredClasses;
     private final Set<Object> registeredInstances;
     private final Set<Class<?>> providers;
@@ -59,10 +60,12 @@ public class ApplicationStatisticsImpl implements ApplicationStatistics {
 
 
 
-    public ApplicationStatisticsImpl(ResourceConfig resourceConfig, Date startTime, Set<Class<?>> registeredClasses,
+    public ApplicationStatisticsImpl(ResourceConfig resourceConfig, Date startTime, Date destroyTime,
+                                     Set<Class<?>> registeredClasses,
                                      Set<Object> registeredInstances, Set<Class<?>> providers) {
         this.resourceConfig = resourceConfig;
         this.startTime = startTime;
+        this.destroyTime = destroyTime;
 
         this.registeredClasses = registeredClasses;
         this.registeredInstances = registeredInstances;
@@ -87,6 +90,10 @@ public class ApplicationStatisticsImpl implements ApplicationStatistics {
 
     public Set<Class<?>> getProviders() {
         return providers;
+    }
+
+    public Date getDestroyTime() {
+        return destroyTime;
     }
 
     @Override

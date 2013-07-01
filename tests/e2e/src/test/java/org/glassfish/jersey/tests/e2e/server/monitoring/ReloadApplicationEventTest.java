@@ -47,6 +47,7 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.monitoring.RequestEventListener;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
@@ -63,9 +64,12 @@ import static org.junit.Assert.assertTrue;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public class ReloadApplicationEventTest extends JerseyTest {
+
     @Override
     protected Application configure() {
-        return new ResourceConfig(TestResource.class, AppEventListener.class);
+        final ResourceConfig resourceConfig = new ResourceConfig(TestResource.class, AppEventListener.class);
+        resourceConfig.property(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED, true);
+        return resourceConfig;
     }
 
     @Path("resource")
@@ -105,7 +109,7 @@ public class ReloadApplicationEventTest extends JerseyTest {
                 case INITIALIZATION_FINISHED:
                     initFinishedCalled = true;
                     break;
-                case RELOAD:
+                case RELOAD_FINISHED:
                     reloadEventCalled = true;
                     break;
             }

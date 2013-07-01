@@ -53,6 +53,8 @@ public interface ApplicationStatistics {
 
     public Date getStartTime();
 
+    public Date getDestroyTime();
+
     public ApplicationStatistics snapshot();
 
     public Set<Class<?>> getRegisteredClasses();

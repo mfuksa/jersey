@@ -83,17 +83,12 @@ public class MonitoringStatisticsProcessor {
     }
 
     public void startMonitoringWorker() {
-        final ApplicationEvent appEvent = monitoringEventListener.getApplicationEvents().remove();
-
-        final ApplicationStatisticsImpl appStatistics = new ApplicationStatisticsImpl(appEvent.getResourceConfig(),
-                new Date(monitoringEventListener.getApplicationStartTime()), appEvent.getRegisteredClasses(),
-                appEvent.getRegisteredInstances(), appEvent.getProviders());
-        statisticsBuilder.setApplicationStatisticsImpl(appStatistics);
 
         scheduler.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 try {
+                    processApplicationEvents();
                     processRequestItems();
                     processResponseCodeEvents();
                     processExceptionMapperEvents();
@@ -120,6 +115,32 @@ public class MonitoringStatisticsProcessor {
 
             }
         }, 0, 500, TimeUnit.MILLISECONDS);
+    }
+
+    private void processApplicationEvents() {
+        while (!monitoringEventListener.getApplicationEvents().isEmpty()) {
+            final ApplicationEvent appEvent = monitoringEventListener.getApplicationEvents().remove();
+            switch (appEvent.getType()) {
+                case INITIALIZATION_FINISHED:
+                case RELOAD_FINISHED:
+                    final ApplicationStatisticsImpl initStatistics = new ApplicationStatisticsImpl(appEvent.getResourceConfig(),
+                            new Date(monitoringEventListener.getApplicationStartTime()), null, appEvent.getRegisteredClasses(),
+                            appEvent.getRegisteredInstances(), appEvent.getProviders());
+                    statisticsBuilder.setApplicationStatisticsImpl(initStatistics);
+                    break;
+
+                case DESTROY_FINISHED:
+                    final ApplicationStatisticsImpl destroyStatistics = new ApplicationStatisticsImpl(appEvent.getResourceConfig(),
+                            new Date(monitoringEventListener.getApplicationStartTime()), null, appEvent.getRegisteredClasses(),
+                            appEvent.getRegisteredInstances(), appEvent.getProviders());
+                    statisticsBuilder.setApplicationStatisticsImpl(destroyStatistics);
+
+                    break;
+            }
+
+
+
+        }
     }
 
     private void processExceptionMapperEvents() {

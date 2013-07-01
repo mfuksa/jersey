@@ -66,7 +66,7 @@ public class MonitoringContainerListener extends AbstractContainerLifecycleListe
     @Override
     public void onReload(Container container) {
         if (listener != null) {
-            listener.onEvent(getApplicationEvent(ApplicationEvent.Type.RELOAD));
+            listener.onEvent(getApplicationEvent(ApplicationEvent.Type.RELOAD_FINISHED));
         }
     }
 

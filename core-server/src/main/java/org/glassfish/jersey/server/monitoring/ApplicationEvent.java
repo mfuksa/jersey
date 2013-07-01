@@ -54,7 +54,7 @@ public interface ApplicationEvent {
         INITIALIZATION_START,
         INITIALIZATION_FINISHED,
         DESTROY_FINISHED,
-        RELOAD
+        RELOAD_FINISHED
     }
 
     public ResourceConfig getResourceConfig();

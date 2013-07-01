@@ -42,6 +42,7 @@ package org.glassfish.jersey.server.internal.monitoring.jmx;
 
 import java.lang.management.ManagementFactory;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -105,6 +106,20 @@ public class MBeanExposer implements MonitoringStatisticsListener {
         }
     }
 
+
+    private void unregisterJerseyMBeans() {
+        final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+        try {
+            final Set<ObjectName> names = mBeanServer.queryNames(new ObjectName(domain + ",*"), null);
+            for (ObjectName name : names) {
+                mBeanServer.unregisterMBean(name);
+            }
+        } catch (Exception e) {
+            throw new ProcessingException("Error unregistering Jersey monitoring mbeans on application destroy.", e);
+        }
+
+    }
+
     @Override
     public void onStatistics(MonitoringStatistics statistics) {
         if (exposed.compareAndSet(false, true)) {
@@ -114,6 +129,7 @@ public class MBeanExposer implements MonitoringStatisticsListener {
                 appName = "App_" + Integer.toHexString(appStats.getResourceConfig().hashCode());
             }
             domain = "org.glassfish.jersey:type=" + appName;
+            unregisterJerseyMBeans();
 
             uriStatsGroup = new ResourcesMBeanGroup(statistics.getUriStatistics(), true, this, ",subType=Uris");
             Map<String, ResourceStatistics> newMap = transformToStringKeys(statistics.getResourceClassStatistics());
@@ -131,6 +147,10 @@ public class MBeanExposer implements MonitoringStatisticsListener {
 
             applicationMXBean = new ApplicationMXBeanImpl(appStats, this,
                     appStats.getProviders(), appStats.getRegisteredClasses(), appStats.getRegisteredInstances());
+        }
+
+        if (statistics.getApplicationStatistics().getDestroyTime() != null) {
+            unregisterJerseyMBeans();
         }
 
         requestMBean.updateExecutionStatistics(statistics.getRequestExecutionStatistics());
