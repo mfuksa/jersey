@@ -38,22 +38,39 @@
  * holder.
  */
 
-package org.glassfish.jersey.internal.util.collection;
+package org.glassfish.jersey.message.internal;
+
+import java.util.List;
+
+import javax.ws.rs.core.MediaType;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.google.common.collect.Lists;
+
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
- * TODO: M: javadoc
  */
-public class UnsafeValueBean<T> implements Settable<T>, Value<T> {
-    private T value;
+public class MediaTypesTest {
 
-    @Override
-    public void set(T value) {
-        this.value = value;
-    }
+    @Test
+    public void testConvertToString() {
+        final List<MediaType> emptyList = Lists.newArrayList();
+        Assert.assertEquals("", MediaTypes.convertToString(emptyList));
 
-    @Override
-    public T get() {
-        return value;
+
+        Assert.assertEquals("\"text/plain\"", MediaTypes.convertToString(Lists.newArrayList(
+                MediaType.TEXT_PLAIN_TYPE)));
+
+        Assert.assertEquals("\"text/plain\", \"application/json\"",
+                MediaTypes.convertToString(Lists.newArrayList(MediaType.TEXT_PLAIN_TYPE,
+                        MediaType.APPLICATION_JSON_TYPE)));
+
+        Assert.assertEquals("\"text/plain\", \"application/json\", \"text/html\"",
+                MediaTypes.convertToString(Lists.newArrayList(MediaType.TEXT_PLAIN_TYPE,
+                        MediaType.APPLICATION_JSON_TYPE,
+                        MediaType.TEXT_HTML_TYPE)));
     }
 }

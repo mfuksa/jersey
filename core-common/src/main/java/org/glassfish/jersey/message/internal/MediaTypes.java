@@ -69,10 +69,10 @@ public class MediaTypes {
     public final static MediaType FAST_INFOSET = MediaType.valueOf("application/fastinfoset");
     /**
      * Comparator for lists of media types.
-     * <p>
+     * <p/>
      * The least specific content type of each list is obtained and then compared
      * using {@link #MEDIA_TYPE_COMPARATOR}.
-     * <p>
+     * <p/>
      * Assumes each list is already ordered according to {@link #MEDIA_TYPE_COMPARATOR}
      * and therefore the least specific media type is at the end of the list.
      */
@@ -90,7 +90,6 @@ public class MediaTypes {
             };
     /**
      * The general media type corresponding to *\\/*.
-     *
      */
     public static final MediaType GENERAL_MEDIA_TYPE = new MediaType("*", "*");
     /**
@@ -99,7 +98,6 @@ public class MediaTypes {
     public static final List<MediaType> GENERAL_MEDIA_TYPE_LIST = createMediaTypeList();
     /**
      * The general acceptable media type corresponding to *\\/*.
-     *
      */
     static final AcceptableMediaType GENERAL_ACCEPT_MEDIA_TYPE = new AcceptableMediaType("*", "*");
     /**
@@ -130,7 +128,7 @@ public class MediaTypes {
      * the less specific ones:
      * <pre>
      *   m/n &lt; m/&#42; &lt; &#42;/&#42;</pre>
-     * <p />
+     *
      * The actual media type values are ignored, i.e. the different media types are
      * considered equal if they are comparably specific:
      * <pre>
@@ -195,7 +193,7 @@ public class MediaTypes {
      * @param m1 first media type.
      * @param m2 second media type.
      * @return {@code true} if the two media types are of the same type and subtype,
-     *     {@code false} otherwise.
+     *         {@code false} otherwise.
      */
     public static boolean typeEqual(MediaType m1, MediaType m2) {
         if (m1 == null || m2 == null) {
@@ -213,7 +211,7 @@ public class MediaTypes {
      * @param ml1 first media type list.
      * @param ml2 second media type list.
      * @return {@code true} if the two media type lists intersect by sharing a
-     *     common type-equal sub-list, {@code false} otherwise.
+     *         common type-equal sub-list, {@code false} otherwise.
      */
     public static boolean intersect(List<? extends MediaType> ml1, List<? extends MediaType> ml2) {
         for (MediaType m1 : ml1) {
@@ -286,7 +284,8 @@ public class MediaTypes {
 
     /**
      * Create a list of media type from a string array of media types.
-     * <p>
+     * <p/>
+     *
      * @param mediaTypes the string array of media types.
      * @return the list of {@link MediaType}, ordered according to {@link #MEDIA_TYPE_COMPARATOR}.
      */
@@ -310,7 +309,8 @@ public class MediaTypes {
 
     /**
      * Create a list of quality source media type from the Produces annotation.
-     * <p>
+     * <p/>
+     *
      * @param mime the Produces annotation.
      * @return the list of {@link QualitySourceMediaType}, ordered according to
      *         {@link #QUALITY_SOURCE_MEDIA_TYPE_COMPARATOR}.
@@ -325,11 +325,12 @@ public class MediaTypes {
 
     /**
      * Create a list of quality source media type from an array of media types.
-     * <p>
+     * <p/>
+     *
      * @param mediaTypes the array of media types.
      * @return the list of {@link QualitySourceMediaType}, ordered according to
-     * the quality source as the primary key and {@link #MEDIA_TYPE_COMPARATOR}
-     * as the secondary key.
+     *         the quality source as the primary key and {@link #MEDIA_TYPE_COMPARATOR}
+     *         as the secondary key.
      */
     public static List<QualitySourceMediaType> createQualitySourceMediaTypes(String[] mediaTypes) {
         try {
@@ -341,6 +342,7 @@ public class MediaTypes {
 
     /**
      * Reads quality factor from given media type.
+     *
      * @param mt media type to read quality parameter from
      * @return quality factor of input media type
      */
@@ -367,7 +369,7 @@ public class MediaTypes {
      *
      * @param mediaType type to strip quality parameters from
      * @return media type instance corresponding to the given one with quality parameters stripped off
-     *          or the original instance if no such parameters are present
+     *         or the original instance if no such parameters are present
      */
     public static MediaType stripQualityParams(MediaType mediaType) {
         final Map<String, String> oldParameters = mediaType.getParameters();
@@ -386,7 +388,6 @@ public class MediaTypes {
     }
 
 
-
     /**
      * Returns MediaType with wildcard in subtype.
      *
@@ -403,7 +404,17 @@ public class MediaTypes {
         return mt;
     }
 
-    // TODO: M: javadoc
+    /**
+     * Convert media types into {@link java.lang.String}. The result string contains
+     * media types in the same order, separated by comma ',' and enclosed into quotes.
+     * For example for input media types
+     * {@link MediaType#TEXT_PLAIN_TYPE}, {@link MediaType#TEXT_PLAIN_TYPE} and
+     * {@link MediaType#APPLICATION_JSON_TYPE} the result will be
+     * "text/plain", "application/json", "text/html".
+     *
+     * @param mediaTypes {@link Iterable iterable} with {@link MediaType media types}.
+     * @return Media types converted into String.
+     */
     public static String convertToString(Iterable<MediaType> mediaTypes) {
         StringBuilder sb = new StringBuilder();
         boolean isFirst = true;

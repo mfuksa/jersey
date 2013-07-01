@@ -165,7 +165,7 @@ public interface ExtendedUriInfo extends UriInfo {
      */
     public List<RuntimeResource> getMatchedRuntimeResources();
 
-    // TODO: M: deprecated?
+
     /**
      * Get matched {@link ResourceMethod resource method} that is invoked.
      * <p/>
@@ -176,7 +176,7 @@ public interface ExtendedUriInfo extends UriInfo {
      */
     public ResourceMethod getMatchedResourceMethod();
 
-    // TODO: M: deprecated?
+
     /**
      * Get matched {@link Resource model resource} from which {@link #getMatchedResourceMethod() the matched} resource method
      * was invoked. The resource can also be a child if the matched method is a sub resource method.
@@ -189,7 +189,30 @@ public interface ExtendedUriInfo extends UriInfo {
     public Resource getMatchedModelResource();
 
 
+    /**
+     * Get resource locators matched since beginning of a matching. The list contains resource
+     * locators sorted in the order that the first element of the list is the last locator executed (LIFO ordering).
+     * The method can be invoked from request scoped code. When method is invoked from the resource locator
+     * itself such a locator will be already in the returned list as a first element.
+     * <p>
+     * The resource locator is
+     * a {@link ResourceMethod resource method} which is annotated by the {@link javax.ws.rs.Path @Path}
+     * and returns a sub resource.
+     * <p/>
+     * @return List of matched resource locators.
+     */
     public List<ResourceMethod> getMatchedResourceLocators();
 
+    /**
+     * Get the list of sub resources returned from resource locators during matching.
+     * The sub resources are sorted in the
+     * order, so that the first element of the list is a sub resource that was lastly returned from the
+     * resource locator (LIFO ordering).
+     * <p/>
+     * Sub resource is a resource that is returned from invoked resource locator method and that will be
+     * used for further resource matching.
+     *
+     * @return Locator sub resource.
+     */
     public List<Resource> getLocatorSubResources();
 }

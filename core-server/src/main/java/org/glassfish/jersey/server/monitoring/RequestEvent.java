@@ -47,6 +47,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.ExtendedUriInfo;
+import org.glassfish.jersey.server.model.Resource;
 
 /**
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)

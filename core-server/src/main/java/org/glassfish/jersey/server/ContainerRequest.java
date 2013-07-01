@@ -426,12 +426,30 @@ public class ContainerRequest extends InboundMessageContext
         this.httpMethod = method;
     }
 
-    // TODO: M: javadoc
+    /**
+     * Set {@link RequestEventListener request event listener} that will listen to events of this request and
+     * {@link RequestEventBuilder request event builder} that will be used to build these events.
+     *
+     * <p>
+     * Do not use this method to set empty mock event listener which has no internal functionality in order to
+     * disable event listener and set {@code requestEventListener} to null instead. Request event listeners are usually created from
+     * {@link org.glassfish.jersey.server.monitoring.ApplicationEventListener#onNewRequest(org.glassfish.jersey.server.monitoring.RequestEvent)}.
+     * If this method is never called on the request the default no functionality event listener
+     * and event builder will be used.
+     * <p/>
+     *
+     *
+     * @param requestEventListener Request event listener or null if the listening to events should be disabled.
+     * @param requestEventBuilder Request event builder.
+     */
     public void setRequestEventListener(RequestEventListener requestEventListener,
                                         RequestEventBuilder requestEventBuilder) {
         if (requestEventListener != null) {
             this.requestEventListener = requestEventListener;
             this.requestEventBuilder = requestEventBuilder;
+        } else {
+            // use mock builder
+            this.requestEventBuilder = EmptyRequestEventBuilder.EMPTY_EVENT_BUILDER;
         }
     }
 

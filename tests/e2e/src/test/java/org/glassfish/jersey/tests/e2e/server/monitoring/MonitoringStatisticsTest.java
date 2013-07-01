@@ -63,8 +63,8 @@ public class MonitoringStatisticsTest extends JerseyTest {
     @Override
     protected Application configure() {
         final ResourceConfig resourceConfig = new ResourceConfig(StatisticsTest.class);
-        resourceConfig.setApplicationName("testApp");
         resourceConfig.property(ServerProperties.MONITORING_STATISTICS_ENABLED, true);
+        resourceConfig.property(ServerProperties.APPLICATION_NAME, "testApp");
         return resourceConfig;
     }
 

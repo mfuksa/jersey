@@ -389,6 +389,9 @@ public final class ServerProperties {
 
     public static final String MONITORING_STATISTICS_ENABLED = "jersey.config.server.monitoring.statistics.enabled";
     public static final String MONITORING_STATISTICS_MBEANS_ENABLED = "jersey.config.server.monitoring.statistics.mbeans.enabled";
+    public static final String APPLICATION_NAME = "jersey.config.server.application.name";
+
+
 
 
     private ServerProperties() {
