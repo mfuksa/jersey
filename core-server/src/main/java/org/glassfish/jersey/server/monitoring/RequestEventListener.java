@@ -40,9 +40,8 @@
 
 package org.glassfish.jersey.server.monitoring;
 
-import org.glassfish.jersey.server.monitoring.RequestEvent;
-
 /**
+ *
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public interface RequestEventListener {

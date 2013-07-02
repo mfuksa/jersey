@@ -147,6 +147,8 @@ public interface MonitoringStatistics {
     /**
      * Get the immutable consistent snapshot of the monitoring statistics. Working with snapshots might
      * have negative performance impact as snapshot must be created but ensures consistency of data over time.
+     * However, the usage of snapshot is encouraged to avoid working with inconsistent data. Not all statistics
+     * must be updated in the same time on mutable version of statistics.
      *
      * @return Snapshot of monitoring statistics.
      */

@@ -65,6 +65,10 @@ import org.glassfish.jersey.server.model.Resource;
  */
 public interface RequestEvent {
 
+    /**
+     * The type of the event which describes in which request processing phase the event
+     * is triggered.
+     */
     public static enum Type {
         /**
          * The request processing has started. This event type is handled only by
@@ -167,38 +171,133 @@ public interface RequestEvent {
          */
         EXCEPTION_MAPPING_FINISHED,
 
-
-        FINISHED;
+        /**
+         * The request and response processing has finished. The result of request processing can be checked
+         * by {@link #isSuccess()} method. This method is called even when request processing fails and ends
+         * up with not handled exceptions.
+         */
+        FINISHED
     }
 
 
+    /**
+     * Describes the origin of the exception.
+     */
     public static enum ExceptionCause {
+        /**
+         * An exception was thrown during the standard request and response processing and was not thrown
+         * from processing of mapped response.
+         */
         STANDARD_PROCESSING,
-        MAPPED_RESPONSE_PROCESSING;
+        /**
+         * An exception was thrown during the processing of response
+         * mapped from {@link ExceptionMapper exception mappers}.
+         */
+        MAPPED_RESPONSE_PROCESSING
     }
 
-    public ContainerRequest getContainerRequest();
-
-    public ContainerResponse getContainerResponse();
-
-    public Throwable getThrowable();
-
+    /**
+     * Returns the {@link Type type} of this event.
+     *
+     * @return Request event type.
+     */
     public Type getType();
 
+    /**
+     * Get the container request. The container request is available for all event types. Returned
+     * request must not be modified by the {@link RequestEventListener request event listener}.
+     *
+     * @return The non-null container request.
+     */
+    public ContainerRequest getContainerRequest();
+
+    /**
+     * Get the container response. The response is available only for certain {@link Type event types}. The
+     * returned response might vary also on the event type. The getter returns always the latest response being
+     * processed. So, for example for event {@link Type#EXCEPTION_MAPPING_FINISHED} event type the method
+     * returns mapped response and not the original response created from execution of the resource method.
+     *
+     * @return Latest response being processed or {@link null} if no response has been produced yet.
+     */
+    public ContainerResponse getContainerResponse();
+
+    /**
+     * Get the latest exception, if any, thrown by the request and response processing. When this method
+     * returns not null value, the method {@link #getExceptionCause()} returns the origin of the exception.
+     *
+     * @return Exception thrown or {@link null} if no exception has been thrown.
+     */
+    public Throwable getThrowable();
+
+    /**
+     * Get the {@link ExtendedUriInfo extended uri info} associated with this request. This method returns
+     * null for {@link Type#START} event. The returned {@code ExtendedUriInfo} can be used to retrieve
+     * information relevant to many event types (especially event types describing the matching process).
+     *
+     * @return Extended uri info or {@link null} if it is not available yet.
+     */
     public ExtendedUriInfo getUriInfo();
 
+    /**
+     * Get the {@link ExceptionMapper} that was found and used during the exception mapping phase.
+     *
+     * @return Exception mapper or {@link null} if no exception mapper was found or even needed.
+     */
     public ExceptionMapper<?> getExceptionMapper();
 
+
+    /**
+     * Get {@link ContainerRequestFilter container request filters} used during the request filtering
+     * phase.
+     *
+     * @return Container request filters or {@link null} if no filters were used yet.
+     */
     public Iterable<ContainerRequestFilter> getContainerRequestFilters();
 
+    /**
+     * Get {@link ContainerResponseFilter container response filters} used during the response filtering
+     * phase.
+     *
+     * @return Container response filter or {@link null} if no filters were used yet.
+     */
     public Iterable<ContainerResponseFilter> getContainerResponseFilters();
 
+    /**
+     * Return {@code true} if the request and response has been successfully processed. Response is successfully
+     * processed when the response code is smaller than 400 and response was successfully written. If the exception
+     * occurred but was mapped into a response with successful response code and written, this method returns
+     * {@code true}.
+     *
+     * @return True if the response was successfully processed.
+     */
     public boolean isSuccess();
 
+    /**
+     * Returns {@code true} if the response was successfully mapped from an exception
+     * by {@link ExceptionMapper exception mappers}. When exception mapping phase failed or when
+     * no exception was thrown at all the, the method returns false. This method is convenient when
+     * handling the {@link Type#EXCEPTION_MAPPING_FINISHED} event type.
+     *
+     * @return True if the exception occurred and it was successfully mapped into a response.
+     */
     public boolean isResponseSuccessfullyMapped();
 
+    /**
+     * Get the {@link ExceptionCause exception cause}. This method is relevant only in cases when
+     * {@link #getThrowable()} returns non-null value (for example when handling {@link Type#ON_EXCEPTION})
+     * event type.
+     *
+     * @return Exception cause of the latest exception or {@code null} if no exception has occurred.
+     */
     public ExceptionCause getExceptionCause();
 
+    /**
+     * Returns {@code true} if the response has been successfully written. {@code true} is returned
+     * even for cases when the written response contains error response code.
+     *
+     * @return {@code true} if the response was successfully written;{@code false} when the response
+     * has not been written yet or when writing of response failed.
+     */
     public boolean isResponseWritten();
 
 

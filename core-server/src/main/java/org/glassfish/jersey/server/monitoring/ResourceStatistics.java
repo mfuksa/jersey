@@ -45,13 +45,44 @@ import java.util.Map;
 import org.glassfish.jersey.server.model.ResourceMethod;
 
 /**
+ * Monitoring statistics of the resource. The resource is a set of resource methods with specific characteristics
+ * that is not defined by this interface. The resource can be set of resource methods that are accessible on
+ * the same URI (in the case of {@link org.glassfish.jersey.server.monitoring.MonitoringStatistics#getUriStatistics()})
+ * or the set of resource method defined in one {@link Class} (in case
+ * of {@link org.glassfish.jersey.server.monitoring.MonitoringStatistics#getResourceClassStatistics()}).
+ * <p/>
+ * The principles of using statistics
+ * is similar to principles of using {@link MonitoringStatistics}.
+ *
+ * @see MonitoringStatistics See monitoring statistics for more details.
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public interface ResourceStatistics {
+    /**
+     * Get {@link ExecutionStatistics execution statistics} that contain measurements of times only for
+     * execution of resource methods. Durations average time, minimum time and maximum time
+     * measure only time of execution of resource methods code. It does not involve other request processing
+     * phases.
+     *
+     * @return Execution statistics of all resource method in this resource.
+     */
     public ExecutionStatistics getResourceMethodExecutionStatistics();
 
+    /**
+     * Get {@link ExecutionStatistics execution statistics} that contain measurements of times for
+     * whole processing from time when request comes into the Jersey application until the response
+     * is written to the underlying IO container. The statistics involves only requests that were matched
+     * to resource methods defined in {@link #getResourceMethodStatistics()}.
+     *
+     * @return Execution statistics of entire request processing for all resource method from this resource.
+     */
     public ExecutionStatistics getRequestExecutionStatistics();
 
+    /**
+     * Return the statistics for resource method.
+     *
+     * @return
+     */
     public Map<ResourceMethod, ResourceMethodStatistics> getResourceMethodStatistics();
 
     public ResourceStatistics snapshot();
