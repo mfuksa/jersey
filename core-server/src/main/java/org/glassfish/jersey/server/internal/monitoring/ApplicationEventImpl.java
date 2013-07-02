@@ -47,6 +47,7 @@ import org.glassfish.jersey.server.model.ResourceModel;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 
 /**
+ *
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public class ApplicationEventImpl implements ApplicationEvent {
@@ -57,9 +58,6 @@ public class ApplicationEventImpl implements ApplicationEvent {
     private final Set<Class<?>> registeredClasses;
     private final Set<Object> registeredInstances;
     private final ResourceModel resourceModel;
-
-
-    // TODO: M: builder?
 
     public ApplicationEventImpl(Type type, ResourceConfig resourceConfig,
                                 Set<Class<?>> providers, Set<Class<?>> registeredClasses,

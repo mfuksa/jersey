@@ -155,7 +155,7 @@ class ServerRuntime {
          *
          *
          * @param requestProcessingRoot application request processing root stage.
-         * @param eventListener TODO: M:
+         * @param eventListener Application event listener registered for this runtime.
          * @return new server-side request processing runtime.
          */
         public ServerRuntime build(final Stage<ContainerRequest> requestProcessingRoot, ApplicationEventListener eventListener) {
@@ -351,7 +351,6 @@ class ServerRuntime {
             request.getRequestEventBuilder().setContainerResponse(response);
             response = processResponse(response);
             release(response);
-//            TODO: M: request.triggerEvent(RequestEvent.Type.PROCESSING_SUCCESS);
         }
 
         private ContainerResponse processResponse(ContainerResponse response) {

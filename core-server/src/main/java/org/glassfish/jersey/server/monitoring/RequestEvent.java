@@ -50,44 +50,121 @@ import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.glassfish.jersey.server.model.Resource;
 
 /**
+ * An event informing about details of a request processing. The event is created by a Jersey runtime and
+ * handled by {@link RequestEventListener} (javadoc of listener describes how to register the listener for
+ * particular request).
+ * <p/>
+ * The event contains the {@link Type} which distinguishes between types of event. There are various
+ * properties in the event (accessible by getters) and some of them might be relevant only to specific event types.
+ * <p/>
+ * Note that internal state of the event must be modified. Even the event is immutable it exposes objects
+ * which might be mutable and the code of event listener must not change state of these objects.
+
+ *
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public interface RequestEvent {
 
     public static enum Type {
         /**
-         * This event type is used only when calling {@link org.glassfish.jersey.server.monitoring.ApplicationEventListener#onNewRequest(RequestEventImpl)}.
+         * The request processing has started. This event type is handled only by
+         * {@link org.glassfish.jersey.server.monitoring.ApplicationEventListener#onNewRequest(RequestEvent)} and will
+         * never be called for {@link RequestEventListener#onEvent(RequestEvent)}.
          */
         START,
 
+        /**
+         * The matching of the resource and resource method has started.
+         */
         MATCHING_START,
+        /**
+         * The sub resource locator method is found and it will be called.
+         * The locator method can be retrieved from {@link #getUriInfo()} by method
+         * {@link org.glassfish.jersey.server.ExtendedUriInfo#getMatchedResourceLocators()}.
+         */
         MATCHED_LOCATOR,
 
-        // TODO: remove
+        /**
+         * The sub resource has been returned from sub resource locator, model was constructed, enhanced by
+         * {@link org.glassfish.jersey.server.model.ModelProcessor model processor}, validated and the matching
+         * is going to be performed on the sub {@link Resource resource}.
+         * The sub resource can be retrieved from {@link #getUriInfo()} by method
+         * {@link org.glassfish.jersey.server.ExtendedUriInfo#getLocatorSubResources()}.
+         *
+         */
         MATCHED_SUB_RESOURCE,
 
         /**
-         * similar to MATCHING_FINISHED
+         * The matching has been finished and {@link ContainerRequestFilter container request filters}
+         * are going to be executed. The request filters can be retrieved from event by
+         * {@link #getContainerRequestFilters()} method. This method also determines end of the matching
+         * process and therefore the matching results can be retrieved using {@link #getUriInfo()}.
          */
         REQ_FILTERS_START,
-        REQ_FILTERS_FINISHED,
+
         /**
-         * Directly before execution
+         * Execution of {@link ContainerRequestFilter container request filters} has been finished.
+         */
+        REQ_FILTERS_FINISHED,
+
+        /**
+         * Resource method is going to be executed. The resource method can be extracted from {@link ExtendedUriInfo}
+         * returned by {@link #getUriInfo()}.
          */
         RESOURCE_METHOD_START,
+
+        /**
+         * Resource method execution has finished. The response is not available yet.
+         */
         RESOURCE_METHOD_FINISHED,
 
 
+        /**
+         * {@link ContainerResponseFilter Container response filters} are going to be executed. In this point
+         * the response is already available and can be retrieved by {@link #getContainerResponse()}. The
+         * response filters can be retrieved by {@link #getContainerResponseFilters()}.
+         * <p/>
+         * This phase is executed in the regular response processing but might also been executed for
+         * processing on response mapped from exceptions by {@link ExceptionMapper exception mappers}.
+         * In this case the {@link #ON_EXCEPTION} event type precedes this event.
+         */
         RESP_FILTERS_START,
+
+        /**
+         * Execution of {@link ContainerResponseFilter Container response filters} has finished.
+         * <p/>
+         * This phase is executed in the regular response processing but might also been executed for
+         * processing on response mapped from exceptions by {@link ExceptionMapper exception mappers}.
+         * In this case the {@link #ON_EXCEPTION} event type precedes this event.
+         */
         RESP_FILTERS_FINISHED,
 
 
+        /**
+         * Exception has been thrown during the request/response processing. This situation can
+         * occur in almost all phases of request processing and therefore there is no fixed order of
+         * events in which this event type can be triggered.
+         * <p/>
+         * The origin of exception can be retrieved
+         * by {@link #getExceptionCause()}. This event type can be received even two types in the case
+         * when first exception is thrown during the standard request processing and the second one
+         * is thrown during the processing of the response mapped from the exception.
+         * <p/>
+         * The exception thrown can be retrieved by {@link #getThrowable()}.
+         */
         ON_EXCEPTION,
 
         /**
-         * After the ExceptionMapper is successfully found and before execution of this mapper
+         * An {@link ExceptionMapper} is successfully found and it is going to be executed. The
+         * {@code ExceptionMapper} can be retrieved by {@link #getExceptionMapper()}.
          */
         EXCEPTION_MAPPER_FOUND,
+
+        /**
+         * Exception mapping is finished. The result of exception mapping can be checked by
+         * {@link #isResponseSuccessfullyMapped()} which returns true when the exception mapping
+         * was successful. In this case the new response is available in the {@link #getContainerResponse()}.
+         */
         EXCEPTION_MAPPING_FINISHED,
 
 

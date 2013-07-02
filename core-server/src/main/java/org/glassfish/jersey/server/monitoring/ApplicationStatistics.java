@@ -46,6 +46,7 @@ import java.util.Set;
 import org.glassfish.jersey.server.ResourceConfig;
 
 /**
+ * Application statistics
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public interface ApplicationStatistics {

@@ -46,11 +46,28 @@ import javax.ws.rs.RuntimeType;
 import org.glassfish.jersey.spi.Contract;
 
 /**
+ * A Jersey specific provider that listens to monitoring statistics. Each time when new statistics are available,
+ * the implementation of {@code MonitoringStatisticsListener} will be called and new statistics will be passed.
+ * Statistics are calculated in irregular undefined intervals.
+ * <p/>
+ * The implementation of this interface can be registered as a standard Jersey/JAX-RS provider
+ * by annotating with {@link javax.ws.rs.ext.Provider @Provider} annotation in the case of
+ * class path scanning, by registering as a provider using {@link org.glassfish.jersey.server.ResourceConfig}
+ * or by returning from {@link javax.ws.rs.core.Application#getClasses()}
+ * or {@link javax.ws.rs.core.Application#getSingletons()}}. The provider can be registered only on the server
+ * side.
+ * <p/>
+ *
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
 @Contract
 @ConstrainedTo(RuntimeType.SERVER)
 public interface MonitoringStatisticsListener {
+    /**
+     * The method is called when new statistics are available and statistics are passed as a argument.
+     *
+     * @param statistics Newly calculated monitoring statistics.
+     */
     public void onStatistics(MonitoringStatistics statistics);
 }
