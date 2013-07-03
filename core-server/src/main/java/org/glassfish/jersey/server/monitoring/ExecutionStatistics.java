@@ -44,13 +44,45 @@ import java.util.Date;
 import java.util.Map;
 
 /**
+ * Monitoring statistics of execution of one target. {@code ExecutionStatistics} contains
+ * {@link TimeWindowStatistics} for various time window sizes.
+ * <p/>
+ * Statistics retrieved from Jersey runtime might be mutable and thanks to it might provide inconsistent data
+ * as not all statistics are updated in the same time. To retrieve the immutable and consistent
+ * statistics data the method {@link #snapshot()} should be used.
+ *
+ * @see MonitoringStatistics See monitoring statistics for general details about statistics.
+ *
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public interface ExecutionStatistics {
 
+    /**
+     * Return time when target was executed last time. The time is measured before the target was executed.
+     *
+     * @return Time of last execution.
+     */
     public Date getLastStartTime();
 
+    /**
+     * Returns time window statistics for available time window sizes. The returned map contains sizes
+     * of a time window in milliseconds as keys and
+     * {@link TimeWindowStatistics time window statistics} for the corresponding time window
+     * as value.
+     *
+     * @return Map with size of a time window in milliseconds as keys and
+     * {@link TimeWindowStatistics time window statistics} for the corresponding time window
+     * as value.
+     */
     public Map<Long, TimeWindowStatistics> getTimeWindowStatistics();
 
+    /**
+     * Get the immutable consistent snapshot of the monitoring statistics. Working with snapshots might
+     * have negative performance impact as snapshot must be created but ensures consistency of data over time.
+     * However, the usage of snapshot is encouraged to avoid working with inconsistent data. Not all statistics
+     * must be updated in the same time on mutable version of statistics.
+     *
+     * @return Snapshot of execution statistics.
+     */
     public ExecutionStatistics snapshot();
 }

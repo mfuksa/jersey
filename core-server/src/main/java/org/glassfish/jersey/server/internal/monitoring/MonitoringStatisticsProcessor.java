@@ -99,11 +99,12 @@ public class MonitoringStatisticsProcessor {
                     throw new ProcessingException("Error generating statistics.", t);
                 }
 
+                final MonitoringStatisticsImpl immutableStats = statisticsBuilder.build();
                 final Iterator<MonitoringStatisticsListener> iterator = statisticsCallbackList.iterator();
                 while (iterator.hasNext()) {
                     MonitoringStatisticsListener monitoringStatisticsListener = iterator.next();
                     try {
-                        monitoringStatisticsListener.onStatistics(statisticsBuilder.build());
+                        monitoringStatisticsListener.onStatistics(immutableStats);
                     } catch (Throwable t) {
                         // TODO: M: loc
                         LOGGER.log(Level.SEVERE, "Exception thrown when provider "

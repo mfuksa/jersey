@@ -543,7 +543,7 @@ public class UriRoutingContext implements RoutingContext, ExtendedUriInfo {
 
     @Override
     public Resource getMatchedModelResource() {
-        return matchedResourceMethod.getParent();
+        return matchedResourceMethod == null ? null : matchedResourceMethod.getParent();
     }
 
 

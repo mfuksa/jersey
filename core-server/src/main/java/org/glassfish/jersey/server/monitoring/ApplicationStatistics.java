@@ -46,22 +46,84 @@ import java.util.Set;
 import org.glassfish.jersey.server.ResourceConfig;
 
 /**
- * Application statistics
+ * Monitoring statistics and configuration of an application.
+ * <p/>
+ * Statistics retrieved from Jersey runtime might be mutable and thanks to it might provide inconsistent data
+ * as not all statistics are updated in the same time. To retrieve the immutable and consistent
+ * statistics data the method {@link #snapshot()} should be used.
+
+ * @see MonitoringStatistics See monitoring statistics for general details about statistics.
+
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public interface ApplicationStatistics {
+    /**
+     * Get the resource config.
+     *
+     * @return Resource config.
+     */
     public ResourceConfig getResourceConfig();
 
+    /**
+     * Get the start time of the application.
+     *
+     * @return Time when an application initialization has been finished.
+     */
     public Date getStartTime();
 
+    /**
+     * Get the time when application destroy (stop) has been finished.
+     * @return Destroyp time.
+     */
     public Date getDestroyTime();
 
-    public ApplicationStatistics snapshot();
 
+    /**
+     * Get resource classes registered by the user in the current application. The set contains only
+     * user resource classes and not resource classes added by Jersey
+     * or by {@link org.glassfish.jersey.server.model.ModelProcessor}.
+     * <p/>
+     * User resources are resources that
+     * were explicitly registered by the configuration, discovered by the class path scanning or that
+     * constructs explicitly registered {@link org.glassfish.jersey.server.model.Resource programmatic resource}.
+     *
+     * @return Resource user registered classes.
+     */
     public Set<Class<?>> getRegisteredClasses();
 
+    /**
+     * Get resource instances registered by the user in the current application. The set contains only
+     * user resources and not resources added by Jersey
+     * or by {@link org.glassfish.jersey.server.model.ModelProcessor}.
+     * <p/>
+     * User resources are resources that
+     * were explicitly registered by the configuration, discovered by the class path scanning or that
+     * constructs explicitly registered {@link org.glassfish.jersey.server.model.Resource programmatic resource}.
+     *
+     * @return Resource instances registered by user.
+     */
     public Set<Object> getRegisteredInstances();
 
+    /**
+     * Get registered providers available in the runtime. The registered providers
+     * are providers like {@link org.glassfish.jersey.server.model.MethodList.Filter filters},
+     * {@link javax.ws.rs.ext.ReaderInterceptor reader} and {@link javax.ws.rs.ext.WriterInterceptor writer}
+     * interceptors which are explicitly registered by configuration, or annotated by
+     * {@link javax.ws.rs.ext.Provider @Provider} or registered in META-INF/services. The
+     * set does not include providers that are by default built in Jersey.
+     *
+     * @return Set of provider classes.
+     */
     public Set<Class<?>> getProviders();
+
+    /**
+     * Get the immutable consistent snapshot of the monitoring statistics. Working with snapshots might
+     * have negative performance impact as snapshot must be created but ensures consistency of data over time.
+     * However, the usage of snapshot is encouraged to avoid working with inconsistent data. Not all statistics
+     * must be updated in the same time on mutable version of statistics.
+     *
+     * @return Snapshot of application statistics.
+     */
+    public ApplicationStatistics snapshot();
 }
 

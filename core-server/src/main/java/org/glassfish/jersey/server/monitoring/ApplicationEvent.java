@@ -73,7 +73,7 @@ public interface ApplicationEvent {
          */
         INITIALIZATION_FINISHED,
         /**
-         * Application has been destroyed (stopped). In this point the application cannot any new requests.
+         * Application has been destroyed (stopped). In this point the application cannot process any new requests.
          */
         DESTROY_FINISHED,
         /**

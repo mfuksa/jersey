@@ -58,6 +58,7 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.fail;
 
@@ -65,6 +66,9 @@ import static org.junit.Assert.fail;
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  *
  */
+
+// TODO: M: unignore
+@Ignore
 public class ExtendedExceptionMapperTest extends JerseyTest {
 
     @Override
