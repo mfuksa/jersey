@@ -49,6 +49,8 @@ import org.glassfish.jersey.spi.Contract;
  * A Jersey specific provider that listens to monitoring statistics. Each time when new statistics are available,
  * the implementation of {@code MonitoringStatisticsListener} will be called and new statistics will be passed.
  * Statistics are calculated in irregular undefined intervals.
+ * <p>
+ * The provider must not throw any exception.
  * <p/>
  * The implementation of this interface can be registered as a standard Jersey/JAX-RS provider
  * by annotating with {@link javax.ws.rs.ext.Provider @Provider} annotation in the case of

@@ -43,20 +43,18 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import org.glassfish.jersey.server.ContainerRequest;
-import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 
 /**
- * Router that pushes matched {@link Resource resource or child resource} and {@link ResourceMethod resourceMethod}
+ * Router that pushes matched {@link ResourceMethod resource method}
  * to {@link RoutingContext routing context}.
  *
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
-// TODO: M: javadoc
 class PushMatchedMethodRouter implements Router {
 
     /**
-     * Builder for creating {@link PushMatchedMethodRouter push matched resource router} instances. New builder instance
+     * Builder for creating {@link PushMatchedMethodRouter push matched method router} instances. New builder instance
      * must be injected and not directly created by constructor call.
      */
     static class Builder {
@@ -65,6 +63,7 @@ class PushMatchedMethodRouter implements Router {
 
         /**
          * Builds new instance of router.
+         *
          * @param resourceMethod The matched resource method that should be pushed into the
          *                       {@link RoutingContext routing context}.
          * @return New instance of the router.

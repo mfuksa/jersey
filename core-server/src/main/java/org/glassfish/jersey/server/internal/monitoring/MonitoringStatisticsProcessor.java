@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.ws.rs.ProcessingException;
 
 import org.glassfish.jersey.server.ExtendedResourceContext;
+import org.glassfish.jersey.server.internal.LocalizationMessages;
 import org.glassfish.jersey.server.internal.RuntimeExecutorsBinder;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
@@ -93,10 +94,9 @@ public class MonitoringStatisticsProcessor {
                     processResponseCodeEvents();
                     processExceptionMapperEvents();
                 } catch (Throwable t) {
-                    // TODO: M: loc
-                    LOGGER.log(Level.SEVERE, "Error generating MonitoringStatistics.", t);
+                    LOGGER.log(Level.SEVERE, LocalizationMessages.ERROR_MONITORING_STATISTICS_GENERATION(), t);
                     // rethrowing exception stops further task execution
-                    throw new ProcessingException("Error generating statistics.", t);
+                    throw new ProcessingException(LocalizationMessages.ERROR_MONITORING_STATISTICS_GENERATION(), t);
                 }
 
                 final MonitoringStatisticsImpl immutableStats = statisticsBuilder.build();
@@ -106,10 +106,8 @@ public class MonitoringStatisticsProcessor {
                     try {
                         monitoringStatisticsListener.onStatistics(immutableStats);
                     } catch (Throwable t) {
-                        // TODO: M: loc
-                        LOGGER.log(Level.SEVERE, "Exception thrown when provider "
-                                + monitoringStatisticsListener + " was processing MonitoringStatistics. " +
-                                "Removing provider from further processing.", t);
+                        LOGGER.log(Level.SEVERE, LocalizationMessages.ERROR_MONITORING_STATISTICS_LISTENER(
+                                        monitoringStatisticsListener.getClass()), t);
                         iterator.remove();
                     }
                 }

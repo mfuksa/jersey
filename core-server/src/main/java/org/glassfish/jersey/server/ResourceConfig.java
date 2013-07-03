@@ -956,7 +956,7 @@ public class ResourceConfig extends Application implements Configurable<Resource
     }
 
     /**
-     * Return the name of the Jersey application.
+     * Get the name of the Jersey application.
      *
      * @return Name of the application.
      * @see #setApplicationName(String)

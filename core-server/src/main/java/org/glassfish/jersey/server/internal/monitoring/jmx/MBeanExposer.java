@@ -52,6 +52,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.ws.rs.ProcessingException;
 
+import org.glassfish.jersey.server.internal.LocalizationMessages;
 import org.glassfish.jersey.server.monitoring.ApplicationStatistics;
 import org.glassfish.jersey.server.monitoring.MonitoringStatistics;
 import org.glassfish.jersey.server.monitoring.MonitoringStatisticsListener;
@@ -69,7 +70,6 @@ public class MBeanExposer implements MonitoringStatisticsListener {
     private volatile ResponseMXBeanImpl responseMXBean;
     private volatile ResourcesMBeanGroup uriStatsGroup;
     private volatile ResourcesMBeanGroup resourceClassStatsGroup;
-    private volatile ApplicationMXBeanImpl applicationMXBean;
     private volatile ExceptionMapperMXBeanImpl exceptionMapperMXBean;
 
     private final AtomicBoolean exposed = new AtomicBoolean(false);
@@ -86,23 +86,28 @@ public class MBeanExposer implements MonitoringStatisticsListener {
         return newMap;
     }
 
+    /**
+     * Register the mbean with the given postfix name.
+     *
+     * @param mbean MBean to be registered.
+     * @param namePostfix Postfix of the object name in the pattern ",[property]=[value]...". Example
+     *                    ",subType=Requests,details=Execution"
+     */
     void registerMBean(Object mbean, String namePostfix) {
         final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
         final String name = domain + namePostfix;
         try {
             final ObjectName objectName = new ObjectName(name);
             if (mBeanServer.isRegistered(objectName)) {
-                // TODO: M: loc
-                LOGGER.log(Level.SEVERE, "Monitoring Mbeans for Jersey application " + objectName.getCanonicalName() +
-                        " are already registered. Unregistering the current mbean and registering a new one instead.");
+
+                LOGGER.log(Level.WARNING, LocalizationMessages.WARNING_MONITORING_MBEANS_BEAN_ALREADY_REGISTERED(objectName));
                 mBeanServer.unregisterMBean(objectName);
             }
 
             mBeanServer.registerMBean(mbean, objectName);
         } catch (JMException e) {
 
-            throw new ProcessingException(
-                    "Error when registering Jersey monitoring MXBeans. MxBean with name '" + name + "' failed.", e);
+            throw new ProcessingException(LocalizationMessages.ERROR_MONITORING_MBEANS_REGISTRATION(name), e);
         }
     }
 
@@ -115,7 +120,7 @@ public class MBeanExposer implements MonitoringStatisticsListener {
                 mBeanServer.unregisterMBean(name);
             }
         } catch (Exception e) {
-            throw new ProcessingException("Error unregistering Jersey monitoring mbeans on application destroy.", e);
+            throw new ProcessingException(LocalizationMessages.ERROR_MONITORING_MBEANS_UNREGISTRATION_DESTROY(), e);
         }
 
     }
@@ -137,7 +142,6 @@ public class MBeanExposer implements MonitoringStatisticsListener {
             resourceClassStatsGroup = new ResourcesMBeanGroup(newMap, false, this, ",subType=ResourceClasses");
 
             responseMXBean = new ResponseMXBeanImpl();
-            // TODO: M: move register to Respbean
             registerMBean(responseMXBean, ",subType=Responses");
 
             requestMBean = new ExecutionStatisticsDynamicBean(statistics.getRequestExecutionStatistics(),
@@ -145,7 +149,7 @@ public class MBeanExposer implements MonitoringStatisticsListener {
 
             exceptionMapperMXBean = new ExceptionMapperMXBeanImpl(statistics.getExceptionMapperStatistics(), this);
 
-            applicationMXBean = new ApplicationMXBeanImpl(appStats, this,
+            new ApplicationMXBeanImpl(appStats, this,
                     appStats.getProviders(), appStats.getRegisteredClasses(), appStats.getRegisteredInstances());
         }
 

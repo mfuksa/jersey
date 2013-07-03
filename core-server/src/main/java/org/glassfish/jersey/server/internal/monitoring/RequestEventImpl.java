@@ -54,8 +54,6 @@ import org.glassfish.jersey.server.monitoring.RequestEvent;
  */
 public class RequestEventImpl implements RequestEvent {
 
-
-    // TODO: M: volatile
     public static class Builder implements RequestEventBuilder {
         private ContainerRequest containerRequest;
         private ContainerResponse containerResponse;
@@ -170,10 +168,7 @@ public class RequestEventImpl implements RequestEvent {
     private final ContainerRequest containerRequest;
     private final ContainerResponse containerResponse;
     private final Throwable throwable;
-    //    private final ContainerResponse mappedResponse;
-//    private final ContainerResponse responseWritten;
     private final ExtendedUriInfo extendedUriInfo;
-    // TODO: M: maybe List?
     private final Iterable<ContainerResponseFilter> containerResponseFilters;
     private final Iterable<ContainerRequestFilter> containerRequestFilters;
     private final ExceptionMapper<?> exceptionMapper;

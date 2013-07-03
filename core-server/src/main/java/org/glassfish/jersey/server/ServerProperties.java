@@ -255,7 +255,7 @@ public final class ServerProperties {
 
     /**
      * A Bean Validation (JSR-349) support customization property.
-     *
+     * <p/>
      * If {@code true} the check whether the overriding / implementing methods are annotated with
      * {@link javax.validation.executable.ValidateOnExecution} as well as one of their predecessor (in hierarchy)
      * is disabled.
@@ -276,7 +276,7 @@ public final class ServerProperties {
 
     /**
      * A Bean Validation (JSR-349) support customization property.
-     *
+     * <p/>
      * If set to {@code true} and Bean Validation support has not been explicitly disabled (see
      * {@link #BV_FEATURE_DISABLE}), the validation error information will be sent in the entity of the
      * returned {@link javax.ws.rs.core.Response}.
@@ -346,7 +346,7 @@ public final class ServerProperties {
 
     /**
      * If {@code true} then the extensive validation of application resource model is disabled.
-     *
+     * <p/>
      * This impacts both the validation of root resources during deployment as well as validation of any sub resources
      * returned from sub-resource locators.
      * <p>
@@ -372,7 +372,7 @@ public final class ServerProperties {
      * If {@code true} then validation of application resource models does not fail even in case of a fatal
      * validation errors. All resource model validation issues are still output to the log, unless the resource
      * model validation is completely disabled (see {@link #RESOURCE_VALIDATION_DISABLE}).
-     *
+     * <p/>
      * This impacts both the validation of root resources during deployment as well as validation of any sub resources
      * returned from sub-resource locators. The option is typically used during development and testing.
      * <p>
@@ -388,13 +388,62 @@ public final class ServerProperties {
             "jersey.config.server.resource.validation.ignoreErrors";
 
 
+    /**
+     * If {@code true} then calculation of monitoring statistics will be enabled. This will enable the possibility
+     * of injecting {@link org.glassfish.jersey.server.monitoring.MonitoringStatistics} into resource and providers
+     * and also the registered listeners
+     * implementing {@link org.glassfish.jersey.server.monitoring.MonitoringStatisticsListener} will be called
+     * when statistics are available. Enabling statistics has negative performance impact and therefore should
+     * be enabled only when needed.
+     * <p>
+     * The default value is {@code false}.
+     * </p>
+     * <p>
+     * The name of the configuration property is <tt>{@value}</tt>.
+     * </p>
+     *
+     * @see org.glassfish.jersey.server.monitoring.MonitoringStatistics
+     * @see org.glassfish.jersey.server.monitoring.MonitoringStatisticsListener
+     */
     public static final String MONITORING_STATISTICS_ENABLED = "jersey.config.server.monitoring.statistics.enabled";
 
+    /**
+     * If {@code true} then Jersey will expose MBeans with monitoring statistics. Exposed JMX MBeans are based
+     * on {@link org.glassfish.jersey.server.monitoring.MonitoringStatistics} and therefore when they are enabled,
+     * also the calculation of monitoring statistics needs to be enabled. Therefore if this property is {@link true}
+     * the calculation of monitoring statistics is automatically enabled (the same result as setting the property
+     * {@link #MONITORING_STATISTICS_ENABLED}).
+     * <p/>
+     * Enabling statistics MBeans has negative
+     * performance impact and therefore should be enabled only when needed.
+     * <p>
+     * The default value is {@code false}.
+     * </p>
+     * <p>
+     * The name of the configuration property is <tt>{@value}</tt>.
+     * </p>
+     */
     public static final String MONITORING_STATISTICS_MBEANS_ENABLED = "jersey.config.server.monitoring.statistics.mbeans.enabled";
 
+    /**
+     * {@link String} property that defines the application name. The name is an arbitrary user defined name
+     * which is used to distinguish between Jersey applications in the case that more applications
+     * are deployed on the same runtime (container). The name can be used for example for purposes
+     * of monitoring by JMX when name identifies to which application deployed MBeans belong to.
+     * The name should be unique in the runtime.
+     * <p>
+     * The property is ignored
+     * if the application name is set programmatically by
+     * {@link org.glassfish.jersey.server.ResourceConfig#getApplicationName()}.
+     * </p/>
+     * <p>
+     * There is no default value.
+     * </p>
+     * <p>
+     * The name of the configuration property is <tt>{@value}</tt>.
+     * </p>
+     */
     public static final String APPLICATION_NAME = "jersey.config.server.application.name";
-
-
 
 
     private ServerProperties() {

@@ -406,7 +406,6 @@ class ServerRuntime {
                 }
             } finally {
                 release(response);
-                // TODO: M: request.triggerEvent(RequestEvent.Type.PROCESSING_FAILURE);
             }
         }
 

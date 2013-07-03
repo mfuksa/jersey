@@ -158,6 +158,7 @@ class SubResourceLocatorRouter implements Router {
         }
 
         subResource = resourceModel.getResources().get(0);
+        routingCtx.pushLocatorSubResource(subResource);
         request.triggerEvent(RequestEventImpl.Type.MATCHED_SUB_RESOURCE);
 
 
