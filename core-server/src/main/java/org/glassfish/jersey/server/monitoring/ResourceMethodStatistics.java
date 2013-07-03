@@ -52,6 +52,11 @@ import org.glassfish.jersey.server.model.ResourceMethod;
  * statistics for complete processing of requests that were matched to the resource method. This implies that
  * {@link #getRequestStatistics()} will tend to contain higher time measurements as they measure total request
  * processing time and not only execution of the resource method.
+ * <p/>
+ * Statistics retrieved from Jersey runtime might be mutable and thanks to it might provide inconsistent data
+ * as not all statistics are updated in the same time. To retrieve the immutable and consistent
+ * statistics data the method {@link #snapshot()} should be used.
+ *
  *
  * @see MonitoringStatistics See monitoring statistics for more details.
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
@@ -87,7 +92,7 @@ public interface ResourceMethodStatistics {
     public ResourceMethod getResourceMethod();
 
     /**
-     * Get the immutable consistent snapshot of the monitoring statistics. Working with snapshots might
+     * Get the immutable and consistent snapshot of the monitoring statistics. Working with snapshots might
      * have negative performance impact as snapshot must be created but ensures consistency of data over time.
      * However, the usage of snapshot is encouraged to avoid working with inconsistent data. Not all statistics
      * must be updated in the same time on mutable version of statistics.

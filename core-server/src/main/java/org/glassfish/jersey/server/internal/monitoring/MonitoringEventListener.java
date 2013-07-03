@@ -125,7 +125,7 @@ public class MonitoringEventListener implements ApplicationEventListener {
     }
 
     @Override
-    public ReqEventListener onNewRequest(RequestEvent requestEvent) {
+    public ReqEventListener onRequest(RequestEvent requestEvent) {
         switch (requestEvent.getType()) {
             case START:
                 return new ReqEventListener();

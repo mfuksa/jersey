@@ -41,9 +41,25 @@
 package org.glassfish.jersey.server.monitoring;
 
 /**
+ * Non-registrable provider that listens to {@link RequestEvent request events}.
+ * <p/>
+ * The implementation of the interface will be called for request events when they occur. The provider
+ * cannot be registered as a standard JAX-RS or Jersey provider. The instance of the
+ * {@code RequestEventListener} must be returned from the {@link ApplicationEventListener#onRequest(RequestEvent)}.
+ * This will register the instance for listening of request events for one particular request. Once
+ * the processing of the request is finished, the instance will be ignored by the Jersey runtime and not used
+ * for processing of further requests.
+ *
+ * @see ApplicationEventListener for details of how to register the {@code RequestEventListener}.
  *
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public interface RequestEventListener {
+    /**
+     * The method is called when new request event occurs. This method will never be called for method
+     * {@link RequestEvent.Type#START} as this event is handled by {@link ApplicationEventListener}.
+     *
+     * @param event Request event.
+     */
     public void onEvent(RequestEvent event);
 }

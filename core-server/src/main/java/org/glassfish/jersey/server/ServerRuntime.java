@@ -255,7 +255,7 @@ class ServerRuntime {
         if (applicationEventListener != null) {
         final RequestEventBuilder requestEventBuilder = new RequestEventImpl.Builder().setContainerRequest(request);
         final RequestEventListener requestEventEventListener =
-                applicationEventListener.onNewRequest(requestEventBuilder.build(RequestEventImpl.Type.START));
+                applicationEventListener.onRequest(requestEventBuilder.build(RequestEventImpl.Type.START));
 
             if (requestEventEventListener != null) {
                 request.setRequestEventListener(requestEventEventListener, requestEventBuilder);

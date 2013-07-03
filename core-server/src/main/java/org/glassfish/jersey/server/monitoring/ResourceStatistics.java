@@ -48,13 +48,18 @@ import org.glassfish.jersey.server.model.ResourceMethod;
  * Monitoring statistics of the resource. The resource is a set of resource methods with specific characteristics
  * that is not defined by this interface. The resource can be set of resource methods that are accessible on
  * the same URI (in the case of {@link org.glassfish.jersey.server.monitoring.MonitoringStatistics#getUriStatistics()})
- * or the set of resource method defined in one {@link Class} (in case
+ * or the set of resource methods defined in one {@link Class} (in case
  * of {@link org.glassfish.jersey.server.monitoring.MonitoringStatistics#getResourceClassStatistics()}).
  * <p/>
+ * Statistics retrieved from Jersey runtime might be mutable and thanks to it might provide inconsistent data
+ * as not all statistics are updated in the same time. To retrieve the immutable and consistent
+ * statistics data the method {@link #snapshot()} should be used.
+ * <p/>
+ *
  * The principles of using statistics
  * is similar to principles of using {@link MonitoringStatistics}.
  *
- * @see MonitoringStatistics See monitoring statistics for more details.
+ * @see MonitoringStatistics See monitoring statistics for general details about statistics.
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public interface ResourceStatistics {
@@ -79,12 +84,22 @@ public interface ResourceStatistics {
     public ExecutionStatistics getRequestExecutionStatistics();
 
     /**
-     * Return the statistics for resource method.
+     * Return the statistics for resource method. Keys of returned map are {@link ResourceMethod resource methods}
+     * available in the resource and values are execution statistics of these resource methods.
      *
-     * @return
+     * @return Map with {@link ResourceMethod resource method} keys
+     * and corresponding {@link ResourceMethodStatistics resource method statistics}.
      */
     public Map<ResourceMethod, ResourceMethodStatistics> getResourceMethodStatistics();
 
+    /**
+     * Get the immutable and consistent snapshot of the monitoring statistics. Working with snapshots might
+     * have negative performance impact as snapshot must be created but ensures consistency of data over time.
+     * However, the usage of snapshot is encouraged to avoid working with inconsistent data. Not all statistics
+     * must be updated in the same time on mutable version of statistics.
+
+     * @return Snapshot of resource statistics.
+     */
     public ResourceStatistics snapshot();
 
 }

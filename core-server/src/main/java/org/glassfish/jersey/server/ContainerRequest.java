@@ -433,7 +433,7 @@ public class ContainerRequest extends InboundMessageContext
      * <p>
      * Do not use this method to set empty mock event listener which has no internal functionality in order to
      * disable event listener and set {@code requestEventListener} to null instead. Request event listeners are usually created from
-     * {@link org.glassfish.jersey.server.monitoring.ApplicationEventListener#onNewRequest(org.glassfish.jersey.server.monitoring.RequestEvent)}.
+     * {@link org.glassfish.jersey.server.monitoring.ApplicationEventListener#onRequest(org.glassfish.jersey.server.monitoring.RequestEvent)}.
      * If this method is never called on the request the default no functionality event listener
      * and event builder will be used.
      * <p/>

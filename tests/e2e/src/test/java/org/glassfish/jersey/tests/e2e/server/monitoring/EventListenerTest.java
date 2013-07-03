@@ -113,7 +113,7 @@ public class EventListenerTest extends JerseyTest {
         }
 
         @Override
-        public RequestEventListener onNewRequest(RequestEvent newRequestEvent) {
+        public RequestEventListener onRequest(RequestEvent newRequestEvent) {
             this.newRequestEvent = newRequestEvent;
             if ("POST".equals(newRequestEvent.getContainerRequest().getMethod())) {
                 return null;

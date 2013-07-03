@@ -72,7 +72,7 @@ public interface RequestEvent {
     public static enum Type {
         /**
          * The request processing has started. This event type is handled only by
-         * {@link org.glassfish.jersey.server.monitoring.ApplicationEventListener#onNewRequest(RequestEvent)} and will
+         * {@link org.glassfish.jersey.server.monitoring.ApplicationEventListener#onRequest(RequestEvent)} and will
          * never be called for {@link RequestEventListener#onEvent(RequestEvent)}.
          */
         START,

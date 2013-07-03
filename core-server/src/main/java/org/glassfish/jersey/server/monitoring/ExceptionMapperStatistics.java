@@ -43,6 +43,8 @@ package org.glassfish.jersey.server.monitoring;
 import java.util.Map;
 
 /**
+ * Monitoring statistics of {@link javax.ws.rs.ext.ExceptionMapper exception mapper} executions.
+ *
  * @author Miroslav Fuksa (miroslav.fuksa at oracle.com)
  */
 public interface ExceptionMapperStatistics {

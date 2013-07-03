@@ -116,7 +116,7 @@ public class ReloadApplicationEventTest extends JerseyTest {
         }
 
         @Override
-        public RequestEventListener onNewRequest(RequestEvent requestEvent) {
+        public RequestEventListener onRequest(RequestEvent requestEvent) {
             return null;
         }
     }

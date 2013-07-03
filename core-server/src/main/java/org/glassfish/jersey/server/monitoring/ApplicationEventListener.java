@@ -90,5 +90,5 @@ public interface ApplicationEventListener {
      * @return Request event listener that will monitor the events of the request
      *         connected with {@code requestEvent}; null otherwise.
      */
-    public RequestEventListener onNewRequest(RequestEvent requestEvent);
+    public RequestEventListener onRequest(RequestEvent requestEvent);
 }
