@@ -820,6 +820,7 @@
         <module>media</module>
         <module>security</module>
         <module>test-framework</module>
+
         <module>tests</module>
         <!--module>tools</module-->
     </modules>
