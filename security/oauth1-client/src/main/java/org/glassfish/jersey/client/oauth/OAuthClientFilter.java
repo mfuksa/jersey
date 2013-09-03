@@ -54,15 +54,19 @@ import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.ClientResponseContext;
 import javax.ws.rs.client.ClientResponseFilter;
+import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import org.glassfish.jersey.client.ClientRequest;
 import org.glassfish.jersey.message.MessageBodyWorkers;
 import org.glassfish.jersey.oauth.signature.OAuthParameters;
 import org.glassfish.jersey.oauth.signature.OAuthSecrets;
 import org.glassfish.jersey.oauth.signature.OAuthSignature;
 import org.glassfish.jersey.oauth.signature.OAuthSignatureException;
+
+import com.sun.xml.internal.ws.client.RequestContext;
 
 /**
  * Client filter adding OAuth authorization header to the HTTP request, if no
@@ -294,14 +298,15 @@ public final class OAuthClientFilter implements ClientRequestFilter, ClientRespo
 
         if (!signOnly) {
             if (state == State.NOT_AUTHORIZED_YET) {
-                // request temporary credentials
-                final Client client = ClientBuilder.newBuilder().withConfig(request.getConfiguration()).build();
 
+                // request temporary credentials
+                final Configuration clientConfiguration = request.getConfiguration();
+                final Client client = ClientBuilder.newBuilder().withConfig(clientConfiguration).build();
 
                 Response response = client.target(requestTokenUri)
                         .request().header(JERSEY_OAUTH_FILTER_SIGN_ONLY, "true").post(null);
                 if (response.getStatus() != 200) {
-                    throw new RuntimeException("Unsuccessful request for client temporary id. Response status: " + response.getStatus());
+                    throw new RuntimeException("Unsuccessful request for Request Token. Response status: " + response.getStatus());
                 }
                 Form form = response.readEntity(Form.class);
                 String token = form.asMap().getFirst(OAuthParameters.TOKEN);

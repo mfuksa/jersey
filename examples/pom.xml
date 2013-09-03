@@ -90,6 +90,7 @@
         <module>managed-client-webapp</module>
         <module>managed-client-simple-webapp</module>
         <module>multipart-webapp</module>
+        <module>oauth-twitter-client</module>
         <module>osgi-helloworld-webapp</module>
         <module>osgi-http-service</module>
         <module>reload</module>
