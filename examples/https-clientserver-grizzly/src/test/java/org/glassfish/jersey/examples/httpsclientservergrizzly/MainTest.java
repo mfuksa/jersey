@@ -165,13 +165,13 @@ public class MainTest {
         Response response = null;
 
         try {
-            response = target.path("404").request().get(Response.class);
+            response = target.path("401").request().get(Response.class);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
 
-        assertEquals(404, response.getStatus());
+        assertEquals(401, response.getStatus());
     }
 
 

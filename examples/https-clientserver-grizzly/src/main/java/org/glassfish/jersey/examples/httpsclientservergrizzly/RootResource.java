@@ -68,7 +68,7 @@ public class RootResource {
 
 
     @GET
-    @Path("404")
+    @Path("401")
     public Response get401(@Context HttpHeaders headers) {
 
 
