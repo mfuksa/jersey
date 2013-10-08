@@ -58,6 +58,12 @@ import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
  */
 public class Server {
 
+//    private static final String KEYSTORE_SERVER_FILE = "/home/mira/dev/projects/jersey/examples/https-clientserver-grizzly/keystore_server";
+    private static final String KEYSTORE_SERVER_FILE = "./keystore_server";
+    private static final String KEYSTORE_SERVER_PWD = "asdfgh";
+//    private static final String TRUSTORE_SERVER_FILE = "/home/mira/dev/projects/jersey/examples/https-clientserver-grizzly/truststore_server";
+    private static final String TRUSTORE_SERVER_FILE = "./truststore_server";
+    private static final String TRUSTORE_SERVER_PWD = "asdfgh";
     private static HttpServer webServer;
 
     public static final URI BASE_URI = getBaseURI();
@@ -88,13 +94,14 @@ public class Server {
         SSLContextConfigurator sslContext = new SSLContextConfigurator();
 
         // set up security context
-        sslContext.setKeyStoreFile("./keystore_server"); // contains server keypair
-        sslContext.setKeyStorePass("asdfgh");
-        sslContext.setTrustStoreFile("./truststore_server"); // contains client certificate
-        sslContext.setTrustStorePass("asdfgh");
+        sslContext.setKeyStoreFile(KEYSTORE_SERVER_FILE); // contains server keypair
+        sslContext.setKeyStorePass(KEYSTORE_SERVER_PWD);
+        sslContext.setTrustStoreFile(TRUSTORE_SERVER_FILE); // contains client certificate
+        sslContext.setTrustStorePass(TRUSTORE_SERVER_PWD);
 
         ResourceConfig rc = new ResourceConfig();
         rc.registerClasses(RootResource.class, SecurityFilter.class, AuthenticationExceptionMapper.class);
+
 
         try {
             webServer = GrizzlyHttpServerFactory.createHttpServer(
@@ -109,6 +116,7 @@ public class Server {
             webServer.start();
 
         } catch (Exception ex) {
+            ex.printStackTrace();
             System.out.println(ex.getMessage());
         }
     }
