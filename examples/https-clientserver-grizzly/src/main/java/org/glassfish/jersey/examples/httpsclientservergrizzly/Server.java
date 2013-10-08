@@ -100,7 +100,7 @@ public class Server {
         sslContext.setTrustStorePass(TRUSTORE_SERVER_PWD);
 
         ResourceConfig rc = new ResourceConfig();
-        rc.registerClasses(RootResource.class, SecurityFilter.class, AuthenticationExceptionMapper.class);
+        rc.registerClasses(RootResource.class/*, SecurityFilter.class*/, AuthenticationExceptionMapper.class);
 
 
         try {

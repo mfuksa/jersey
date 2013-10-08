@@ -46,6 +46,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response;
 
 /**
  * Simple resource demonstrating low level approach of getting user credentials.
@@ -63,6 +64,18 @@ public class RootResource {
         System.out.println("Service: GET / User: " + getUser(headers));
 
         return Server.CONTENT;
+    }
+
+
+    @GET
+    @Path("404")
+    public Response get401(@Context HttpHeaders headers) {
+
+
+
+        return Response.status(401).
+                header("WWW-Authenticate", "Basic realm=\"aaaa\"").
+                build();
     }
 
     private String getUser(HttpHeaders headers) {

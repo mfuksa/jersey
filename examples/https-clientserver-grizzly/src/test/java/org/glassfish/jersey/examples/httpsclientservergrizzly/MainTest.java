@@ -55,6 +55,7 @@ import org.glassfish.jersey.grizzly.connector.GrizzlyConnector;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -63,8 +64,6 @@ import static org.junit.Assert.assertTrue;
  * @author Pavel Bucek (pavel.bucek at oracle.com)
  */
 public class MainTest {
-
-//    private static final String TRUSTORE_CLIENT_FILE = "/home/mira/dev/projects/jersey/examples/https-clientserver-grizzly/truststore_client";
     private static final String TRUSTORE_CLIENT_FILE = "./truststore_client";
     private static final String TRUSTSTORE_CLIENT_PWD = "asdfgh";
     private static final String KEYSTORE_CLIENT_FILE = "./keystore_client";
@@ -81,6 +80,7 @@ public class MainTest {
     }
 
     @Test
+    @Ignore
     public void testSSLWithBasicAndSSLAuthGrizzlyConnector() {
         final ClientConfig clientConfig = getGrizzlyConfig();
         _testSSLWithBasicAndSSLAuth(clientConfig);
@@ -94,6 +94,7 @@ public class MainTest {
     }
 
     @Test
+    @Ignore
     public void testSSLWithBasicAndSSLAuthHttpUrlConnector() {
         final ClientConfig clientConfig = getHttpUrlConnectorConfig();
         _testSSLWithBasicAndSSLAuth(clientConfig);
@@ -133,13 +134,44 @@ public class MainTest {
 
 
     @Test
+    @Ignore
     public void testWithoutBasicAuthHttpUrlConnector() {
         _testWithoutBasicAuth(getHttpUrlConnectorConfig());
     }
 
     @Test
+    @Ignore
    public void testWithoutBasicAuthGrizzlyConnector() {
         _testWithoutBasicAuth(getGrizzlyConfig());
+    }
+
+
+    @Test
+    public void test401() {
+        SslConfigurator sslConfig = SslConfigurator.newInstance()
+                .trustStoreFile(TRUSTORE_CLIENT_FILE)
+                .trustStorePassword(TRUSTSTORE_CLIENT_PWD)
+                .keyStoreFile(KEYSTORE_CLIENT_FILE)
+                .keyPassword(KEYSTORE_CLIENT_PWD);
+
+        Client client = ClientBuilder.newBuilder().withConfig(getGrizzlyConfig()).sslContext(sslConfig
+                .createSSLContext()).build();
+
+        System.out.println("Client: GET " + Server.BASE_URI);
+
+        WebTarget target = client.target(Server.BASE_URI);
+        target.register(new LoggingFilter());
+
+        Response response = null;
+
+        try {
+            response = target.path("404").request().get(Response.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
+        assertEquals(404, response.getStatus());
     }
 
 
@@ -206,11 +238,13 @@ public class MainTest {
     }
 
     @Test
+    @Ignore
     public void testWithoutSSLAuthenticationGrizzly() {
         _testWithoutSSLAuthentication(getGrizzlyConfig());
     }
 
     @Test
+    @Ignore
     public void testWithoutSSLAuthenticationHttpUrlConnector() {
         _testWithoutSSLAuthentication(getHttpUrlConnectorConfig());
     }
