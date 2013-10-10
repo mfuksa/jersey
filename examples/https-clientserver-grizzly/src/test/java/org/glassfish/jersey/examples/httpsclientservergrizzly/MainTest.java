@@ -80,7 +80,6 @@ public class MainTest {
     }
 
     @Test
-    @Ignore
     public void testSSLWithBasicAndSSLAuthGrizzlyConnector() {
         final ClientConfig clientConfig = getGrizzlyConfig();
         _testSSLWithBasicAndSSLAuth(clientConfig);
@@ -94,7 +93,6 @@ public class MainTest {
     }
 
     @Test
-    @Ignore
     public void testSSLWithBasicAndSSLAuthHttpUrlConnector() {
         final ClientConfig clientConfig = getHttpUrlConnectorConfig();
         _testSSLWithBasicAndSSLAuth(clientConfig);
@@ -134,13 +132,11 @@ public class MainTest {
 
 
     @Test
-    @Ignore
     public void testWithoutBasicAuthHttpUrlConnector() {
         _testWithoutBasicAuth(getHttpUrlConnectorConfig());
     }
 
     @Test
-    @Ignore
    public void testWithoutBasicAuthGrizzlyConnector() {
         _testWithoutBasicAuth(getGrizzlyConfig());
     }
@@ -238,13 +234,11 @@ public class MainTest {
     }
 
     @Test
-    @Ignore
     public void testWithoutSSLAuthenticationGrizzly() {
         _testWithoutSSLAuthentication(getGrizzlyConfig());
     }
 
     @Test
-    @Ignore
     public void testWithoutSSLAuthenticationHttpUrlConnector() {
         _testWithoutSSLAuthentication(getHttpUrlConnectorConfig());
     }

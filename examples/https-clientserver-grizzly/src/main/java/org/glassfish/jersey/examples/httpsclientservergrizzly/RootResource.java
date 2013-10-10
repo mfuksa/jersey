@@ -70,9 +70,6 @@ public class RootResource {
     @GET
     @Path("401")
     public Response get401(@Context HttpHeaders headers) {
-
-
-
         return Response.status(401).
                 header("WWW-Authenticate", "Basic realm=\"aaaa\"").
                 build();
