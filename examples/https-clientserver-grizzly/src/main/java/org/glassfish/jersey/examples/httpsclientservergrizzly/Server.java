@@ -57,11 +57,8 @@ import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
  * @author Pavel Bucek (pavel.bucek at oracle.com)
  */
 public class Server {
-
-//    private static final String KEYSTORE_SERVER_FILE = "/home/mira/dev/projects/jersey/examples/https-clientserver-grizzly/keystore_server";
     private static final String KEYSTORE_SERVER_FILE = "./keystore_server";
     private static final String KEYSTORE_SERVER_PWD = "asdfgh";
-//    private static final String TRUSTORE_SERVER_FILE = "/home/mira/dev/projects/jersey/examples/https-clientserver-grizzly/truststore_server";
     private static final String TRUSTORE_SERVER_FILE = "./truststore_server";
     private static final String TRUSTORE_SERVER_PWD = "asdfgh";
     private static HttpServer webServer;
@@ -102,7 +99,6 @@ public class Server {
         ResourceConfig rc = new ResourceConfig();
         rc.registerClasses(RootResource.class, SecurityFilter.class, AuthenticationExceptionMapper.class);
 
-
         try {
             webServer = GrizzlyHttpServerFactory.createHttpServer(
                     getBaseURI(),
@@ -132,4 +128,3 @@ public class Server {
         System.in.read();
     }
 }
-

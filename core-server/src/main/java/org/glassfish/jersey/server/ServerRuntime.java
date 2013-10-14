@@ -387,9 +387,9 @@ class ServerRuntime {
             } catch (Throwable responseError) {
                 if (throwable != responseError
                         && !(throwable instanceof MappableException && throwable.getCause() == responseError)) {
-                    LOGGER.log(Level.SEVERE, LocalizationMessages.ERROR_EXCEPTION_MAPPING_ORIGINAL_EXCEPTION(), throwable);
+                    LOGGER.log(Level.FINE, LocalizationMessages.ERROR_EXCEPTION_MAPPING_ORIGINAL_EXCEPTION(), throwable);
                 }
-                LOGGER.log(Level.SEVERE, LocalizationMessages.ERROR_EXCEPTION_MAPPING_THROWN_TO_CONTAINER(), responseError);
+                LOGGER.log(Level.FINE, LocalizationMessages.ERROR_EXCEPTION_MAPPING_THROWN_TO_CONTAINER(), responseError);
 
                 try {
                     request.getResponseWriter().failure(responseError);

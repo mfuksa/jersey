@@ -86,13 +86,10 @@ import com.ning.http.client.providers.grizzly.GrizzlyAsyncHttpProvider;
  * @author Stepan Kopriva (stepan.kopriva at oracle.com)
  */
 public class GrizzlyConnector implements Connector {
-
-
     private volatile AsyncHttpClient grizzlyClient = null;
     private final Configuration config;
 
     private final Object LOCK = new Object();
-
 
     /**
      * Create the new Grizzly async client connector.
@@ -226,7 +223,6 @@ public class GrizzlyConnector implements Connector {
 
     @Override
     public Future<?> apply(final ClientRequest request, final AsyncConnectorCallback callback) {
-
         final Request connectorRequest = translate(request);
         final ByteBufferInputStream entityStream = new ByteBufferInputStream();
         final AtomicBoolean callbackInvoked = new AtomicBoolean(false);
@@ -373,7 +369,6 @@ public class GrizzlyConnector implements Connector {
         if (entity == null) {
             return null;
         }
-
 
         return new com.ning.http.client.Request.EntityWriter() {
             @Override

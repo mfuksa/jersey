@@ -55,12 +55,16 @@ import org.glassfish.jersey.grizzly.connector.GrizzlyConnector;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
+ * This test class starts the grizzly server and then client performs several SSL (https)
+ * requests where different scenarios are tested (SSL Client authentication, missing truststore
+ * configuration, etc.). Server is a Grizzly server configured for SSL support and client
+ * uses both, {@link HttpUrlConnector} and {@link GrizzlyConnector}.
+ *
  * @author Pavel Bucek (pavel.bucek at oracle.com)
  */
 public class MainTest {
@@ -137,39 +141,9 @@ public class MainTest {
     }
 
     @Test
-   public void testWithoutBasicAuthGrizzlyConnector() {
+    public void testWithoutBasicAuthGrizzlyConnector() {
         _testWithoutBasicAuth(getGrizzlyConfig());
     }
-
-
-    @Test
-    public void test401() {
-        SslConfigurator sslConfig = SslConfigurator.newInstance()
-                .trustStoreFile(TRUSTORE_CLIENT_FILE)
-                .trustStorePassword(TRUSTSTORE_CLIENT_PWD)
-                .keyStoreFile(KEYSTORE_CLIENT_FILE)
-                .keyPassword(KEYSTORE_CLIENT_PWD);
-
-        Client client = ClientBuilder.newBuilder().withConfig(getGrizzlyConfig()).sslContext(sslConfig
-                .createSSLContext()).build();
-
-        System.out.println("Client: GET " + Server.BASE_URI);
-
-        WebTarget target = client.target(Server.BASE_URI);
-        target.register(new LoggingFilter());
-
-        Response response = null;
-
-        try {
-            response = target.path("401").request().get(Response.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-
-        assertEquals(401, response.getStatus());
-    }
-
 
     /**
      * Test to see that HTTP 401 is returned when client tries to GET without
