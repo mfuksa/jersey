@@ -54,7 +54,25 @@ public class MyApplication extends ResourceConfig {
         register(MyExceptionMapper.class);
         register(MyResource.class);
         setApplicationName("MonitoringExample");
+
+        property("jersey.config.server.tracing.type", "ALL");
+        property("jersey.config.server.tracing.threshold", "VERBOSE");
+
+
+//        property("jersey.config.server.tracing.type", "OFF");
+
+//        trigger by HTTP request header "X-Jersey-Tracing-Accept"
+//        property("jersey.config.server.tracing.type", "ON_DEMAND");
+
+
+        //  you can also define this by "X-Jersey-Tracing-Threshold" HTTP header
+        // SUMMARY, TRACE, VERBOSE
+
+
     }
+
+    // curl http://localhost:8080/monitoring-sample/rest/resource -v
+    // curl http://localhost:8080/monitoring-sample/rest/resource -v -H "X-Jersey-Tracing-Accept: true"
 
     // export MAVEN_OPTS="$MAVEN_OPTS -Djava.util.logging.config.file=`pwd`/logging.properties"
     // echo $MAVEN_OPTS
