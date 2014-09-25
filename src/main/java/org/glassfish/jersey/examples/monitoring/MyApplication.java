@@ -55,4 +55,7 @@ public class MyApplication extends ResourceConfig {
         register(MyResource.class);
         setApplicationName("MonitoringExample");
     }
+
+    // export MAVEN_OPTS="$MAVEN_OPTS -Djava.util.logging.config.file=`pwd`/logging.properties"
+    // echo $MAVEN_OPTS
 }
