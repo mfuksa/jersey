@@ -42,7 +42,6 @@ package org.glassfish.jersey.examples.monitoring;
 import javax.ws.rs.ApplicationPath;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.ServerProperties;
 
 /**
  *
@@ -53,8 +52,7 @@ public class MyApplication extends ResourceConfig {
 
     public MyApplication() {
         register(MyExceptionMapper.class);
-        setApplicationName("MonitoringExample");
         register(MyResource.class);
-        property(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED, true);
+        setApplicationName("MonitoringExample");
     }
 }
