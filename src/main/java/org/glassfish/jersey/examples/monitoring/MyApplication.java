@@ -43,6 +43,7 @@ import javax.ws.rs.ApplicationPath;
 
 import org.glassfish.jersey.examples.monitoring.listener.AppListener;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 
 /**
  *
@@ -57,5 +58,11 @@ public class MyApplication extends ResourceConfig {
         setApplicationName("MonitoringExample");
 
         register(AppListener.class);
+
+        property(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED, true);
+
+        property(ServerProperties.MONITORING_STATISTICS_ENABLED, true);
+
+        register(MonitoringResource.class);
     }
 }
