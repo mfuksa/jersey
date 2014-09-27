@@ -41,6 +41,7 @@ package org.glassfish.jersey.examples.monitoring;
 
 import javax.ws.rs.ApplicationPath;
 
+import org.glassfish.jersey.examples.monitoring.listener.AppListener;
 import org.glassfish.jersey.server.ResourceConfig;
 
 /**
@@ -55,25 +56,6 @@ public class MyApplication extends ResourceConfig {
         register(MyResource.class);
         setApplicationName("MonitoringExample");
 
-        property("jersey.config.server.tracing.type", "ALL");
-        property("jersey.config.server.tracing.threshold", "VERBOSE");
-
-
-//        property("jersey.config.server.tracing.type", "OFF");
-
-//        trigger by HTTP request header "X-Jersey-Tracing-Accept"
-//        property("jersey.config.server.tracing.type", "ON_DEMAND");
-
-
-        //  you can also define this by "X-Jersey-Tracing-Threshold" HTTP header
-        // SUMMARY, TRACE, VERBOSE
-
-
+        register(AppListener.class);
     }
-
-    // curl http://localhost:8080/monitoring-sample/rest/resource -v
-    // curl http://localhost:8080/monitoring-sample/rest/resource -v -H "X-Jersey-Tracing-Accept: true"
-
-    // export MAVEN_OPTS="$MAVEN_OPTS -Djava.util.logging.config.file=`pwd`/logging.properties"
-    // echo $MAVEN_OPTS
 }
